@@ -166,10 +166,12 @@ export function applyLandingPageReplacements(
 
 export function loadLandingPageTemplate(): string {
   try {
-    const templatePath = join(__dirname, 'landingPageTemplate.html');
+    // Use absolute path from project root since __dirname varies in dev vs prod
+    const templatePath = join(process.cwd(), 'server/landingPageTemplate.html');
     return readFileSync(templatePath, 'utf-8');
   } catch (error) {
     console.error('Failed to load landing page template:', error);
+    console.error('Attempted path:', join(process.cwd(), 'server/landingPageTemplate.html'));
     throw new Error('Landing page template not found');
   }
 }

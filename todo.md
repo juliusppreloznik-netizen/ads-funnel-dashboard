@@ -66,3 +66,7 @@
 
 - [x] Make logo clickable to navigate to admin dashboard
 - [x] Remove triple-click mechanism
+
+## Bug Fixes
+
+- [x] Fix landing page template loading error - template file not found
