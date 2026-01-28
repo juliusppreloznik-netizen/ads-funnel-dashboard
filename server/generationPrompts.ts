@@ -78,42 +78,90 @@ Write clean, conversational copy that flows naturally. End each ad with a clear 
 BEGIN ADS NOW:`;
 }
 
-export function getLandingPagePrompt(client: Client, htmlTemplate: string, hexColor?: string): string {
-  const colorInstruction = hexColor 
-    ? `\n\n## COLOR CUSTOMIZATION:\nReplace the primary orange color (rgb(237, 109, 5) and #ED6D05) throughout the template with: ${hexColor}\nFind and replace ALL instances of the orange color in inline styles and CSS.`
-    : '';
-
-  return `You are an expert at personalizing landing page copy. You will receive an HTML template and must perform LITERAL find-and-replace operations on the text content ONLY.
+export function getLandingPageCopyPrompt(client: Client): string {
+  return `You are an elite direct response copywriter. Generate NEW personalized copy for a business funding landing page.
 
 ## CLIENT DATA:
-- Client Name: ${client.name}
 - Business Name: ${client.businessName}
 
-## CRITICAL INSTRUCTIONS:
-1. DO NOT modify HTML structure, CSS, classes, or layout
-2. ONLY replace text content between HTML tags
-3. Keep the exact same sections, formatting, and design
-4. Preserve all Framer classes, data attributes, and styling exactly as-is
-5. The output must be the COMPLETE HTML file with only text content changed
-6. Keep "Citadel Consulting" or "Citidel Consulting" → replace with "${client.businessName}"
-7. Update headlines, body copy, and testimonials with personalized content
-8. Maintain the same emotional arc and messaging structure
-9. DO NOT remove or modify the VSL embed section
-10. DO NOT remove or modify the testimonial embed slots${colorInstruction}
+## REQUIRED OUTPUT FORMAT:
+Return a JSON object with the following fields. Each field should contain the NEW copy text that will replace the original template text.
 
-## TEXT REPLACEMENT AREAS:
-- Main headline and subheadline
-- Body copy paragraphs
-- Testimonial text (keep structure, update names/amounts)
-- FAQ questions and answers
-- CTA button text
-- Social proof metrics
+{
+  "headline": "Main headline (replace: 'We'll use Funding Optimization to get you access to 6 figures of 0% APR capital in as little as 14 days')",
+  "subheadline": "Subheadline (replace: 'Even if your credit isn't the best and even if you've been rejected for funding before.')",
+  "socialProof": "Social proof line (replace: '50+ entrepreneurs approved every month')",
+  "ctaButton": "CTA button text (replace: 'Get me funded')",
+  "bodySection1": "First body paragraph - introduce the problem",
+  "bodySection2": "Second body paragraph - agitate the problem",
+  "bodySection3": "Third body paragraph - introduce Funding Optimization mechanism",
+  "bodySection4": "Fourth body paragraph - explain how it works",
+  "testimonial1Name": "First testimonial name",
+  "testimonial1Result": "First testimonial result (e.g., '$120,000 in 4 weeks')",
+  "testimonial1Quote": "First testimonial quote",
+  "testimonial2Name": "Second testimonial name",
+  "testimonial2Result": "Second testimonial result (e.g., '$175,000 in 3 weeks')",
+  "testimonial2Quote": "Second testimonial quote",
+  "faq1Question": "FAQ 1 question",
+  "faq1Answer": "FAQ 1 answer",
+  "faq2Question": "FAQ 2 question",
+  "faq2Answer": "FAQ 2 answer",
+  "faq3Question": "FAQ 3 question",
+  "faq3Answer": "FAQ 3 answer"
+}
 
-Generate NEW copy that maintains the same promise (Funding Optimization, 6 figures, 0% APR, 14 days) but with fresh wording.
+Generate fresh, compelling copy that maintains the same promise (Funding Optimization, 6 figures, 0% APR, 14 days) but with new wording personalized for ${client.businessName}.
 
-OUTPUT THE COMPLETE HTML FILE with only text (and optionally color) changes:
+OUTPUT ONLY THE JSON OBJECT, NO OTHER TEXT:`;
+}
 
-${htmlTemplate}`;
+export function applyLandingPageReplacements(
+  template: string,
+  copyData: any,
+  businessName: string,
+  hexColor?: string
+): string {
+  let result = template;
+
+  // Replace business name
+  result = result.replace(/Citadel Consulting/g, businessName);
+  result = result.replace(/Citidel Consulting/g, businessName);
+
+  // Replace copy elements if provided
+  if (copyData.headline) {
+    // Find and replace the main headline - look for the specific text pattern
+    result = result.replace(
+      /We'll use Funding Optimization to get you access to 6 figures of 0% APR capital in as little as 14 days[^<]*/g,
+      copyData.headline
+    );
+  }
+
+  if (copyData.subheadline) {
+    result = result.replace(
+      /Even if your credit isn't the best and even if you've been rejected for funding before\./g,
+      copyData.subheadline
+    );
+  }
+
+  if (copyData.ctaButton) {
+    result = result.replace(/Get me funded/g, copyData.ctaButton);
+  }
+
+  // Replace color if provided
+  if (hexColor) {
+    // Replace rgb(237, 109, 5) with hex color
+    const rgbMatch = hexColor.match(/^#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})$/i);
+    if (rgbMatch) {
+      const r = parseInt(rgbMatch[1], 16);
+      const g = parseInt(rgbMatch[2], 16);
+      const b = parseInt(rgbMatch[3], 16);
+      result = result.replace(/rgb\(237,\s*109,\s*5\)/g, `rgb(${r}, ${g}, ${b})`);
+      result = result.replace(/rgb\(237, 109, 5\)/g, `rgb(${r}, ${g}, ${b})`);
+    }
+    result = result.replace(/#ED6D05/g, hexColor);
+  }
+
+  return result;
 }
 
 export function loadLandingPageTemplate(): string {
@@ -122,37 +170,6 @@ export function loadLandingPageTemplate(): string {
     return readFileSync(templatePath, 'utf-8');
   } catch (error) {
     console.error('Failed to load landing page template:', error);
-    // Fallback to simple template
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <title>Funding Optimization</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .vsl-container { width: 100%; max-width: 800px; margin: 20px auto; padding: 20px; border: 2px solid #ccc; }
-    .testimonial-slot { width: 100%; max-width: 600px; margin: 20px auto; padding: 20px; border: 2px dashed #999; }
-  </style>
-</head>
-<body>
-  <h1>Get Your Business Funded The Right Way</h1>
-  <p>Access 6 figures of 0% APR capital in as little as 14 days.</p>
-  
-  <div class="vsl-container">
-    <p>[VSL EMBED GOES HERE]</p>
-  </div>
-  
-  <h2>What Our Clients Say</h2>
-  
-  <div class="testimonial-slot">
-    <p>[TESTIMONIAL 1 EMBED GOES HERE]</p>
-  </div>
-  
-  <div class="testimonial-slot">
-    <p>[TESTIMONIAL 2 EMBED GOES HERE]</p>
-  </div>
-  
-  <button>Get Started</button>
-</body>
-</html>`;
+    throw new Error('Landing page template not found');
   }
 }

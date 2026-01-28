@@ -50,3 +50,9 @@
 - [x] Replace landing page template with actual provided template
 - [x] Keep VSL embed box and 2 testimonial slots open for embeds in landing page
 - [x] Add hex color picker to admin dashboard for landing page generation
+
+## Landing Page Generation Fix
+
+- [x] Change approach: use Claude only to generate copy text, not to modify HTML
+- [x] Implement programmatic find-and-replace in server code
+- [x] Preserve full template structure with all Framer styling and scripts

@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
-import { getVSLPrompt, getAdsPrompt, getLandingPagePrompt, loadLandingPageTemplate } from "./generationPrompts";
+import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, loadLandingPageTemplate, applyLandingPageReplacements } from "./generationPrompts";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -151,18 +151,63 @@ export const appRouter = router({
         const client = await db.getClientById(input.clientId);
         if (!client) throw new Error("Client not found");
 
-        const htmlTemplate = loadLandingPageTemplate();
-        const prompt = getLandingPagePrompt(client, htmlTemplate, input.hexColor);
-        const response = await invokeLLM({
+        // Step 1: Generate copy text using Claude
+        const copyPrompt = getLandingPageCopyPrompt(client);
+        const copyResponse = await invokeLLM({
           messages: [
-            { role: "system", content: "You are an elite direct response copywriter. Follow instructions exactly." },
-            { role: "user", content: prompt },
+            { role: "system", content: "You are an elite direct response copywriter. Return ONLY valid JSON, no other text." },
+            { role: "user", content: copyPrompt },
           ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "landing_page_copy",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  headline: { type: "string" },
+                  subheadline: { type: "string" },
+                  socialProof: { type: "string" },
+                  ctaButton: { type: "string" },
+                  bodySection1: { type: "string" },
+                  bodySection2: { type: "string" },
+                  bodySection3: { type: "string" },
+                  bodySection4: { type: "string" },
+                  testimonial1Name: { type: "string" },
+                  testimonial1Result: { type: "string" },
+                  testimonial1Quote: { type: "string" },
+                  testimonial2Name: { type: "string" },
+                  testimonial2Result: { type: "string" },
+                  testimonial2Quote: { type: "string" },
+                  faq1Question: { type: "string" },
+                  faq1Answer: { type: "string" },
+                  faq2Question: { type: "string" },
+                  faq2Answer: { type: "string" },
+                  faq3Question: { type: "string" },
+                  faq3Answer: { type: "string" },
+                },
+                required: ["headline", "subheadline", "ctaButton"],
+                additionalProperties: false,
+              },
+            },
+          },
         });
 
-        const content = typeof response.choices[0]?.message?.content === 'string' 
-          ? response.choices[0].message.content 
-          : JSON.stringify(response.choices[0]?.message?.content || "");
+        const copyText = typeof copyResponse.choices[0]?.message?.content === 'string' 
+          ? copyResponse.choices[0].message.content 
+          : JSON.stringify(copyResponse.choices[0]?.message?.content || "{}");
+        
+        const copyData = JSON.parse(copyText);
+
+        // Step 2: Load template and apply replacements programmatically
+        const htmlTemplate = loadLandingPageTemplate();
+        const content = applyLandingPageReplacements(
+          htmlTemplate,
+          copyData,
+          client.businessName,
+          input.hexColor
+        );
         
         await db.createGeneratedAsset({
           clientId: input.clientId,
