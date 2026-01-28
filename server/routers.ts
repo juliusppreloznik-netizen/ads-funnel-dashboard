@@ -82,12 +82,12 @@ export const appRouter = router({
   // Claude API generation endpoints
   generation: router({
     generateVSL: protectedProcedure
-      .input(z.object({ clientId: z.number() }))
+      .input(z.object({ clientId: z.number(), uniqueMechanism: z.string() }))
       .mutation(async ({ input }) => {
         const client = await db.getClientById(input.clientId);
         if (!client) throw new Error("Client not found");
 
-        const prompt = getVSLPrompt(client);
+        const prompt = getVSLPrompt(client, input.uniqueMechanism);
         const response = await invokeLLM({
           messages: [
             { role: "system", content: "You are an elite direct response copywriter specializing in VSL scripts." },
@@ -106,20 +106,20 @@ export const appRouter = router({
         });
 
         await notifyOwner({
-          title: "VSL Generated",
+          title: "VSL Script Generated",
           content: `VSL script generated for ${client.name} (${client.businessName})`,
         });
 
-        return { success: true, content };
+        return { success: true };
       }),
 
     generateAds: protectedProcedure
-      .input(z.object({ clientId: z.number() }))
+      .input(z.object({ clientId: z.number(), uniqueMechanism: z.string() }))
       .mutation(async ({ input }) => {
         const client = await db.getClientById(input.clientId);
         if (!client) throw new Error("Client not found");
 
-        const prompt = getAdsPrompt(client);
+        const prompt = getAdsPrompt(client, input.uniqueMechanism);
         const response = await invokeLLM({
           messages: [
             { role: "system", content: "You are an elite direct response copywriter specializing in short-form video ads." },
@@ -138,21 +138,21 @@ export const appRouter = router({
         });
 
         await notifyOwner({
-          title: "Ads Generated",
+          title: "Ad Scripts Generated",
           content: `5 ad scripts generated for ${client.name} (${client.businessName})`,
         });
 
-        return { success: true, content };
+        return { success: true };
       }),
 
     generateLandingPage: protectedProcedure
-      .input(z.object({ clientId: z.number(), hexColor: z.string().optional() }))
+      .input(z.object({ clientId: z.number(), hexColor: z.string().optional(), uniqueMechanism: z.string() }))
       .mutation(async ({ input }) => {
         const client = await db.getClientById(input.clientId);
         if (!client) throw new Error("Client not found");
 
         // Step 1: Generate copy text using Claude
-        const copyPrompt = getLandingPageCopyPrompt(client);
+        const copyPrompt = getLandingPageCopyPrompt(client, input.uniqueMechanism);
         const copyResponse = await invokeLLM({
           messages: [
             { role: "system", content: "You are an elite direct response copywriter. Return ONLY valid JSON, no other text." },
@@ -205,7 +205,6 @@ export const appRouter = router({
         const content = applyLandingPageReplacements(
           htmlTemplate,
           copyData,
-          client.businessName,
           input.hexColor
         );
         
@@ -220,7 +219,7 @@ export const appRouter = router({
           content: `Landing page generated for ${client.name} (${client.businessName})`,
         });
 
-        return { success: true, content };
+        return { success: true };
       }),
   }),
 });

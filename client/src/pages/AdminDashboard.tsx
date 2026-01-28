@@ -17,14 +17,18 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [hexColor, setHexColor] = useState<string>("#ED6D05");
+  const [uniqueMechanism, setUniqueMechanism] = useState<string>("Funding Optimization");
 
   const { data: clients, isLoading: clientsLoading } = trpc.clients.list.useQuery(undefined, {
     enabled: !!user,
   });
 
+  const utils = trpc.useUtils();
+
   const generateVSL = trpc.generation.generateVSL.useMutation({
     onSuccess: () => {
       toast.success("VSL script generated successfully!");
+      utils.assets.getByClientId.invalidate();
     },
     onError: (error: any) => {
       toast.error("Failed to generate VSL: " + error.message);
@@ -34,6 +38,7 @@ export default function AdminDashboard() {
   const generateAds = trpc.generation.generateAds.useMutation({
     onSuccess: () => {
       toast.success("5 ad scripts generated successfully!");
+      utils.assets.getByClientId.invalidate();
     },
     onError: (error: any) => {
       toast.error("Failed to generate ads: " + error.message);
@@ -43,6 +48,7 @@ export default function AdminDashboard() {
   const generateLandingPage = trpc.generation.generateLandingPage.useMutation({
     onSuccess: () => {
       toast.success("Landing page generated successfully!");
+      utils.assets.getByClientId.invalidate();
     },
     onError: (error: any) => {
       toast.error("Failed to generate landing page: " + error.message);
@@ -78,7 +84,11 @@ export default function AdminDashboard() {
       toast.error("Please select a client first");
       return;
     }
-    generateVSL.mutate({ clientId: selectedClient.id });
+    if (!uniqueMechanism.trim()) {
+      toast.error("Please enter a unique mechanism");
+      return;
+    }
+    generateVSL.mutate({ clientId: selectedClient.id, uniqueMechanism });
   };
 
   const handleGenerateAds = () => {
@@ -86,7 +96,11 @@ export default function AdminDashboard() {
       toast.error("Please select a client first");
       return;
     }
-    generateAds.mutate({ clientId: selectedClient.id });
+    if (!uniqueMechanism.trim()) {
+      toast.error("Please enter a unique mechanism");
+      return;
+    }
+    generateAds.mutate({ clientId: selectedClient.id, uniqueMechanism });
   };
 
   const handleGenerateLandingPage = () => {
@@ -94,7 +108,11 @@ export default function AdminDashboard() {
       toast.error("Please select a client first");
       return;
     }
-    generateLandingPage.mutate({ clientId: selectedClient.id, hexColor });
+    if (!uniqueMechanism.trim()) {
+      toast.error("Please enter a unique mechanism");
+      return;
+    }
+    generateLandingPage.mutate({ clientId: selectedClient.id, hexColor, uniqueMechanism });
   };
 
   const viewAssets = () => {
@@ -124,7 +142,22 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                       <div className="mb-4 space-y-2">
+                <Label htmlFor="uniqueMechanism">Unique Mechanism</Label>
+                <Input
+                  id="uniqueMechanism"
+                  type="text"
+                  value={uniqueMechanism}
+                  onChange={(e) => setUniqueMechanism(e.target.value)}
+                  placeholder="e.g., Funding Optimization, Credit Stacking System"
+                  className="max-w-md"
+                />
+                <p className="text-sm text-muted-foreground">
+                  This unique mechanism will be used across all generated assets (VSL, Ads, Landing Page)
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
                 <Button
                   onClick={handleGenerateVSL}
                   disabled={generateVSL.isPending}

@@ -70,3 +70,12 @@
 ## Bug Fixes
 
 - [x] Fix landing page template loading error - template file not found
+- [x] Fix landing page generation displaying raw HTML instead of saving to database
+- [ ] Fix landing page replacements - template not being fully preserved (only 1KB instead of 500KB)
+
+## Unique Mechanism Feature
+
+- [x] Add Unique Mechanism input field to admin dashboard
+- [x] Update landing page generation to use template with minimal replacements
+- [x] Preserve full 500KB template structure
+- [x] Replace only "Funding Optimization" with client's unique mechanism
