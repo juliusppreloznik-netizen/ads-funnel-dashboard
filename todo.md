@@ -79,3 +79,14 @@
 - [x] Update landing page generation to use template with minimal replacements
 - [x] Preserve full 500KB template structure
 - [x] Replace only "Funding Optimization" with client's unique mechanism
+- [ ] Fix HTML/SVG code displaying on right side of admin dashboard
+
+## Standalone Landing Page Builder
+
+- [x] Create new route `/admin/landing-page-builder`
+- [x] Build step-by-step UI (input → AI generation → editor → save)
+- [x] Add AI copy generation endpoint
+- [x] Integrate template with AI-generated copy
+- [x] Add GrapesJS visual editor
+- [x] Implement save and download functionality
+- [x] Add link to landing page builder in admin dashboard

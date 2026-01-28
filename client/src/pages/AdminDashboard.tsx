@@ -157,6 +157,21 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
+              <div className="mb-6">
+                <Button
+                  onClick={() => setLocation("/admin/landing-page-builder")}
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                >
+                  <Globe className="h-5 w-5 mr-2" />
+                  Open Landing Page Builder
+                </Button>
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Build custom landing pages with AI-generated copy and visual editing
+                </p>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <Button
                   onClick={handleGenerateVSL}
