@@ -10,7 +10,7 @@ import ThankYou from "./pages/ThankYou";
 import AdminDashboard from "./pages/AdminDashboard";
 import AssetManagement from "./pages/AssetManagement";
 import HTMLEditor from "./pages/HTMLEditor";
-import LandingPageBuilder from "./pages/LandingPageBuilder";
+
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -19,7 +19,7 @@ function Router() {
       <Route path={"/"} component={IntakeForm} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/landing-page-builder" component={LandingPageBuilder} />
+
       <Route path="/admin/assets/:clientId" component={AssetManagement} />
       <Route path="/admin/editor/:assetId" component={HTMLEditor} />
       <Route path={"/404"} component={NotFound} />

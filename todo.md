@@ -90,3 +90,13 @@
 - [x] Add GrapesJS visual editor
 - [x] Implement save and download functionality
 - [x] Add link to landing page builder in admin dashboard
+
+## UI Redesign - Modern Tech Aesthetic
+
+- [x] Remove landing page builder route and components
+- [x] Remove landing page generation from admin dashboard
+- [x] Remove landing page generation from server routers
+- [x] Redesign intake form with modern, sleek UI (glassmorphism, smooth animations, clean typography)
+- [x] Redesign admin dashboard with tech startup aesthetic (dark mode option, gradient accents, modern card layouts)
+- [x] Keep only VSL and Ads generation functionality
+- [x] Update color scheme and typography for professional tech feel

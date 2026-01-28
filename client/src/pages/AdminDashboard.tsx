@@ -4,11 +4,11 @@ import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Search, FileText, Image as ImageIcon, Globe } from "lucide-react";
+import { Loader2, Search, FileText, Zap, Sparkles, Eye } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
@@ -16,7 +16,6 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
-  const [hexColor, setHexColor] = useState<string>("#ED6D05");
   const [uniqueMechanism, setUniqueMechanism] = useState<string>("Funding Optimization");
 
   const { data: clients, isLoading: clientsLoading } = trpc.clients.list.useQuery(undefined, {
@@ -45,17 +44,6 @@ export default function AdminDashboard() {
     },
   });
 
-  const generateLandingPage = trpc.generation.generateLandingPage.useMutation({
-    onSuccess: () => {
-      toast.success("Landing page generated successfully!");
-      utils.assets.getByClientId.invalidate();
-    },
-    onError: (error: any) => {
-      toast.error("Failed to generate landing page: " + error.message);
-    },
-  });
-
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
       window.location.href = getLoginUrl();
@@ -64,8 +52,8 @@ export default function AdminDashboard() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
   }
@@ -103,203 +91,183 @@ export default function AdminDashboard() {
     generateAds.mutate({ clientId: selectedClient.id, uniqueMechanism });
   };
 
-  const handleGenerateLandingPage = () => {
-    if (!selectedClient) {
-      toast.error("Please select a client first");
-      return;
-    }
-    if (!uniqueMechanism.trim()) {
-      toast.error("Please enter a unique mechanism");
-      return;
-    }
-    generateLandingPage.mutate({ clientId: selectedClient.id, hexColor, uniqueMechanism });
-  };
-
-  const viewAssets = () => {
-    if (!selectedClient) {
-      toast.error("Please select a client first");
-      return;
-    }
-    setLocation(`/admin/assets/${selectedClient.id}`);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold">Admin Dashboard</CardTitle>
-            <CardDescription>Manage client submissions and generate marketing assets</CardDescription>
-          </CardHeader>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Header */}
+      <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
+        <div className="container mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img src="/catalyst-logo.jpg" alt="Catalyst" className="h-12 w-auto" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">Command Center</h1>
+                <p className="text-sm text-slate-400">AI-Powered Asset Generation</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-white">{user.name}</p>
+                <p className="text-xs text-slate-400">{user.email}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div className="container mx-auto px-6 py-8">
+        {/* Generation Panel */}
         {selectedClient && (
-          <Card className="border-primary">
-            <CardHeader>
-              <CardTitle>Selected Client: {selectedClient.name}</CardTitle>
-              <CardDescription>
-                {selectedClient.businessName} • {selectedClient.email}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-                       <div className="mb-4 space-y-2">
-                <Label htmlFor="uniqueMechanism">Unique Mechanism</Label>
-                <Input
-                  id="uniqueMechanism"
-                  type="text"
-                  value={uniqueMechanism}
-                  onChange={(e) => setUniqueMechanism(e.target.value)}
-                  placeholder="e.g., Funding Optimization, Credit Stacking System"
-                  className="max-w-md"
-                />
-                <p className="text-sm text-muted-foreground">
-                  This unique mechanism will be used across all generated assets (VSL, Ads, Landing Page)
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <Button
-                  onClick={() => setLocation("/admin/landing-page-builder")}
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                >
-                  <Globe className="h-5 w-5 mr-2" />
-                  Open Landing Page Builder
-                </Button>
-                <p className="text-sm text-muted-foreground mt-2 text-center">
-                  Build custom landing pages with AI-generated copy and visual editing
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <Button
-                  onClick={handleGenerateVSL}
-                  disabled={generateVSL.isPending}
-                  size="lg"
-                  className="h-24 flex flex-col gap-2"
-                >
-                  {generateVSL.isPending ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <>
-                      <FileText className="h-6 w-6" />
-                      <span>Generate VSL</span>
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleGenerateAds}
-                  disabled={generateAds.isPending}
-                  size="lg"
-                  className="h-24 flex flex-col gap-2"
-                  variant="secondary"
-                >
-                  {generateAds.isPending ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <>
-                      <ImageIcon className="h-6 w-6" />
-                      <span>Generate 5 Ads</span>
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={handleGenerateLandingPage}
-                  disabled={generateLandingPage.isPending}
-                  size="lg"
-                  className="h-24 flex flex-col gap-2"
-                  variant="outline"
-                >
-                  {generateLandingPage.isPending ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  ) : (
-                    <>
-                      <Globe className="h-6 w-6" />
-                      <span>Generate Landing Page</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              <div className="mt-4 space-y-2">
-                <Label htmlFor="hexColor">Landing Page Primary Color</Label>
-                <div className="flex gap-2 items-center">
-                  <Input
-                    id="hexColor"
-                    type="text"
-                    value={hexColor}
-                    onChange={(e) => setHexColor(e.target.value)}
-                    placeholder="#ED6D05"
-                    className="max-w-[150px]"
-                  />
-                  <div
-                    className="w-10 h-10 rounded border"
-                    style={{ backgroundColor: hexColor }}
-                  />
+          <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">
+            <div className="p-8">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    {selectedClient.name}
+                  </h2>
+                  <p className="text-slate-400">{selectedClient.businessName}</p>
+                  <p className="text-sm text-slate-500">{selectedClient.email}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Enter a hex color code for the landing page accent color
-                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation(`/admin/assets/${selectedClient.id}`)}
+                  className="text-white hover:bg-white/10"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View Assets
+                </Button>
               </div>
-              <Button onClick={viewAssets} className="w-full mt-4" variant="outline">
-                View Generated Assets
-              </Button>
-            </CardContent>
+
+              <div className="space-y-6">
+                <div>
+                  <Label htmlFor="uniqueMechanism" className="text-white mb-2 block">
+                    Unique Mechanism
+                  </Label>
+                  <Input
+                    id="uniqueMechanism"
+                    value={uniqueMechanism}
+                    onChange={(e) => setUniqueMechanism(e.target.value)}
+                    placeholder="e.g., Funding Optimization, Credit Stacking System"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-white/30"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    This mechanism will be used across all generated assets
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    onClick={handleGenerateVSL}
+                    disabled={generateVSL.isPending}
+                    size="lg"
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 h-16"
+                  >
+                    {generateVSL.isPending ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-5 w-5 mr-2" />
+                        Generate VSL Script
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    onClick={handleGenerateAds}
+                    disabled={generateAds.isPending}
+                    size="lg"
+                    className="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white border-0 h-16"
+                  >
+                    {generateAds.isPending ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5 mr-2" />
+                        Generate 5 Ads
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Client Submissions</CardTitle>
-            <div className="flex items-center gap-2 mt-4">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search clients..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
+        {/* Client List */}
+        <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">
+          <div className="p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white">Client Submissions</h2>
+              <div className="relative w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-500" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search clients..."
+                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-white/30"
+                />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
+
             {clientsLoading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
               </div>
             ) : filteredClients && filteredClients.length > 0 ? (
-              <div className="rounded-md border">
+              <div className="rounded-lg border border-white/10 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Business Name</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead>Actions</TableHead>
+                    <TableRow className="border-white/10 hover:bg-white/5">
+                      <TableHead className="text-slate-300">Name</TableHead>
+                      <TableHead className="text-slate-300">Email</TableHead>
+                      <TableHead className="text-slate-300">Business</TableHead>
+                      <TableHead className="text-slate-300">Submitted</TableHead>
+                      <TableHead className="text-slate-300">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredClients.map((client) => (
                       <TableRow
                         key={client.id}
-                        className={selectedClientId === client.id ? "bg-muted" : ""}
+                        className={`border-white/10 hover:bg-white/5 cursor-pointer transition-colors ${
+                          selectedClientId === client.id ? "bg-white/10" : ""
+                        }`}
                       >
-                        <TableCell className="font-medium">{client.name}</TableCell>
-                        <TableCell>{client.email}</TableCell>
-                        <TableCell>{client.businessName}</TableCell>
-                        <TableCell>
+                        <TableCell className="font-medium text-white">
+                          {client.name}
+                        </TableCell>
+                        <TableCell className="text-slate-400">{client.email}</TableCell>
+                        <TableCell className="text-slate-400">
+                          {client.businessName}
+                        </TableCell>
+                        <TableCell className="text-slate-400">
                           {new Date(client.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
                           <Button
                             onClick={() => setSelectedClientId(client.id)}
-                            size="sm"
                             variant={selectedClientId === client.id ? "default" : "outline"}
+                            size="sm"
+                            className={
+                              selectedClientId === client.id
+                                ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0"
+                                : "border-white/20 text-white hover:bg-white/10"
+                            }
                           >
-                            {selectedClientId === client.id ? "Selected" : "Select"}
+                            {selectedClientId === client.id ? (
+                              <>
+                                <Zap className="h-4 w-4 mr-1" />
+                                Selected
+                              </>
+                            ) : (
+                              "Select"
+                            )}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -308,11 +276,11 @@ export default function AdminDashboard() {
                 </Table>
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                No clients found
+              <div className="text-center py-12">
+                <p className="text-slate-400">No client submissions found</p>
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
       </div>
     </div>
