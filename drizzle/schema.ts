@@ -25,4 +25,35 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Clients table - stores client intake form submissions
+ */
+export const clients = mysqlTable("clients", {
+  id: int("id").autoincrement().primaryKey(),
+  name: text("name").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  businessName: text("businessName").notNull(),
+  ghlEmail: varchar("ghlEmail", { length: 320 }),
+  ghlPassword: text("ghlPassword"),
+  driveLink: text("driveLink"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = typeof clients.$inferInsert;
+
+/**
+ * Generated Assets table - stores VSL scripts, ads, and landing pages
+ */
+export const generatedAssets = mysqlTable("generatedAssets", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  assetType: mysqlEnum("assetType", ["vsl", "ads", "landing_page"]).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GeneratedAsset = typeof generatedAssets.$inferSelect;
+export type InsertGeneratedAsset = typeof generatedAssets.$inferInsert;
