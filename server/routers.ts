@@ -6,7 +6,7 @@ import { z } from "zod";
 import * as db from "./db";
 import { notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
-import { getVSLPrompt, getAdsPrompt, getLandingPagePrompt } from "./generationPrompts";
+import { getVSLPrompt, getAdsPrompt, getLandingPagePrompt, loadLandingPageTemplate } from "./generationPrompts";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -146,24 +146,13 @@ export const appRouter = router({
       }),
 
     generateLandingPage: protectedProcedure
-      .input(z.object({ clientId: z.number() }))
+      .input(z.object({ clientId: z.number(), hexColor: z.string().optional() }))
       .mutation(async ({ input }) => {
         const client = await db.getClientById(input.clientId);
         if (!client) throw new Error("Client not found");
 
-        // Use a simple HTML template for now
-        const htmlTemplate = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Funding Optimization</title>
-</head>
-<body>
-  <h1>Get Funded Fast</h1>
-  <p>Your business deserves the capital it needs to grow.</p>
-</body>
-</html>`;
-
-        const prompt = getLandingPagePrompt(client, htmlTemplate);
+        const htmlTemplate = loadLandingPageTemplate();
+        const prompt = getLandingPagePrompt(client, htmlTemplate, input.hexColor);
         const response = await invokeLLM({
           messages: [
             { role: "system", content: "You are an elite direct response copywriter. Follow instructions exactly." },

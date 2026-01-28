@@ -3,6 +3,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [hexColor, setHexColor] = useState<string>("#ED6D05");
 
   const { data: clients, isLoading: clientsLoading } = trpc.clients.list.useQuery(undefined, {
     enabled: !!user,
@@ -92,7 +94,7 @@ export default function AdminDashboard() {
       toast.error("Please select a client first");
       return;
     }
-    generateLandingPage.mutate({ clientId: selectedClient.id });
+    generateLandingPage.mutate({ clientId: selectedClient.id, hexColor });
   };
 
   const viewAssets = () => {
@@ -172,6 +174,27 @@ export default function AdminDashboard() {
                     </>
                   )}
                 </Button>
+              </div>
+              
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="hexColor">Landing Page Primary Color</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    id="hexColor"
+                    type="text"
+                    value={hexColor}
+                    onChange={(e) => setHexColor(e.target.value)}
+                    placeholder="#ED6D05"
+                    className="max-w-[150px]"
+                  />
+                  <div
+                    className="w-10 h-10 rounded border"
+                    style={{ backgroundColor: hexColor }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Enter a hex color code for the landing page accent color
+                </p>
               </div>
               <Button onClick={viewAssets} className="w-full mt-4" variant="outline">
                 View Generated Assets

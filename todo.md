@@ -42,3 +42,11 @@
 - [x] Final testing and verification
 - [x] Create checkpoint
 - [x] Deliver to user
+
+## User Requested Changes
+
+- [x] Remove visual suggestions and timestamps from ad generation - output clean ad copy only
+- [x] Remove timestamps and section breaks from VSL generation - output continuous flowing copy
+- [x] Replace landing page template with actual provided template
+- [x] Keep VSL embed box and 2 testimonial slots open for embeds in landing page
+- [x] Add hex color picker to admin dashboard for landing page generation
