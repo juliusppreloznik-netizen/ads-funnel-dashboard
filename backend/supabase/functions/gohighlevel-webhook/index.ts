@@ -7,10 +7,10 @@ import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
 // TYPE DEFINITIONS
 // ============================================================================
 
-// Calendar IDs for qualification status
-const CALENDAR_IDS = {
-  QUALIFIED: "gJ3K5tJoorALAQBTWcv2",
-  DQ: "4mYGkeS43WkbhpUzNDkp",
+// Calendar names for qualification status (matched by name, not ID)
+const CALENDAR_NAMES = {
+  QUALIFIED: "Scaling Blueprint Call.", // with period at end
+  DQ: "Scaling Blueprint Call*", // with asterisk at end
 } as const;
 
 // Event types we handle
@@ -64,7 +64,7 @@ interface GHLContact {
   [key: string]: unknown;
 }
 
-// Appointment object structure
+// Appointment/Calendar object structure
 interface GHLAppointment {
   id?: string;
   appointmentId?: string;
@@ -72,6 +72,7 @@ interface GHLAppointment {
   calendar_id?: string;
   calendarName?: string;
   calendar_name?: string;
+  name?: string; // Calendar name at root level (payload.calendar.name)
   status?: string;
   appointmentStatus?: string;
   startTime?: string;
@@ -215,8 +216,110 @@ interface PipelineStageEntry {
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-client-info, apikey, x-webhook-secret",
 };
+
+// ============================================================================
+// WEBHOOK SECRET VERIFICATION
+// ============================================================================
+
+/**
+ * Verify webhook secret from header or query parameter
+ * GoHighLevel doesn't send Supabase auth headers, so we use a custom secret
+ */
+function verifyWebhookSecret(req: Request): { valid: boolean; error?: string } {
+  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+
+  // If no secret is configured, log warning but allow requests (for development)
+  if (!webhookSecret) {
+    console.warn("[Security] WEBHOOK_SECRET not configured - allowing all requests");
+    return { valid: true };
+  }
+
+  // Check x-webhook-secret header first
+  const headerSecret = req.headers.get("x-webhook-secret");
+  if (headerSecret === webhookSecret) {
+    return { valid: true };
+  }
+
+  // Check query parameter as fallback
+  try {
+    const url = new URL(req.url);
+    const querySecret = url.searchParams.get("secret");
+    if (querySecret === webhookSecret) {
+      return { valid: true };
+    }
+  } catch {
+    // URL parsing failed, continue to reject
+  }
+
+  // No valid secret found
+  console.error("[Security] Invalid or missing webhook secret");
+  return {
+    valid: false,
+    error: "Unauthorized: Invalid or missing webhook secret",
+  };
+}
+
+// ============================================================================
+// HELPER FUNCTIONS - Data Sanitization
+// ============================================================================
+
+/**
+ * Sanitize timestamp values to ensure they're either valid ISO strings or null
+ * Converts empty strings, "null", "undefined" to actual null
+ */
+function sanitizeTimestamp(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "string") return null;
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "null" || trimmed === "undefined" || trimmed === "") {
+    return null;
+  }
+
+  return trimmed;
+}
+
+/**
+ * Sanitize a contact record, ensuring all timestamp fields are valid
+ * Also removes undefined values
+ */
+function sanitizeContactRecord(record: Record<string, unknown>): Record<string, unknown> {
+  const timestampFields = [
+    "form_submitted_at",
+    "call_booked_at",
+    "call_scheduled_for",
+    "showed_up_at",
+    "no_show_at",
+    "qualified_at",
+    "disqualified_at",
+    "deal_closed_at",
+    "updated_at",
+  ];
+
+  const sanitized: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(record)) {
+    // Skip undefined values
+    if (value === undefined) continue;
+
+    // Sanitize timestamp fields
+    if (timestampFields.includes(key)) {
+      const sanitizedValue = sanitizeTimestamp(value);
+      // Only include if not null (to avoid overwriting existing data with null)
+      // Unless we explicitly want to set it (value was a valid timestamp)
+      if (sanitizedValue !== null) {
+        sanitized[key] = sanitizedValue;
+      }
+    } else {
+      // For non-timestamp fields, just include if not undefined
+      sanitized[key] = value;
+    }
+  }
+
+  return sanitized;
+}
 
 // ============================================================================
 // HELPER FUNCTIONS - Data Extraction
@@ -340,26 +443,37 @@ function extractAppointmentData(payload: GHLWebhookPayload): {
   scheduledTime: string | null;
   status: string | null;
 } {
-  const appointment = payload.appointment || payload.calendar || {};
+  const appointment = payload.appointment || {};
+  const calendar = payload.calendar || {};
 
   const calendarId =
+    (calendar as GHLAppointment).calendarId ||
+    (calendar as GHLAppointment).calendar_id ||
     (appointment as GHLAppointment).calendarId ||
     (appointment as GHLAppointment).calendar_id ||
     payload.calendarId ||
     payload.calendar_id ||
     null;
 
+  // Extract calendar name - check payload.calendar.name first (GHL's actual structure)
   const calendarName =
-    (appointment as GHLAppointment).calendarName ||
-    (appointment as GHLAppointment).calendar_name ||
+    (calendar as GHLAppointment).name || // payload.calendar.name (primary)
+    (appointment as GHLAppointment).calendar_name || // fallback
+    (appointment as GHLAppointment).calendarName || // fallback
     null;
 
-  // Determine qualification based on calendar ID
+  // Determine qualification based on calendar NAME (not ID)
   let isQualified: boolean | null = null;
-  if (calendarId === CALENDAR_IDS.QUALIFIED) {
-    isQualified = true;
-  } else if (calendarId === CALENDAR_IDS.DQ) {
-    isQualified = false;
+  if (calendarName) {
+    if (calendarName === CALENDAR_NAMES.QUALIFIED) {
+      isQualified = true;
+      console.log(`[Appointment] Calendar "${calendarName}" matched as QUALIFIED`);
+    } else if (calendarName === CALENDAR_NAMES.DQ) {
+      isQualified = false;
+      console.log(`[Appointment] Calendar "${calendarName}" matched as DQ`);
+    } else {
+      console.log(`[Appointment] Calendar "${calendarName}" did not match known calendars`);
+    }
   }
 
   const scheduledTime =
@@ -433,17 +547,15 @@ async function handleFormSubmission(
   const contactData = extractContactData(payload);
   const now = new Date().toISOString();
 
-  const contactRecord: ContactRecord = {
+  const contactRecord: Record<string, unknown> = {
     ghl_contact_id: contactId,
     ...contactData,
     form_submitted_at: now,
     updated_at: now,
   };
 
-  // Remove undefined values
-  const cleanRecord = Object.fromEntries(
-    Object.entries(contactRecord).filter(([_, v]) => v !== undefined)
-  );
+  // Sanitize record: remove undefined values and validate timestamps
+  const cleanRecord = sanitizeContactRecord(contactRecord);
 
   console.log(`[Form Submission] Upserting contact record:`, JSON.stringify(cleanRecord, null, 2));
 
@@ -473,7 +585,7 @@ async function handleAppointmentBooked(
   const contactData = extractContactData(payload);
   const now = new Date().toISOString();
 
-  const updateData: Partial<ContactRecord> = {
+  const updateData: Record<string, unknown> = {
     ghl_contact_id: contactId,
     ...contactData,
     calendar_id: appointmentData.calendarId,
@@ -491,10 +603,8 @@ async function handleAppointmentBooked(
     updateData.disqualified_at = now;
   }
 
-  // Remove undefined values
-  const cleanRecord = Object.fromEntries(
-    Object.entries(updateData).filter(([_, v]) => v !== undefined)
-  );
+  // Sanitize record: remove undefined values and validate timestamps
+  const cleanRecord = sanitizeContactRecord(updateData);
 
   console.log(`[Appointment Booked] Upserting contact:`, JSON.stringify(cleanRecord, null, 2));
 
@@ -524,7 +634,7 @@ async function handleAppointmentStatusChange(
   const status = appointmentData.status?.toLowerCase();
   const now = new Date().toISOString();
 
-  const updateData: Partial<ContactRecord> = {
+  const updateData: Record<string, unknown> = {
     ghl_contact_id: contactId,
     updated_at: now,
   };
@@ -540,10 +650,8 @@ async function handleAppointmentStatusChange(
     console.log(`[Appointment Status] Unknown status: ${status}, skipping timestamp update`);
   }
 
-  // Remove undefined values
-  const cleanRecord = Object.fromEntries(
-    Object.entries(updateData).filter(([_, v]) => v !== undefined)
-  );
+  // Sanitize record: remove undefined values and validate timestamps
+  const cleanRecord = sanitizeContactRecord(updateData);
 
   const { data, error } = await supabase
     .from("contacts")
@@ -568,6 +676,7 @@ async function handlePipelineStageChange(
   console.log(`[Pipeline Stage] Processing for contact: ${contactId}`);
 
   const opportunityData = extractOpportunityData(payload);
+  const contactData = extractContactData(payload);
   const now = new Date().toISOString();
 
   // First, fetch existing contact to get current stage history
@@ -593,7 +702,7 @@ async function handlePipelineStageChange(
   const existingHistory = (existingContact?.pipeline_stage_history as PipelineStageEntry[]) || [];
   const updatedHistory = [...existingHistory, stageEntry];
 
-  const updateData: Partial<ContactRecord> = {
+  const updateData: Record<string, unknown> = {
     ghl_contact_id: contactId,
     current_pipeline: opportunityData.pipelineName,
     current_stage: opportunityData.stageName,
@@ -601,10 +710,29 @@ async function handlePipelineStageChange(
     updated_at: now,
   };
 
-  // Remove undefined values (but keep null for explicit clears)
-  const cleanRecord = Object.fromEntries(
-    Object.entries(updateData).filter(([_, v]) => v !== undefined)
-  );
+  // Handle specific stage transitions
+  const stageName = opportunityData.stageName?.toLowerCase() || "";
+
+  if (stageName === "appointment no-show" || stageName === "appointment no show") {
+    updateData.no_show_at = now;
+    console.log(`[Pipeline Stage] Stage "${opportunityData.stageName}" - setting no_show_at`);
+  }
+
+  if (stageName === "deal closed") {
+    updateData.deal_closed_at = now;
+
+    // Get deal value from contact's custom field (not opportunity.monetary_value)
+    const dealValue = contactData.deal_value;
+    if (dealValue !== null && dealValue !== undefined) {
+      updateData.final_deal_value = dealValue;
+      console.log(`[Pipeline Stage] Stage "${opportunityData.stageName}" - setting deal_closed_at with value: ${dealValue}`);
+    } else {
+      console.log(`[Pipeline Stage] Stage "${opportunityData.stageName}" - setting deal_closed_at (no deal_value found)`);
+    }
+  }
+
+  // Sanitize record: remove undefined values and validate timestamps
+  const cleanRecord = sanitizeContactRecord(updateData);
 
   console.log(`[Pipeline Stage] Upserting contact with stage: ${opportunityData.stageName}`);
 
@@ -654,7 +782,7 @@ async function handleDealClosed(
   const existingHistory = (existingContact?.pipeline_stage_history as PipelineStageEntry[]) || [];
   const updatedHistory = [...existingHistory, stageEntry];
 
-  const updateData: Partial<ContactRecord> = {
+  const updateData: Record<string, unknown> = {
     ghl_contact_id: contactId,
     current_pipeline: opportunityData.pipelineName,
     current_stage: "Deal Closed",
@@ -664,10 +792,8 @@ async function handleDealClosed(
     updated_at: now,
   };
 
-  // Remove undefined values
-  const cleanRecord = Object.fromEntries(
-    Object.entries(updateData).filter(([_, v]) => v !== undefined)
-  );
+  // Sanitize record: remove undefined values and validate timestamps
+  const cleanRecord = sanitizeContactRecord(updateData);
 
   console.log(`[Deal Closed] Upserting contact with value: ${opportunityData.monetaryValue}`);
 
@@ -748,6 +874,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
       status: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+
+  // Verify webhook secret (custom auth for external webhooks)
+  const secretVerification = verifyWebhookSecret(req);
+  if (!secretVerification.valid) {
+    return new Response(
+      JSON.stringify({ error: secretVerification.error }),
+      {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 
   try {
