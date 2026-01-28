@@ -56,3 +56,8 @@
 - [x] Change approach: use Claude only to generate copy text, not to modify HTML
 - [x] Implement programmatic find-and-replace in server code
 - [x] Preserve full template structure with all Framer styling and scripts
+
+## UI Updates
+
+- [x] Add Catalyst Marketing logo to intake form
+- [x] Change submit button color from blue to black

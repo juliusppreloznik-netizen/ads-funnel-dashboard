@@ -52,7 +52,7 @@ export default function IntakeForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <div className="absolute top-6 left-6">
-        <Logo />
+        <img src="/catalyst-logo.jpg" alt="Catalyst Marketing" className="h-16" />
       </div>
       <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-2xl shadow-lg">
@@ -141,7 +141,7 @@ export default function IntakeForm() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-black hover:bg-gray-800 text-white"
               size="lg"
               disabled={createClient.isPending}
             >
