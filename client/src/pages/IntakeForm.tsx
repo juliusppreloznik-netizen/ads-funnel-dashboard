@@ -52,7 +52,9 @@ export default function IntakeForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <div className="absolute top-6 left-6">
-        <img src="/catalyst-logo.jpg" alt="Catalyst Marketing" className="h-16" />
+        <a href="/admin" className="cursor-pointer">
+          <img src="/catalyst-logo.jpg" alt="Catalyst Marketing" className="h-16 hover:opacity-80 transition-opacity" />
+        </a>
       </div>
       <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-2xl shadow-lg">

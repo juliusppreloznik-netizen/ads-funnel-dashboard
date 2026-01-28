@@ -61,3 +61,8 @@
 
 - [x] Add Catalyst Marketing logo to intake form
 - [x] Change submit button color from blue to black
+
+## Admin Access Update
+
+- [x] Make logo clickable to navigate to admin dashboard
+- [x] Remove triple-click mechanism
