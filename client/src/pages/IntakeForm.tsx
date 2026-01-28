@@ -54,7 +54,7 @@ export default function IntakeForm() {
         href="/admin"
         className="fixed top-6 left-6 transition-opacity hover:opacity-80"
       >
-        <img src="/catalyst-logo.jpg" alt="Catalyst Marketing" className="h-16 w-auto" />
+        <img src="/catalyst-logo.png" alt="Catalyst Marketing" className="h-12 w-auto" />
       </a>
 
       {/* Main Form Card */}

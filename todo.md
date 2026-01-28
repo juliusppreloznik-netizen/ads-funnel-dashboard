@@ -100,3 +100,9 @@
 - [x] Redesign admin dashboard with tech startup aesthetic (dark mode option, gradient accents, modern card layouts)
 - [x] Keep only VSL and Ads generation functionality
 - [x] Update color scheme and typography for professional tech feel
+
+## Logo Update
+
+- [x] Remove black background from logo
+- [x] Create transparent PNG with white logo mark only
+- [x] Update logo file in project

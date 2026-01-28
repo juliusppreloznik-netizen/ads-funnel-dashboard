@@ -98,7 +98,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <img src="/catalyst-logo.jpg" alt="Catalyst" className="h-12 w-auto" />
+              <img src="/catalyst-logo.png" alt="Catalyst" className="h-12 w-auto" />
               <div>
                 <h1 className="text-2xl font-bold text-white">Command Center</h1>
                 <p className="text-sm text-slate-400">AI-Powered Asset Generation</p>
