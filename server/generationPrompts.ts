@@ -2,55 +2,160 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 export function getVSLPrompt(client: any, uniqueMechanism: string): string {
-  return `You are a direct response copywriter creating a VSL (Video Sales Letter) script.
+  return `You are an elite direct response copywriter specializing in VSL scripts. You've studied the masters like Gary Halbert, Dan Kennedy, and modern direct response legends.
 
 Client Information:
 - Business Name: ${client.businessName}
 - Unique Mechanism: "${uniqueMechanism}"
 
-Write a complete VSL script using the unique mechanism "${uniqueMechanism}". The script should:
-- Hook the viewer in the first 10 seconds with a bold promise
-- Introduce the problem (business funding struggles)
-- Present "${uniqueMechanism}" as the solution
-- Explain how it works (6 figures, 0% APR, 14 days)
-- Include social proof and results
-- End with a strong call to action
+Your task is to write a complete VSL script that follows the exact style, voicing, and structure of the "Secondary Bureau Attack Method VSL" reference.
 
-Output the script as continuous flowing copy with NO timestamps, NO section headers, NO visual suggestions. Just the raw script text that will be read aloud.`;
+STYLE & VOICING REQUIREMENTS:
+- Conversational, direct first-person narrative ("I'm going to show you...")
+- Story-driven with personal experience and client case studies
+- Specific numbers and concrete results ($150,000, 32 days, 570 credit score, etc.)
+- Vivid mental imagery and sensory-rich descriptions
+- Emotional contrast between pain of current situation and pleasure of transformation
+- Use present tense and "right now" to create immediacy
+- Address skepticism head-on with transparency and proof
+
+STRUCTURE (follow this exact flow):
+1. HOOK (first 30-60 seconds):
+   - Bold promise about accessing capital using "${uniqueMechanism}"
+   - Specific outcome (6 figures, 0% APR, 14 days)
+   - Works even if rejected before or low credit score
+
+2. BODY - PROBLEM AGITATION:
+   - Introduce the "hidden killer" that causes funding rejections
+   - Personal story: "Four years ago, I was working as a funding broker..."
+   - Discovery moment: noticing profitable businesses getting rejected
+   - Investigation: talking to underwriters and VPs
+   - The revelation: it's not about revenue, it's about hidden data
+
+3. MECHANISM REVEAL:
+   - Explain "${uniqueMechanism}" as the solution
+   - Technical details that build credibility (like secondary data furnishers)
+   - The "loophole" or unfair advantage
+   - Why traditional methods don't work
+
+4. PROOF & CASE STUDIES:
+   - At least 2-3 specific client stories with names and numbers
+   - Before state: specific struggles (520 credit score, $45K revenue, 6 rejections)
+   - After state: specific results ($150,000 approved, 32 days, 0% APR)
+   - Emotional transformation ("I didn't start this business to survive...")
+
+5. OFFER:
+   - "Here's my offer to you:"
+   - What you'll do for them (step-by-step process)
+   - Done-for-you service (not a course)
+   - Risk reversal (don't pay if not approved)
+
+6. CLOSE:
+   - Scarcity (only 10 spots available)
+   - Permission to act ("you're finally ready to build the business you deserve")
+   - Clear CTA (click button, answer questions, get custom blueprint)
+
+LENGTH: 3,000-4,000 words (similar to reference VSL)
+
+CRITICAL FORMATTING RULES:
+- Output ONLY continuous flowing copy
+- NO timestamps (like [0:00] or 0:15)
+- NO section headers (like "Hook:" or "Body:")
+- NO visual suggestions (like "show laptop screen")
+- NO stage directions or production notes
+- Just pure script text that flows naturally when read aloud
+
+The script should feel like a conversation with a trusted expert who's revealing insider secrets. Use the exact narrative structure and emotional arc of the reference VSL.
+
+Write the complete VSL script now:`;
 }
 
 export function getAdsPrompt(client: any, uniqueMechanism: string): string {
-  return `You are a direct response copywriter creating 5 video ad scripts.
+  return `You are an elite direct response copywriter specializing in short-form video ad scripts. You've studied the reference ad scripts and understand the exact style, voicing, and structure required.
 
 Client Information:
 - Business Name: ${client.businessName}
 - Unique Mechanism: "${uniqueMechanism}"
 
-Write 5 distinct ad scripts (30-45 seconds each) using "${uniqueMechanism}" as the core offer. Each ad should use a different hook type:
+Your task is to write 5 distinct video ad scripts (45-90 seconds each when read aloud) using "${uniqueMechanism}" as the core mechanism.
 
-Ad 1 - Contrast Hook (before/after, us vs them)
-Ad 2 - Big Secret Hook (reveal hidden truth)
-Ad 3 - Story Hook (personal narrative)
-Ad 4 - Self-Identification Hook (speak directly to avatar)
-Ad 5 - FOMO Hook (scarcity, urgency)
+STYLE & VOICING REQUIREMENTS:
+- Conversational, casual tone (like talking to a friend)
+- Direct, no-fluff approach
+- Specific numbers and concrete promises ($50k-$200k, 0% APR, 14 days)
+- Address skepticism and common objections
+- Use "you" and "I" to build personal connection
+- Create curiosity gaps that compel action
+- Strong, clear CTAs with specific next steps
 
-Format:
-Ad 1:
-[script text]
+REFERENCE THE COPYWRITING PRINCIPLES:
+- Use vivid mental imagery
+- Frame actions as gains, not losses
+- Leverage social proof and scarcity via data
+- Use curiosity and incompleteness
+- Explain "why" to increase compliance
+- Use permission-giving language
+- Address the real problem behind symptoms
 
-Ad 2:
-[script text]
+EACH AD MUST FOLLOW THIS STRUCTURE:
+1. HOOK (first 5-10 seconds): Grab attention immediately
+2. BODY (30-60 seconds): Problem → Mechanism → Proof
+3. CTA (10-15 seconds): Clear next step with urgency
 
-Ad 3:
-[script text]
+THE 5 ADS SHOULD USE DIFFERENT AWARENESS LEVELS:
 
-Ad 4:
-[script text]
+Ad 1 - Problem Aware | Logical Justifier:
+- Hook: "I'm going to be super straight up with you..."
+- Address the funding problem directly
+- Introduce "${uniqueMechanism}" as invite-only or exclusive
+- Explain why banks hate strangers, but you have the "in"
+- Social proof: helped X business owners get $X million
+- CTA: No upfront cost, only success fee after funded
 
-Ad 5:
-[script text]
+Ad 2 - Perceived Solution-Aware | Mechanistic:
+- Hook: "I'm about to show you a secret method..."
+- Call out outdated strategies (credit stacking, net 60 accounts)
+- Reveal "${uniqueMechanism}" as the new method
+- Explain how it works (relationship funding, insider network)
+- Contrast: 3x more capital, few days vs months
+- CTA: DM "FUNDING" or click button
 
-Output ONLY the ad copy with NO visual suggestions, NO timestamps, NO formatting notes.`;
+Ad 3 - Hero Case Study | Indirect Curiosity Lead:
+- Hook: "I need to show you something... This is crazy..."
+- Show specific approval ($60,000, $180,000 total)
+- Client story with before state (610 credit score)
+- Explain the process used (credit optimization + insider connections)
+- Emotional payoff ("didn't start business to survive")
+- CTA: Same process available for you
+
+Ad 4 - Unaware | Curiosity:
+- Hook: "You're crazy if you're not taking advantage of this"
+- Reveal hidden opportunity most don't know about
+- Explain "capital allocation incentive" concept
+- Why banks HAVE to lend money
+- How to trigger "approval signals"
+- CTA: Join X entrepreneurs who've secured $X
+
+Ad 5 - Loophole | Direct:
+- Hook: "There's a new loophole called '${uniqueMechanism}'..."
+- Position as underground or newly discovered method
+- Explain the mechanism simply
+- Address objections (complex process, easy to mess up)
+- Position your service as done-for-you solution
+- CTA: Fill form to speak with funding specialist
+
+CRITICAL FORMATTING RULES:
+- Format as: "Ad 1:" followed by script, then "Ad 2:" etc.
+- Output ONLY clean ad copy
+- NO visual suggestions (like "show laptop" or "switch camera")
+- NO timestamps or time markers
+- NO production notes or stage directions
+- NO formatting instructions (like "bold this" or "add graphic")
+- Just pure script text that can be read directly to camera
+
+Each ad should feel authentic and conversational, like the speaker is genuinely trying to help. Use the exact tone and structure of the reference ad scripts.
+
+Write all 5 ad scripts now:`;
 }
 
 export function getLandingPageCopyPrompt(client: any, uniqueMechanism: string): string {

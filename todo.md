@@ -106,3 +106,14 @@
 - [x] Remove black background from logo
 - [x] Create transparent PNG with white logo mark only
 - [x] Update logo file in project
+
+## Copy Generation Updates
+
+- [x] Read Funding Optimization VSL reference
+- [x] Read ad scripts references (3 files)
+- [x] Read copywriting guide and water ad
+- [x] Update VSL generation prompt to match reference style, voicing, and length
+- [x] Update ad generation prompt to match reference style, voicing, and length
+- [x] Confirm ads generate 5 scripts (already set but verify)
+- [x] Test VSL generation with new prompt
+- [x] Test ad generation with new prompt
