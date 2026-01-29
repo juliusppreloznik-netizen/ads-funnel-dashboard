@@ -180,15 +180,7 @@ export default function ClientPortal() {
           </div>
         </Card>
 
-        {/* Support Card */}
-        <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl p-6">
-          <p className="text-slate-400 text-center">
-            Have questions? Contact us at{" "}
-            <a href="mailto:support@catalystmarketing.com" className="text-violet-400 hover:text-violet-300">
-              support@catalystmarketing.com
-            </a>
-          </p>
-        </Card>
+
       </div>
     </div>
   );
