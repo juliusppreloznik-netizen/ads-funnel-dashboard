@@ -127,6 +127,20 @@ export const appRouter = router({
         await db.createDefaultTasksForClient(input.clientId);
         return { success: true };
       }),
+    
+    archive: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.archiveClient(input.clientId);
+        return { success: true };
+      }),
+    
+    unarchive: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.unarchiveClient(input.clientId);
+        return { success: true };
+      }),
   }),
 
   // Task management

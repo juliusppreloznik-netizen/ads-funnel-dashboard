@@ -37,6 +37,7 @@ export const clients = mysqlTable("clients", {
   ghlPassword: text("ghlPassword"),
   driveLink: text("driveLink"),
   password: varchar("password", { length: 255 }), // Hashed password for client portal login
+  archived: int("archived").default(0).notNull(), // 0 = active, 1 = archived
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

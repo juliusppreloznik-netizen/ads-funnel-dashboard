@@ -147,3 +147,12 @@
 - [x] Add welcome email to intake form submission flow
 - [x] Add welcome email to manual client creation flow
 - [x] Test email delivery for both scenarios
+
+## Client Filtering & Archive System
+
+- [x] Add archived boolean field to clients table
+- [x] Create archive/unarchive procedures in backend
+- [x] Add filter dropdown (All, In Progress, Completed, Archived)
+- [x] Add archive button for completed clients
+- [x] Add unarchive functionality for archived clients
+- [x] Test filtering and archiving workflows

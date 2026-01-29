@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus } from "lucide-react";
+import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface Task {
@@ -26,6 +26,7 @@ export default function ClientManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "in_progress" | "completed" | "archived">("all");
   const [createFormData, setCreateFormData] = useState({
     name: "",
     email: "",
@@ -122,6 +123,27 @@ export default function ClientManagement() {
     },
   });
 
+  const archiveClientMutation = trpc.clients.archive.useMutation({
+    onSuccess: () => {
+      toast.success("Client archived successfully!");
+      setSelectedClientId(null);
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to archive client: " + error.message);
+    },
+  });
+
+  const unarchiveClientMutation = trpc.clients.unarchive.useMutation({
+    onSuccess: () => {
+      toast.success("Client unarchived successfully!");
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to unarchive client: " + error.message);
+    },
+  });
+
   const handleCreateClient = (e: React.FormEvent) => {
     e.preventDefault();
     createClientMutation.mutate(createFormData);
@@ -209,6 +231,26 @@ export default function ClientManagement() {
                 </div>
               </DialogContent>
               </Dialog>
+              {selectedClient.archived === 0 && progress?.percentage === 100 && (
+                <Button
+                  onClick={() => archiveClientMutation.mutate({ clientId: selectedClientId })}
+                  variant="outline"
+                  className="bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive Client
+                </Button>
+              )}
+              {selectedClient.archived === 1 && (
+                <Button
+                  onClick={() => unarchiveClientMutation.mutate({ clientId: selectedClientId })}
+                  variant="outline"
+                  className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                >
+                  <ArchiveRestore className="h-4 w-4 mr-2" />
+                  Unarchive
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   if (confirm(`Are you sure you want to delete ${selectedClient.name}? This will also delete all their tasks and assets.`)) {
@@ -326,7 +368,19 @@ export default function ClientManagement() {
             <h1 className="text-3xl font-bold text-white">Client Management</h1>
             <p className="text-slate-400">Manage clients and track project progress</p>
           </div>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <div className="flex items-center gap-3">
+            <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+              <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                <SelectItem value="all" className="text-white">All Clients</SelectItem>
+                <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
+                <SelectItem value="completed" className="text-white">Completed</SelectItem>
+                <SelectItem value="archived" className="text-white">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-violet-600 to-indigo-600">
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -414,18 +468,28 @@ export default function ClientManagement() {
                 </Button>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Clients Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clients?.map((client) => {
+          {clients?.filter((client) => {
+            if (filterStatus === "all") return client.archived === 0;
+            if (filterStatus === "in_progress") return client.archived === 0 && client.progress?.percentage !== 100;
+            if (filterStatus === "completed") return client.archived === 0 && client.progress?.percentage === 100;
+            if (filterStatus === "archived") return client.archived === 1;
+            return true;
+          }).map((client) => {
             const isComplete = client.progress?.percentage === 100;
+            const isArchived = client.archived === 1;
             return (
               <Card
                 key={client.id}
                 className={`p-6 cursor-pointer transition-all ${
-                  isComplete
+                  isArchived
+                    ? 'bg-gradient-to-br from-slate-800/40 to-slate-700/30 border-slate-500/20 hover:border-slate-500/40 opacity-75'
+                    : isComplete
                     ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
                     : 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 hover:border-violet-500/50'
                 }`}
@@ -436,7 +500,10 @@ export default function ClientManagement() {
                     <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
                     <p className="text-slate-400 text-sm">{client.businessName}</p>
                   </div>
-                  {isComplete && (
+                  {isArchived && (
+                    <Archive className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                  )}
+                  {!isArchived && isComplete && (
                     <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0" />
                   )}
                 </div>
