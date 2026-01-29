@@ -10,6 +10,9 @@ import ThankYou from "./pages/ThankYou";
 import AdminDashboard from "./pages/AdminDashboard";
 import AssetManagement from "./pages/AssetManagement";
 import HTMLEditor from "./pages/HTMLEditor";
+import ClientLogin from "./pages/ClientLogin";
+import ClientPortal from "./pages/ClientPortal";
+import ClientManagement from "./pages/ClientManagement";
 
 
 function Router() {
@@ -19,9 +22,11 @@ function Router() {
       <Route path={"/"} component={IntakeForm} />
       <Route path="/thank-you" component={ThankYou} />
       <Route path="/admin" component={AdminDashboard} />
-
       <Route path="/admin/assets/:clientId" component={AssetManagement} />
       <Route path="/admin/editor/:assetId" component={HTMLEditor} />
+      <Route path="/admin/clients" component={ClientManagement} />
+      <Route path="/client-login" component={ClientLogin} />
+      <Route path="/client-portal" component={ClientPortal} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

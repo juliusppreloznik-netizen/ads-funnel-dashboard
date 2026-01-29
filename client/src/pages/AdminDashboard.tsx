@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Search, FileText, Zap, Sparkles, Eye } from "lucide-react";
+import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
@@ -105,6 +105,14 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Button
+                onClick={() => setLocation("/admin/clients")}
+                variant="outline"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Manage Clients
+              </Button>
               <div className="text-right">
                 <p className="text-sm font-medium text-white">{user.name}</p>
                 <p className="text-xs text-slate-400">{user.email}</p>

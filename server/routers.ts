@@ -32,9 +32,15 @@ export const appRouter = router({
         ghlEmail: z.string().optional(),
         ghlPassword: z.string().optional(),
         driveLink: z.string().optional(),
+        password: z.string(),
       }))
       .mutation(async ({ input }) => {
-        await db.createClient(input);
+        const result = await db.createClient(input);
+        const clientId = result[0].insertId;
+        
+        // Create default tasks for the new client
+        await db.createDefaultTasksForClient(clientId);
+        
         // Notify owner about new submission
         await notifyOwner({
           title: "New Client Submission",
@@ -51,6 +57,93 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
         return await db.getClientById(input.id);
+      }),
+    
+    createManual: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        email: z.string().email(),
+        businessName: z.string(),
+        password: z.string(),
+        ghlEmail: z.string().optional(),
+        ghlPassword: z.string().optional(),
+        driveLink: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const result = await db.createClient(input);
+        const clientId = result[0].insertId;
+        
+        // Create default tasks for the new client
+        await db.createDefaultTasksForClient(clientId);
+        
+        return { success: true, clientId };
+      }),
+    
+    resetPassword: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        newPassword: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateClientPassword(input.clientId, input.newPassword);
+        return { success: true };
+      }),
+  }),
+
+  // Task management
+  tasks: router({
+    getByClientId: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getTasksByClientId(input.clientId);
+      }),
+    
+    getProgress: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getClientProgress(input.clientId);
+      }),
+    
+    updateStatus: protectedProcedure
+      .input(z.object({
+        taskId: z.number(),
+        status: z.enum(["not_started", "in_progress", "done"]),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get task and client info before updating
+        const task = await db.getTaskById(input.taskId);
+        
+        if (task) {
+          const client = await db.getClientById(task.clientId);
+          const wasNotDone = task.status !== "done";
+          const nowDone = input.status === "done";
+          
+          // Update the task
+          await db.updateTaskStatus(input.taskId, input.status, input.notes);
+          
+          // Send email notification if task was just completed
+          if (client && wasNotDone && nowDone) {
+            await notifyOwner({
+              title: "Task Completed",
+              content: `Task "${task.taskName}" has been marked as complete for ${client.name} (${client.businessName}).`,
+            });
+          }
+        } else {
+          await db.updateTaskStatus(input.taskId, input.status, input.notes);
+        }
+        
+        return { success: true };
+      }),
+    
+    updateNotes: protectedProcedure
+      .input(z.object({
+        taskId: z.number(),
+        notes: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateTaskNotes(input.taskId, input.notes);
+        return { success: true };
       }),
   }),
 

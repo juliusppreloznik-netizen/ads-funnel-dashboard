@@ -36,6 +36,7 @@ export const clients = mysqlTable("clients", {
   ghlEmail: varchar("ghlEmail", { length: 320 }),
   ghlPassword: text("ghlPassword"),
   driveLink: text("driveLink"),
+  password: varchar("password", { length: 255 }), // Hashed password for client portal login
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -57,3 +58,21 @@ export const generatedAssets = mysqlTable("generatedAssets", {
 
 export type GeneratedAsset = typeof generatedAssets.$inferSelect;
 export type InsertGeneratedAsset = typeof generatedAssets.$inferInsert;
+
+/**
+ * Client Tasks table - tracks progress of marketing/systems setup work
+ */
+export const clientTasks = mysqlTable("clientTasks", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  taskName: varchar("taskName", { length: 255 }).notNull(),
+  taskOrder: int("taskOrder").notNull(), // For display ordering
+  status: mysqlEnum("status", ["not_started", "in_progress", "done"]).default("not_started").notNull(),
+  internalNotes: text("internalNotes"), // Admin-only notes
+  completedAt: timestamp("completedAt"), // When task was marked as done
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ClientTask = typeof clientTasks.$inferSelect;
+export type InsertClientTask = typeof clientTasks.$inferInsert;

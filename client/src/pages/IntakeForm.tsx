@@ -17,6 +17,7 @@ export default function IntakeForm() {
     ghlEmail: "",
     ghlPassword: "",
     driveLink: "",
+    password: "",
   });
 
   const createClient = trpc.clients.create.useMutation({
@@ -32,7 +33,7 @@ export default function IntakeForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email || !formData.businessName) {
+    if (!formData.name || !formData.email || !formData.businessName || !formData.password) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -166,6 +167,25 @@ export default function IntakeForm() {
               />
               <p className="text-xs text-slate-500">
                 Share your funding results or relevant documents
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white text-sm font-medium">
+                Create Portal Password <span className="text-red-400">*</span>
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500/50 focus:ring-violet-500/20"
+                required
+              />
+              <p className="text-xs text-slate-500">
+                This password will be used to access your client portal
               </p>
             </div>
 
