@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { notifyOwner } from "./_core/notification";
+import { sendClientWelcomeEmail } from "./_core/clientEmail";
 import { invokeLLM } from "./_core/llm";
 import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, loadLandingPageTemplate, applyLandingPageReplacements } from "./generationPrompts";
 
@@ -34,12 +35,24 @@ export const appRouter = router({
         driveLink: z.string().optional(),
         password: z.string(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const result = await db.createClient(input);
         const clientId = result[0].insertId;
         
         // Create default tasks for the new client
         await db.createDefaultTasksForClient(clientId);
+        
+        // Send welcome email to client
+        const protocol = ctx.req.headers['x-forwarded-proto'] || 'http';
+        const host = ctx.req.headers.host || 'localhost:3000';
+        const portalUrl = `${protocol}://${host}/client-login`;
+        
+        await sendClientWelcomeEmail({
+          clientEmail: input.email,
+          clientName: input.name,
+          password: input.password,
+          portalUrl,
+        });
         
         // Notify owner about new submission
         await notifyOwner({
@@ -69,12 +82,24 @@ export const appRouter = router({
         ghlPassword: z.string().optional(),
         driveLink: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const result = await db.createClient(input);
         const clientId = result[0].insertId;
         
         // Create default tasks for the new client
         await db.createDefaultTasksForClient(clientId);
+        
+        // Send welcome email to client
+        const protocol = ctx.req.headers['x-forwarded-proto'] || 'http';
+        const host = ctx.req.headers.host || 'localhost:3000';
+        const portalUrl = `${protocol}://${host}/client-login`;
+        
+        await sendClientWelcomeEmail({
+          clientEmail: input.email,
+          clientName: input.name,
+          password: input.password,
+          portalUrl,
+        });
         
         return { success: true, clientId };
       }),

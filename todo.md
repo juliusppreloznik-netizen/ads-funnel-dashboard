@@ -140,3 +140,10 @@
 - [x] Test client deletion workflow
 - [x] Add client login link to thank you page
 - [x] Add "Create Tasks" button for clients with no tasks
+
+## Welcome Email System
+
+- [x] Create email notification helper for sending client welcome emails
+- [x] Add welcome email to intake form submission flow
+- [x] Add welcome email to manual client creation flow
+- [x] Test email delivery for both scenarios
