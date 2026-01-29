@@ -1,5 +1,6 @@
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function ThankYou() {
   return (
@@ -14,13 +15,25 @@ export default function ThankYou() {
             Your information has been submitted successfully
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <p className="text-muted-foreground text-base">
             Your marketing assets will be generated shortly. Our team will review your submission and begin creating your personalized VSL script, ad campaigns, and landing page.
           </p>
-          <p className="text-muted-foreground text-sm">
-            We'll reach out to you via email once your assets are ready.
-          </p>
+          <div className="border-t pt-6">
+            <p className="text-muted-foreground text-sm mb-4">
+              Track your project progress in real-time through your client portal:
+            </p>
+            <Button
+              onClick={() => window.location.href = '/client-login'}
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Access Client Portal
+            </Button>
+            <p className="text-muted-foreground text-xs mt-4">
+              Use the email and password you provided in the form to log in.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

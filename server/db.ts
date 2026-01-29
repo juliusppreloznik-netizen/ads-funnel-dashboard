@@ -145,6 +145,20 @@ export async function verifyClientPassword(email: string, password: string): Pro
   return isValid ? client : null;
 }
 
+export async function deleteClient(clientId: number) {
+  const db = await getDb();  
+  if (!db) throw new Error("Database not available");
+  
+  // Delete associated tasks first (foreign key constraint)
+  await db.delete(clientTasks).where(eq(clientTasks.clientId, clientId));
+  
+  // Delete associated assets
+  await db.delete(generatedAssets).where(eq(generatedAssets.clientId, clientId));
+  
+  // Delete the client
+  await db.delete(clients).where(eq(clients.id, clientId));
+}
+
 // Generated assets management functions
 export async function createGeneratedAsset(asset: InsertGeneratedAsset) {
   const db = await getDb();

@@ -88,6 +88,20 @@ export const appRouter = router({
         await db.updateClientPassword(input.clientId, input.newPassword);
         return { success: true };
       }),
+    
+    delete: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteClient(input.clientId);
+        return { success: true };
+      }),
+    
+    createTasksForClient: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.createDefaultTasksForClient(input.clientId);
+        return { success: true };
+      }),
   }),
 
   // Task management

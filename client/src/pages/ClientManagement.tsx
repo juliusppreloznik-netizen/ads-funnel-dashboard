@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key } from "lucide-react";
+import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface Task {
@@ -101,6 +101,27 @@ export default function ClientManagement() {
     },
   });
 
+  const deleteClientMutation = trpc.clients.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Client deleted successfully!");
+      setSelectedClientId(null);
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete client: " + error.message);
+    },
+  });
+
+  const createTasksMutation = trpc.clients.createTasksForClient.useMutation({
+    onSuccess: () => {
+      toast.success("Tasks created successfully!");
+      refetchTasks();
+    },
+    onError: (error) => {
+      toast.error("Failed to create tasks: " + error.message);
+    },
+  });
+
   const handleCreateClient = (e: React.FormEvent) => {
     e.preventDefault();
     createClientMutation.mutate(createFormData);
@@ -156,13 +177,14 @@ export default function ClientManagement() {
                 <p className="text-slate-400">{selectedClient.businessName}</p>
               </div>
             </div>
-            <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
-                  <Key className="h-4 w-4 mr-2" />
-                  Reset Password
-                </Button>
-              </DialogTrigger>
+            <div className="flex items-center gap-2">
+              <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="bg-slate-900 border-white/10">
                 <DialogHeader>
                   <DialogTitle className="text-white">Reset Client Password</DialogTitle>
@@ -186,7 +208,20 @@ export default function ClientManagement() {
                   </Button>
                 </div>
               </DialogContent>
-            </Dialog>
+              </Dialog>
+              <Button
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${selectedClient.name}? This will also delete all their tasks and assets.`)) {
+                    deleteClientMutation.mutate({ clientId: selectedClientId });
+                  }
+                }}
+                variant="outline"
+                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Client
+              </Button>
+            </div>
           </div>
 
           {/* Progress Card */}
@@ -212,6 +247,18 @@ export default function ClientManagement() {
 
           {/* Tasks List */}
           <div className="space-y-4">
+            {tasks && tasks.length === 0 && (
+              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+                <p className="text-slate-400 mb-4">No tasks found for this client.</p>
+                <Button
+                  onClick={() => createTasksMutation.mutate({ clientId: selectedClientId })}
+                  className="bg-gradient-to-r from-violet-600 to-indigo-600"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Default Tasks
+                </Button>
+              </Card>
+            )}
             {tasks?.map((task: Task) => (
               <Card key={task.id} className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-6">
                 <div className="space-y-4">

@@ -131,3 +131,12 @@
 - [x] Add password reset functionality for admin
 - [x] Set up email notifications for task completion
 - [x] Test complete workflow (intake → tracking → client login)
+
+## Bug Fixes & Improvements
+
+- [x] Fix missing tasks issue - tasks not showing for existing clients
+- [x] Add delete client functionality to admin interface
+- [x] Test task creation for new clients
+- [x] Test client deletion workflow
+- [x] Add client login link to thank you page
+- [x] Add "Create Tasks" button for clients with no tasks
