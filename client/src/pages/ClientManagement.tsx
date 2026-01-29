@@ -419,17 +419,51 @@ export default function ClientManagement() {
 
         {/* Clients Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clients?.map((client) => (
-            <Card
-              key={client.id}
-              className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-6 cursor-pointer hover:border-violet-500/50 transition-all"
-              onClick={() => setSelectedClientId(client.id)}
-            >
-              <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
-              <p className="text-slate-400 text-sm mb-3">{client.businessName}</p>
-              <p className="text-slate-500 text-xs">{client.email}</p>
-            </Card>
-          ))}
+          {clients?.map((client) => {
+            const isComplete = client.progress?.percentage === 100;
+            return (
+              <Card
+                key={client.id}
+                className={`p-6 cursor-pointer transition-all ${
+                  isComplete
+                    ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
+                    : 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 hover:border-violet-500/50'
+                }`}
+                onClick={() => setSelectedClientId(client.id)}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
+                    <p className="text-slate-400 text-sm">{client.businessName}</p>
+                  </div>
+                  {isComplete && (
+                    <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0" />
+                  )}
+                </div>
+                <p className="text-slate-500 text-xs mb-3">{client.email}</p>
+                {client.progress && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={isComplete ? 'text-green-400' : 'text-slate-400'}>
+                        Progress
+                      </span>
+                      <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-violet-400'}`}>
+                        {client.progress.percentage}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${
+                          isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-violet-600 to-indigo-600'
+                        }`}
+                        style={{ width: `${client.progress.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
         </div>
 
         {clients?.length === 0 && (

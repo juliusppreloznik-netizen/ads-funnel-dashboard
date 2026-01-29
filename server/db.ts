@@ -108,7 +108,28 @@ export async function getAllClients() {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  return await db.select().from(clients).orderBy(desc(clients.createdAt));
+  const allClients = await db.select().from(clients).orderBy(desc(clients.createdAt));
+  
+  // Add progress data for each client
+  const clientsWithProgress = await Promise.all(
+    allClients.map(async (client) => {
+      const tasks = await db.select().from(clientTasks).where(eq(clientTasks.clientId, client.id));
+      const completedTasks = tasks.filter(t => t.status === 'done').length;
+      const totalTasks = tasks.length;
+      const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      
+      return {
+        ...client,
+        progress: {
+          completedTasks,
+          totalTasks,
+          percentage,
+        },
+      };
+    })
+  );
+  
+  return clientsWithProgress;
 }
 
 export async function getClientById(id: number) {
