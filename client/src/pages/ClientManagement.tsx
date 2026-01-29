@@ -364,9 +364,19 @@ export default function ClientManagement() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Client Management</h1>
-            <p className="text-slate-400">Manage clients and track project progress</p>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setLocation('/admin')}
+              variant="outline"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Client Management</h1>
+              <p className="text-slate-400">Manage clients and track project progress</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
