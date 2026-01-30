@@ -164,3 +164,4 @@
 - [ ] Test funnel generation speed and verify 30-60 second completion
 - [x] Fix JavaScript syntax errors in funnel-builder-reference.html (TypeError: can't access property "audiocts", Uncaught SyntaxError)
 - [x] Download GrapesJS files locally to fix 404 CDN errors
+- [x] Fix GrapesJS JSON parse error - re-download library files and verify integrity
