@@ -114,7 +114,7 @@ export default function AdminDashboard() {
                 Manage Clients
               </Button>
               <Button
-                onClick={() => setLocation("/admin/funnel-builder")}
+                onClick={() => setLocation("/admin/funnel-builder-v2")}
                 variant="outline"
                 className="bg-violet-600/20 border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
               >
