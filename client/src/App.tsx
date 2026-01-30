@@ -14,6 +14,7 @@ import ClientLogin from "./pages/ClientLogin";
 import ClientPortal from "./pages/ClientPortal";
 import ClientManagement from "./pages/ClientManagement";
 import FunnelBuilder from "./pages/FunnelBuilder";
+import FunnelBuilderV2 from "./pages/FunnelBuilderV2";
 
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/admin/editor/:assetId" component={HTMLEditor} />
       <Route path="/admin/clients" component={ClientManagement} />
       <Route path="/admin/funnel-builder" component={FunnelBuilder} />
+      <Route path="/admin/funnel-builder-v2" component={FunnelBuilderV2} />
       <Route path="/client-login" component={ClientLogin} />
       <Route path="/client-portal" component={ClientPortal} />
       <Route path={"/404"} component={NotFound} />
