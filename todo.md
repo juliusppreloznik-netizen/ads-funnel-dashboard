@@ -165,3 +165,15 @@
 - [x] Fix JavaScript syntax errors in funnel-builder-reference.html (TypeError: can't access property "audiocts", Uncaught SyntaxError)
 - [x] Download GrapesJS files locally to fix 404 CDN errors
 - [x] Fix GrapesJS JSON parse error - re-download library files and verify integrity
+
+## Revert Funnel Builder to API Key Approach
+
+- [ ] Revert to original funnel builder HTML with API key field (backend integration too complex)
+- [ ] Keep color wheel picker functionality
+- [ ] Keep AI Assistant live chat functionality
+- [ ] Test generation with API key
+
+## Revert Funnel Builder
+
+- [x] Revert to original API key approach (backend integration too complex)
+- [x] Ensure color wheel selector works with API generation
