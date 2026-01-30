@@ -77,3 +77,22 @@ export const clientTasks = mysqlTable("clientTasks", {
 
 export type ClientTask = typeof clientTasks.$inferSelect;
 export type InsertClientTask = typeof clientTasks.$inferInsert;
+
+/**
+ * Funnels table - stores funnel builder projects
+ */
+export const funnels = mysqlTable("funnels", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId"), // Optional - can be null for unassigned funnels
+  name: varchar("name", { length: 255 }).notNull(),
+  mechanism: text("mechanism"), // Unique mechanism name used in generation
+  color: varchar("color", { length: 50 }), // Color scheme name (red, blue, green, etc.)
+  landingHtml: text("landingHtml"), // Generated landing page HTML
+  thankyouHtml: text("thankyouHtml"), // Generated thank you page HTML
+  editorData: text("editorData"), // GrapesJS editor state (JSON)
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Funnel = typeof funnels.$inferSelect;
+export type InsertFunnel = typeof funnels.$inferInsert;

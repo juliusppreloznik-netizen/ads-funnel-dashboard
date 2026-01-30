@@ -1,0 +1,3987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funnel Builder</title>
+    <link href="https://unpkg.com/grapesjs@0.21.10/dist/css/grapes.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #0a0a0a; color: #fff; overflow: hidden; }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           TOP BAR
+           ═══════════════════════════════════════════════════════════════════════ */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: #000;
+            border-bottom: 1px solid #1a1a1a;
+            height: 50px;
+            z-index: 100;
+        }
+        .top-left { display: flex; align-items: center; gap: 20px; }
+        .logo { font-size: 14px; font-weight: 700; }
+        .logo span { color: #dc2626; }
+        
+        .device-btns { display: flex; gap: 4px; }
+        .device-btn {
+            background: #111;
+            border: 1px solid #222;
+            color: #666;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .device-btn:hover, .device-btn.active { background: #1a1a1a; color: #fff; border-color: #333; }
+        
+        .top-center { display: flex; gap: 4px; }
+        .tool-btn {
+            background: #111;
+            border: 1px solid #222;
+            color: #888;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover { background: #1a1a1a; color: #fff; border-color: #333; }
+        
+        .top-right { display: flex; gap: 8px; }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-dark { background: #1a1a1a; color: #fff; border: 1px solid #333; }
+        .btn-dark:hover { background: #222; }
+        .btn-red { background: #dc2626; color: #fff; }
+        .btn-red:hover { background: #b91c1c; }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           MAIN LAYOUT
+           ═══════════════════════════════════════════════════════════════════════ */
+        .editor-container {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        /* Left Panel - Blocks */
+        .panel-left {
+            width: 240px;
+            background: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            border-bottom: 1px solid #1a1a1a;
+            background: #080808;
+        }
+        .blocks-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .block-category {
+            margin-bottom: 16px;
+        }
+        .block-category-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #dc2626;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        /* Editor Canvas */
+        #gjs {
+            flex: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Right Panel - Styles */
+        .panel-right {
+            width: 260px;
+            background: #0a0a0a;
+            border-left: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid #1a1a1a;
+            background: #080808;
+        }
+        .panel-tab {
+            flex: 1;
+            padding: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .panel-tab:hover { color: #999; }
+        .panel-tab.active { color: #dc2626; border-bottom-color: #dc2626; }
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        }
+        .panel-content.active { display: block; }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           GRAPESJS OVERRIDES
+           ═══════════════════════════════════════════════════════════════════════ */
+        .gjs-one-bg { background: #0a0a0a !important; }
+        .gjs-two-color { color: #fff !important; }
+        .gjs-three-bg { background: #111 !important; }
+        .gjs-four-color, .gjs-four-color-h:hover { color: #dc2626 !important; }
+
+        /* Canvas - FORCE BLACK BACKGROUND */
+        .gjs-cv-canvas {
+            background: #0a0a0a !important;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .gjs-cv-canvas__frames { background: #0a0a0a !important; }
+        .gjs-frame-wrapper { background: #0a0a0a !important; }
+        .gjs-frame { background: #0a0a0a !important; }
+
+        /* Hide default panels */
+        .gjs-pn-panels { display: none !important; }
+        .gjs-pn-views-container { display: none !important; }
+
+        /* Selected/Hovered elements */
+        .gjs-selected { outline: 2px solid #dc2626 !important; outline-offset: -2px; }
+        .gjs-hovered { outline: 1px dashed rgba(220,38,38,0.5) !important; }
+
+        /* Toolbar */
+        .gjs-toolbar {
+            background: #111 !important;
+            border: 1px solid #333 !important;
+            border-radius: 6px !important;
+        }
+        .gjs-toolbar-item { color: #fff !important; padding: 5px 7px !important; }
+        .gjs-toolbar-item:hover { color: #dc2626 !important; }
+
+        /* Badge */
+        .gjs-badge {
+            background: #dc2626 !important;
+            color: #fff !important;
+            font-size: 9px !important;
+            padding: 2px 6px !important;
+            border-radius: 3px !important;
+        }
+
+        /* Resizer */
+        .gjs-resizer-h {
+            border: 2px solid #dc2626 !important;
+            border-radius: 50% !important;
+            width: 10px !important;
+            height: 10px !important;
+            background: #0a0a0a !important;
+        }
+
+        /* RTE */
+        .gjs-rte-toolbar {
+            background: #111 !important;
+            border: 1px solid #333 !important;
+            border-radius: 6px !important;
+        }
+        .gjs-rte-action { color: #fff !important; }
+        .gjs-rte-action:hover { color: #dc2626 !important; }
+
+        /* Blocks in left panel */
+        .gjs-block {
+            background: #111 !important;
+            border: 1px solid #222 !important;
+            border-radius: 6px !important;
+            padding: 12px 8px !important;
+            min-height: auto !important;
+            width: 100% !important;
+            margin: 0 !important;
+            transition: all 0.2s !important;
+        }
+        .gjs-block:hover {
+            border-color: #dc2626 !important;
+            background: #1a1a1a !important;
+        }
+        .gjs-block__media { margin-bottom: 6px !important; }
+        .gjs-block__media svg { fill: #666 !important; width: 28px !important; height: 28px !important; }
+        .gjs-block:hover .gjs-block__media svg { fill: #dc2626 !important; }
+        .gjs-block-label {
+            font-size: 10px !important;
+            color: #888 !important;
+            font-weight: 500 !important;
+        }
+        .gjs-block:hover .gjs-block-label { color: #fff !important; }
+
+        /* Style Manager */
+        .gjs-sm-sector {
+            border-bottom: 1px solid #1a1a1a !important;
+        }
+        .gjs-sm-sector-title {
+            background: #080808 !important;
+            border: none !important;
+            color: #888 !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            padding: 12px 16px !important;
+        }
+        .gjs-sm-sector-title:hover { color: #fff !important; }
+        .gjs-sm-properties { padding: 12px 16px !important; background: #0a0a0a !important; }
+        .gjs-sm-property { margin-bottom: 12px !important; }
+        .gjs-sm-label { color: #666 !important; font-size: 11px !important; margin-bottom: 6px !important; }
+        .gjs-field {
+            background: #111 !important;
+            border: 1px solid #222 !important;
+            border-radius: 4px !important;
+            color: #fff !important;
+        }
+        .gjs-field:focus-within { border-color: #dc2626 !important; }
+        .gjs-field input { color: #fff !important; }
+        .gjs-field-arrow-u, .gjs-field-arrow-d { border-top-color: #666 !important; border-bottom-color: #666 !important; }
+
+        /* Color Picker */
+        .gjs-field-color-picker {
+            background: #111 !important;
+            border: 1px solid #222 !important;
+            border-radius: 4px !important;
+        }
+
+        /* Color Swatches Panel */
+        .color-swatches {
+            padding: 12px 16px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .color-swatches-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .color-swatches-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+        }
+        .color-swatch {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #333;
+            transition: all 0.2s;
+        }
+        .color-swatch:hover {
+            transform: scale(1.15);
+            border-color: #fff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.3);
+        }
+        .color-mode-btn {
+            background: #111;
+            border: 1px solid #222;
+            color: #666;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .color-mode-btn:hover { color: #fff; border-color: #333; }
+        .color-mode-btn.active { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+        /* Radio/Checkbox */
+        .gjs-radio-item { background: #111 !important; border: 1px solid #222 !important; color: #888 !important; }
+        .gjs-radio-item:hover { color: #fff !important; }
+        .gjs-radio-item-focused { background: #dc2626 !important; color: #fff !important; border-color: #dc2626 !important; }
+
+        /* Layer Manager */
+        .gjs-layer {
+            background: #0a0a0a !important;
+            color: #888 !important;
+            font-size: 12px !important;
+        }
+        .gjs-layer:hover { background: #111 !important; color: #fff !important; }
+        .gjs-layer-selected { background: #1a1a1a !important; color: #fff !important; }
+        .gjs-layer-title { padding: 8px 12px !important; }
+        .gjs-layer-caret { border-left-color: #666 !important; }
+        .gjs-layer-vis { color: #666 !important; }
+        .gjs-layer-vis:hover { color: #dc2626 !important; }
+
+        /* Trait Manager */
+        .gjs-trt-trait {
+            padding: 8px 0 !important;
+            border-bottom: 1px solid #1a1a1a !important;
+        }
+        .gjs-trt-trait__wrp-label { color: #666 !important; font-size: 11px !important; }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           MODALS
+           ═══════════════════════════════════════════════════════════════════════ */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #222;
+        }
+        .modal-header h3 { font-size: 16px; font-weight: 600; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-body { padding: 20px; flex: 1; overflow: auto; }
+        .modal-body textarea {
+            width: 100%;
+            height: 400px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            color: #ccc;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 11px;
+            padding: 16px;
+            resize: none;
+            line-height: 1.5;
+        }
+        .modal-body textarea:focus { outline: none; border-color: #dc2626; }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 20px;
+            border-top: 1px solid #222;
+        }
+        .modal-hint {
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* Status */
+        .status-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+        }
+        .status-bar.show { display: block; }
+
+        /* Code Editor Modal */
+        .code-editor-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .code-editor-modal.active { display: flex; }
+        .code-editor-box {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .code-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #222;
+        }
+        .code-editor-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
+        .code-editor-close {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .code-editor-close:hover { color: #fff; }
+        .code-editor-body { padding: 20px; flex: 1; overflow: auto; }
+        .code-editor-body textarea {
+            width: 100%;
+            height: 350px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 8px;
+            color: #ccc;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 12px;
+            padding: 16px;
+            resize: none;
+            line-height: 1.5;
+        }
+        .code-editor-body textarea:focus { outline: none; border-color: #dc2626; }
+        .code-editor-hint {
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #a1a1aa;
+        }
+        .code-editor-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 20px;
+            border-top: 1px solid #222;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+        /* Templates Button */
+        .btn-templates {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-templates:hover { opacity: 0.9; }
+
+        /* Templates Modal */
+        .templates-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .templates-modal.active { display: flex; }
+        .templates-box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        .templates-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #222;
+        }
+        .templates-header h3 { margin: 0; font-size: 18px; }
+        .templates-body { padding: 20px; }
+        .template-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .template-card:hover { border-color: #f59e0b; background: #111; }
+        .template-card h4 { margin: 0 0 8px 0; font-size: 16px; }
+        .template-card p { margin: 0; font-size: 13px; color: #888; line-height: 1.5; }
+        .template-card-icon { font-size: 32px; margin-bottom: 12px; }
+
+        /* AI Assistant Button */
+        .btn-ai {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-ai:hover { opacity: 0.9; transform: scale(1.02); }
+
+        /* AI Panel */
+        .ai-panel {
+            position: fixed;
+            right: -380px;
+            top: 50px;
+            width: 380px;
+            height: calc(100vh - 50px);
+            background: #0a0a0a;
+            border-left: 1px solid #222;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+        }
+        .ai-panel.active { right: 0; }
+        .ai-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff;
+        }
+        .ai-panel-header h3 { font-size: 14px; font-weight: 600; margin: 0; }
+        .ai-panel-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .ai-panel-close:hover { background: rgba(255,255,255,0.3); }
+        
+        /* Prompt Generator Body */
+        .prompt-gen-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .prompt-intro {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .prompt-section {
+            margin-bottom: 20px;
+        }
+        .prompt-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+        .prompt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .prompt-btn {
+            background: #111;
+            border: 1px solid #333;
+            color: #ccc;
+            padding: 12px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .prompt-btn:hover {
+            background: #1a1a1a;
+            border-color: #8b5cf6;
+            color: #fff;
+        }
+        .custom-prompt-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            padding: 12px;
+            font-size: 12px;
+            font-family: inherit;
+            resize: none;
+            height: 70px;
+            margin-bottom: 10px;
+        }
+        .custom-prompt-input:focus { outline: none; border-color: #8b5cf6; }
+        .custom-prompt-input::placeholder { color: #555; }
+        .prompt-btn-full {
+            width: 100%;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border: none;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .prompt-btn-full:hover { opacity: 0.9; }
+        
+        /* Prompt Output Area */
+        .prompt-output-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow: hidden;
+        }
+        .prompt-output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #888;
+        }
+        .prompt-back-btn {
+            background: #222;
+            border: 1px solid #333;
+            color: #888;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .prompt-back-btn:hover { color: #fff; border-color: #444; }
+        .prompt-output {
+            flex: 1;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #ccc;
+            padding: 12px;
+            font-size: 11px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            line-height: 1.5;
+            resize: none;
+            margin-bottom: 12px;
+        }
+        .prompt-output:focus { outline: none; }
+        .copy-prompt-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            color: #fff;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-prompt-btn:hover { opacity: 0.9; }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           FUNNEL GENERATOR MODAL
+           ═══════════════════════════════════════════════════════════════════════ */
+        .funnel-gen-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .funnel-gen-modal.active { display: flex; }
+        .funnel-gen-box {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+        .funnel-gen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #fff;
+        }
+        .funnel-gen-header h3 { margin: 0; font-size: 18px; font-weight: 700; }
+        .funnel-gen-body { padding: 24px; }
+        
+        .fg-section { margin-bottom: 24px; }
+        .fg-section:last-child { margin-bottom: 0; }
+        .fg-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .fg-input {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            padding: 14px 16px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .fg-input:focus { outline: none; border-color: #10B981; }
+        .fg-input::placeholder { color: #555; }
+        .fg-textarea {
+            height: 100px;
+            resize: none;
+        }
+        
+        /* Color Picker Grid */
+        .fg-color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+        .fg-color-option {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .fg-color-option:hover { transform: scale(1.1); }
+        .fg-color-option.selected { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
+        .fg-color-option::after {
+            content: '✓';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .fg-color-option.selected::after { opacity: 1; }
+        
+        /* Page Type Buttons */
+        .fg-page-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .fg-page-btn {
+            flex: 1;
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .fg-page-btn:hover { border-color: #555; }
+        .fg-page-btn.selected { border-color: #10B981; background: rgba(16,185,129,0.1); }
+        .fg-page-btn-icon { font-size: 28px; margin-bottom: 8px; }
+        .fg-page-btn-label { font-size: 13px; font-weight: 600; color: #fff; }
+        
+        .fg-generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            color: #fff;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 24px;
+        }
+        .fg-generate-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .fg-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .fg-api-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .fg-api-input {
+            flex: 1;
+        }
+        .fg-api-status {
+            font-size: 20px;
+        }
+        
+        /* Generation Progress */
+        .fg-progress {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .fg-progress.active { display: block; }
+        .fg-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top-color: #10B981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fg-progress-text {
+            font-size: 16px;
+            color: #888;
+        }
+        .fg-progress-sub {
+            font-size: 13px;
+            color: #555;
+            margin-top: 8px;
+        }
+        
+        /* Output Tabs */
+        .fg-output { display: none; }
+        .fg-output.active { display: block; }
+        .fg-output-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+        .fg-output-tab {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: #888;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .fg-output-tab:hover { color: #fff; border-color: #444; }
+        .fg-output-tab.active { background: #10B981; color: #fff; border-color: #10B981; }
+        .fg-output-tab.empty { 
+            background: transparent; 
+            border-style: dashed; 
+            color: #555; 
+        }
+        .fg-output-tab.empty:hover { 
+            border-color: #10B981; 
+            color: #10B981; 
+        }
+        .fg-output-tab .tab-status {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: 6px;
+        }
+        .fg-output-tab .tab-status.ready { background: #22c55e; }
+        .fg-output-tab .tab-status.empty { background: #555; }
+        
+        /* Preview Container */
+        .fg-preview-container {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            height: 350px;
+        }
+        .fg-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #111;
+            border-bottom: 1px solid #222;
+        }
+        .fg-preview-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fg-preview-title .dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+        .fg-preview-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .fg-preview-action {
+            background: #222;
+            border: none;
+            color: #888;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fg-preview-action:hover { background: #333; color: #fff; }
+        .fg-preview-iframe {
+            width: 100%;
+            height: calc(100% - 42px);
+            border: none;
+            background: #0a0a0a;
+        }
+        .fg-preview-empty {
+            height: calc(100% - 42px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            gap: 12px;
+        }
+        .fg-preview-empty-icon {
+            font-size: 32px;
+            opacity: 0.5;
+        }
+        .fg-preview-empty-text {
+            font-size: 13px;
+        }
+        .fg-preview-empty-btn {
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .fg-preview-empty-btn:hover { opacity: 0.9; }
+        
+        .fg-output-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .fg-load-btn {
+            flex: 1;
+            background: #10B981;
+            border: none;
+            color: #fff;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .fg-load-btn:hover { opacity: 0.9; }
+        .fg-copy-btn {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .fg-copy-btn:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         TOP BAR
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="top-bar">
+        <div class="top-left">
+            <div class="logo">Funnel <span>Builder</span></div>
+            <div class="device-btns">
+                <button class="device-btn active" onclick="setDevice('Desktop')" title="Desktop">🖥️</button>
+                <button class="device-btn" onclick="setDevice('Tablet')" title="Tablet">📱</button>
+                <button class="device-btn" onclick="setDevice('Mobile')" title="Mobile">📲</button>
+            </div>
+        </div>
+        <div class="top-center">
+            <button class="tool-btn" onclick="editor.runCommand('core:undo')" title="Undo">↩ Undo</button>
+            <button class="tool-btn" onclick="editor.runCommand('core:redo')" title="Redo">↪ Redo</button>
+            <button class="tool-btn" onclick="refreshStyles()" title="Refresh Styles">🔄 Refresh</button>
+            <button class="tool-btn" onclick="editor.runCommand('core:canvas-clear')" title="Clear Canvas">🗑️ Clear</button>
+            <button class="tool-btn" onclick="editor.runCommand('core:fullscreen')" title="Fullscreen">⛶ Fullscreen</button>
+        </div>
+        <div class="top-right">
+            <button class="btn" style="background: linear-gradient(135deg, #10B981, #059669);" onclick="openFunnelGenerator()">🚀 Generate Funnel</button>
+            <button class="btn btn-templates" onclick="openTemplatesModal()">📄 Templates</button>
+            <button class="btn btn-ai" onclick="toggleAIPanel()">🤖 AI Assistant</button>
+            <button class="btn btn-dark" onclick="openLoadModal()">📥 Load</button>
+            <button class="btn btn-dark" onclick="previewPage()">👁 Preview</button>
+            <button class="btn btn-red" onclick="openExportModal()">📤 Export</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MAIN EDITOR
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="editor-container">
+        <!-- Left Panel - Blocks -->
+        <div class="panel-left">
+            <div class="panel-header">+ Add Elements</div>
+            <div class="blocks-container" id="blocks"></div>
+        </div>
+
+        <!-- Canvas -->
+        <div id="gjs"></div>
+
+        <!-- Right Panel - Styles/Layers/Settings -->
+        <div class="panel-right">
+            <div class="panel-tabs">
+                <div class="panel-tab active" onclick="showPanel('styles')">Styles</div>
+                <div class="panel-tab" onclick="showPanel('layers')">Layers</div>
+                <div class="panel-tab" onclick="showPanel('settings')">Settings</div>
+            </div>
+            <div class="panel-content active" id="styles-panel">
+                <!-- Color Swatches -->
+                <div class="color-swatches" id="colorSwatches">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="color-swatches-title" style="margin-bottom: 0;">Quick Colors</div>
+                        <div style="display: flex; gap: 4px;">
+                            <button id="colorModeText" class="color-mode-btn active" onclick="setColorMode('text')">Text</button>
+                            <button id="colorModeBg" class="color-mode-btn" onclick="setColorMode('bg')">BG</button>
+                        </div>
+                    </div>
+                    <div class="color-swatches-grid">
+                        <div class="color-swatch" style="background: #ffffff;" onclick="applySelectedColor('#ffffff')" title="White"></div>
+                        <div class="color-swatch" style="background: #a1a1aa;" onclick="applySelectedColor('#a1a1aa')" title="Gray"></div>
+                        <div class="color-swatch" style="background: #71717a;" onclick="applySelectedColor('#71717a')" title="Dark Gray"></div>
+                        <div class="color-swatch" style="background: #000000;" onclick="applySelectedColor('#000000')" title="Black"></div>
+                        <div class="color-swatch" style="background: #dc2626;" onclick="applySelectedColor('#dc2626')" title="Red"></div>
+                        <div class="color-swatch" style="background: #f97316;" onclick="applySelectedColor('#f97316')" title="Orange"></div>
+                        <div class="color-swatch" style="background: #f59e0b;" onclick="applySelectedColor('#f59e0b')" title="Amber"></div>
+                        <div class="color-swatch" style="background: #eab308;" onclick="applySelectedColor('#eab308')" title="Yellow"></div>
+                        <div class="color-swatch" style="background: #22c55e;" onclick="applySelectedColor('#22c55e')" title="Green"></div>
+                        <div class="color-swatch" style="background: #10b981;" onclick="applySelectedColor('#10b981')" title="Emerald"></div>
+                        <div class="color-swatch" style="background: #06b6d4;" onclick="applySelectedColor('#06b6d4')" title="Cyan"></div>
+                        <div class="color-swatch" style="background: #3b82f6;" onclick="applySelectedColor('#3b82f6')" title="Blue"></div>
+                        <div class="color-swatch" style="background: #8b5cf6;" onclick="applySelectedColor('#8b5cf6')" title="Violet"></div>
+                        <div class="color-swatch" style="background: #a855f7;" onclick="applySelectedColor('#a855f7')" title="Purple"></div>
+                        <div class="color-swatch" style="background: #ec4899;" onclick="applySelectedColor('#ec4899')" title="Pink"></div>
+                        <div class="color-swatch" style="background: #0a0a0a;" onclick="applySelectedColor('#0a0a0a')" title="Dark BG"></div>
+                    </div>
+                </div>
+                <!-- GrapesJS Style Manager will append here -->
+            </div>
+            <div class="panel-content" id="layers-panel"></div>
+            <div class="panel-content" id="settings-panel"></div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar" id="statusBar"></div>
+
+    <!-- Load Modal -->
+    <div class="modal" id="loadModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>📥 Load HTML Code</h3>
+                <button class="modal-close" onclick="closeLoadModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-hint">
+                    Paste your HTML code below. You can load any landing page code and edit it visually.
+                </div>
+                <textarea id="loadCode" placeholder="Paste HTML code here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-dark" onclick="closeLoadModal()">Cancel</button>
+                <button class="btn btn-red" onclick="loadCode()">Load into Editor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>📤 Export HTML</h3>
+                <button class="modal-close" onclick="closeExportModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-hint">
+                    Copy this code and paste into GHL → Custom Code element.
+                </div>
+                <textarea id="exportCode" readonly></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-dark" onclick="downloadFile()">⬇ Download</button>
+                <button class="btn btn-red" onclick="copyCode()">📋 Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Panel -->
+    <div class="ai-panel" id="aiPanel">
+        <div class="ai-panel-header">
+            <h3>🤖 AI Copywriting Assistant</h3>
+            <button class="ai-panel-close" onclick="toggleAIPanel()">×</button>
+        </div>
+        <div class="prompt-gen-body">
+            <p class="prompt-intro">Generate prompts loaded with direct response frameworks, your market research, and funnel context. Copy → Paste into Claude!</p>
+            
+            <div class="prompt-section">
+                <div class="prompt-section-title">🎯 Generate Copy</div>
+                <div class="prompt-grid">
+                    <button class="prompt-btn" onclick="generatePrompt('headlines')">📝 Headlines</button>
+                    <button class="prompt-btn" onclick="generatePrompt('vsl')">🎬 VSL Script</button>
+                    <button class="prompt-btn" onclick="generatePrompt('hero')">🏠 Hero Section</button>
+                    <button class="prompt-btn" onclick="generatePrompt('cta')">🎯 CTA Copy</button>
+                    <button class="prompt-btn" onclick="generatePrompt('proof')">⭐ Social Proof</button>
+                    <button class="prompt-btn" onclick="generatePrompt('bullets')">💥 Bullet Points</button>
+                    <button class="prompt-btn" onclick="generatePrompt('email')">📧 Email</button>
+                    <button class="prompt-btn" onclick="generatePrompt('ad')">📱 Ad Copy</button>
+                </div>
+            </div>
+            
+            <div class="prompt-section">
+                <div class="prompt-section-title">🔍 Analyze Funnel</div>
+                <div class="prompt-grid">
+                    <button class="prompt-btn" onclick="generatePrompt('analyze')">🔍 Full Analysis</button>
+                    <button class="prompt-btn" onclick="generatePrompt('improve')">💡 Improvements</button>
+                </div>
+            </div>
+            
+            <div class="prompt-section">
+                <div class="prompt-section-title">⚙️ Custom Prompt</div>
+                <textarea class="custom-prompt-input" id="customPromptInput" placeholder="Describe what you need... (e.g., 'Write an urgency-focused closing section')"></textarea>
+                <button class="prompt-btn-full" onclick="generatePrompt('custom')">📋 Generate Custom Prompt</button>
+            </div>
+        </div>
+        <div class="prompt-output-area" id="promptOutputArea" style="display:none;">
+            <div class="prompt-output-header">
+                <span>📋 Your Prompt (Ready to Copy)</span>
+                <button class="prompt-back-btn" onclick="hidePromptOutput()">← Back</button>
+            </div>
+            <textarea class="prompt-output" id="promptOutput" readonly></textarea>
+            <button class="copy-prompt-btn" onclick="copyPromptToClipboard()">📋 Copy to Clipboard</button>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div class="templates-modal" id="templatesModal">
+        <div class="templates-box">
+            <div class="templates-header">
+                <h3>📄 Page Templates</h3>
+                <button class="modal-close" onclick="closeTemplatesModal()">×</button>
+            </div>
+            <div class="templates-body">
+                <div class="template-card" onclick="loadTemplate('vsl')">
+                    <div class="template-card-icon">🎬</div>
+                    <h4>VSL Landing Page</h4>
+                    <p>Video sales letter page with headline, video embed, CTA button, social proof stats, and testimonials. Ready for your funding offer.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Funnel Generator Modal -->
+    <div class="funnel-gen-modal" id="funnelGenModal">
+        <div class="funnel-gen-box">
+            <div class="funnel-gen-header">
+                <h3>🚀 AI Funnel Generator</h3>
+                <button class="modal-close" onclick="closeFunnelGenerator()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:20px;">×</button>
+            </div>
+            <div class="funnel-gen-body" id="fgForm">
+                <!-- API Key -->
+                <div class="fg-section">
+                    <label class="fg-label">API Key</label>
+                    <div class="fg-api-row">
+                        <input type="password" class="fg-input fg-api-input" id="fgApiKey" placeholder="sk-ant-..." onchange="saveFgApiKey()">
+                        <span class="fg-api-status" id="fgApiStatus">⚪</span>
+                    </div>
+                </div>
+                
+                <!-- Accent Color -->
+                <div class="fg-section">
+                    <label class="fg-label">Accent Color</label>
+                    <div class="fg-color-grid">
+                        <div class="fg-color-option selected" style="background: #10B981;" data-color="emerald" onclick="selectFgColor(this)"></div>
+                        <div class="fg-color-option" style="background: #3B82F6;" data-color="blue" onclick="selectFgColor(this)"></div>
+                        <div class="fg-color-option" style="background: #8B5CF6;" data-color="violet" onclick="selectFgColor(this)"></div>
+                        <div class="fg-color-option" style="background: #F59E0B;" data-color="amber" onclick="selectFgColor(this)"></div>
+                        <div class="fg-color-option" style="background: #F97316;" data-color="coral" onclick="selectFgColor(this)"></div>
+                        <div class="fg-color-option" style="background: #06B6D4;" data-color="cyan" onclick="selectFgColor(this)"></div>
+                    </div>
+                </div>
+                
+                <!-- Unique Mechanism -->
+                <div class="fg-section">
+                    <label class="fg-label">Unique Mechanism Name</label>
+                    <input type="text" class="fg-input" id="fgMechanism" placeholder='e.g., "Secondary Bureau Attack Method"'>
+                </div>
+                
+                <!-- Page Type -->
+                <div class="fg-section">
+                    <label class="fg-label">Generate</label>
+                    <div class="fg-page-btns">
+                        <div class="fg-page-btn selected" data-page="landing" onclick="selectFgPage(this)">
+                            <div class="fg-page-btn-icon">🎬</div>
+                            <div class="fg-page-btn-label">Landing Page</div>
+                        </div>
+                        <div class="fg-page-btn" data-page="thankyou" onclick="selectFgPage(this)">
+                            <div class="fg-page-btn-icon">✅</div>
+                            <div class="fg-page-btn-label">Thank You Page</div>
+                        </div>
+                        <div class="fg-page-btn" data-page="both" onclick="selectFgPage(this)">
+                            <div class="fg-page-btn-icon">📦</div>
+                            <div class="fg-page-btn-label">Both Pages</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="fg-generate-btn" id="fgGenerateBtn" onclick="generateFunnel()">🚀 Generate Funnel</button>
+            </div>
+            
+            <!-- Progress -->
+            <div class="fg-progress" id="fgProgress">
+                <div class="fg-spinner"></div>
+                <div class="fg-progress-text">Generating your funnel...</div>
+                <div class="fg-progress-sub">This may take 30-60 seconds</div>
+            </div>
+            
+            <!-- Output -->
+            <div class="fg-output" id="fgOutput">
+                <div class="fg-output-tabs" id="fgOutputTabs">
+                    <!-- Tabs inserted dynamically -->
+                </div>
+                
+                <!-- Preview Container -->
+                <div class="fg-preview-container">
+                    <div class="fg-preview-header">
+                        <div class="fg-preview-title">
+                            <span class="dot"></span>
+                            <span id="fgPreviewLabel">Preview</span>
+                        </div>
+                        <div class="fg-preview-actions">
+                            <button class="fg-preview-action" onclick="openPreviewNewTab()">↗ Open in New Tab</button>
+                        </div>
+                    </div>
+                    <iframe id="fgPreviewIframe" class="fg-preview-iframe"></iframe>
+                    <div id="fgPreviewEmpty" class="fg-preview-empty" style="display: none;">
+                        <div class="fg-preview-empty-icon">📄</div>
+                        <div class="fg-preview-empty-text">No page generated yet</div>
+                        <button class="fg-preview-empty-btn" onclick="generateMissingPage()">+ Generate This Page</button>
+                    </div>
+                </div>
+                
+                <div class="fg-output-actions">
+                    <button class="fg-load-btn" onclick="loadGeneratedToEditor()">📥 Load into Editor</button>
+                    <button class="fg-copy-btn" onclick="copyGeneratedCode()">📋 Copy Code</button>
+                    <button class="fg-copy-btn" onclick="resetFunnelGenerator()">🔄 Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/grapesjs@0.21.10"></script>
+    <script>
+        // Store loaded CSS globally for export
+        let loadedCSS = '';
+        
+        // Store custom code blocks (id -> code)
+        const customCodeStorage = {};
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // INITIALIZE EDITOR
+        // ═══════════════════════════════════════════════════════════════════════
+        const editor = grapesjs.init({
+            container: '#gjs',
+            height: '100%',
+            width: 'auto',
+            fromElement: false,
+            storageManager: false,
+
+            // Canvas
+            canvas: {
+                styles: [
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'
+                ],
+                frameStyle: `
+                    body { background: #0a0a0a; }
+                    html { background: #0a0a0a; }
+                `
+            },
+
+            // Protect base CSS
+            protectedCss: `
+                html, body { background: #0a0a0a !important; }
+            `,
+
+            // Default CSS
+            style: `
+                html { background: #0a0a0a !important; }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { 
+                    font-family: 'Inter', sans-serif; 
+                    background: #0a0a0a !important; 
+                    color: #fff; 
+                    line-height: 1.6;
+                    min-height: 100vh;
+                }
+            `,
+
+            // Devices
+            deviceManager: {
+                devices: [
+                    { name: 'Desktop', width: '' },
+                    { name: 'Tablet', width: '768px', widthMedia: '992px' },
+                    { name: 'Mobile', width: '375px', widthMedia: '480px' }
+                ]
+            },
+
+            // Panels - we're using custom panels
+            panels: { defaults: [] },
+
+            // Block Manager
+            blockManager: {
+                appendTo: '#blocks'
+            },
+
+            // Style Manager
+            styleManager: {
+                appendTo: '#styles-panel',
+                sectors: [
+                    {
+                        name: 'Layout',
+                        open: true,
+                        properties: [
+                            { property: 'display', type: 'select', options: [
+                                { value: 'block', name: 'Block' },
+                                { value: 'flex', name: 'Flex' },
+                                { value: 'grid', name: 'Grid' },
+                                { value: 'inline-block', name: 'Inline Block' },
+                                { value: 'none', name: 'None' }
+                            ]},
+                            { property: 'flex-direction', type: 'select', options: [
+                                { value: 'row', name: 'Row' },
+                                { value: 'column', name: 'Column' }
+                            ]},
+                            { property: 'justify-content', type: 'select', options: [
+                                { value: 'flex-start', name: 'Start' },
+                                { value: 'center', name: 'Center' },
+                                { value: 'flex-end', name: 'End' },
+                                { value: 'space-between', name: 'Space Between' },
+                                { value: 'space-around', name: 'Space Around' }
+                            ]},
+                            { property: 'align-items', type: 'select', options: [
+                                { value: 'flex-start', name: 'Start' },
+                                { value: 'center', name: 'Center' },
+                                { value: 'flex-end', name: 'End' },
+                                { value: 'stretch', name: 'Stretch' }
+                            ]},
+                            { property: 'gap' }
+                        ]
+                    },
+                    {
+                        name: 'Size',
+                        open: false,
+                        properties: [
+                            { property: 'width' },
+                            { property: 'height' },
+                            { property: 'max-width' },
+                            { property: 'min-height' },
+                            { property: 'padding' },
+                            { property: 'margin' }
+                        ]
+                    },
+                    {
+                        name: 'Typography',
+                        open: false,
+                        properties: [
+                            { property: 'font-family', type: 'select', options: [
+                                { value: "'Inter', sans-serif", name: 'Inter' },
+                                { value: 'Arial, sans-serif', name: 'Arial' },
+                                { value: 'Georgia, serif', name: 'Georgia' }
+                            ]},
+                            { property: 'font-size' },
+                            { property: 'font-weight', type: 'select', options: [
+                                { value: '400', name: 'Normal' },
+                                { value: '500', name: 'Medium' },
+                                { value: '600', name: 'Semi Bold' },
+                                { value: '700', name: 'Bold' },
+                                { value: '800', name: 'Extra Bold' },
+                                { value: '900', name: 'Black' }
+                            ]},
+                            { property: 'color', type: 'color' },
+                            { property: 'text-align', type: 'radio', options: [
+                                { value: 'left', name: 'Left' },
+                                { value: 'center', name: 'Center' },
+                                { value: 'right', name: 'Right' }
+                            ]},
+                            { property: 'line-height' },
+                            { property: 'letter-spacing' },
+                            { property: 'text-decoration', type: 'select', options: [
+                                { value: 'none', name: 'None' },
+                                { value: 'underline', name: 'Underline' },
+                                { value: 'line-through', name: 'Strikethrough' }
+                            ]},
+                            { property: 'text-transform', type: 'select', options: [
+                                { value: 'none', name: 'None' },
+                                { value: 'uppercase', name: 'UPPERCASE' },
+                                { value: 'lowercase', name: 'lowercase' },
+                                { value: 'capitalize', name: 'Capitalize' }
+                            ]}
+                        ]
+                    },
+                    {
+                        name: 'Background',
+                        open: false,
+                        properties: [
+                            { property: 'background-color', type: 'color' },
+                            { property: 'background-image' },
+                            { property: 'background-size', type: 'select', options: [
+                                { value: 'auto', name: 'Auto' },
+                                { value: 'cover', name: 'Cover' },
+                                { value: 'contain', name: 'Contain' }
+                            ]}
+                        ]
+                    },
+                    {
+                        name: 'Border',
+                        open: false,
+                        properties: [
+                            { property: 'border-radius' },
+                            { property: 'border-width' },
+                            { property: 'border-style', type: 'select', options: [
+                                { value: 'none', name: 'None' },
+                                { value: 'solid', name: 'Solid' },
+                                { value: 'dashed', name: 'Dashed' },
+                                { value: 'dotted', name: 'Dotted' }
+                            ]},
+                            { property: 'border-color', type: 'color' }
+                        ]
+                    },
+                    {
+                        name: 'Effects',
+                        open: false,
+                        properties: [
+                            { property: 'opacity' },
+                            { property: 'box-shadow' }
+                        ]
+                    }
+                ]
+            },
+
+            // Layer Manager
+            layerManager: {
+                appendTo: '#layers-panel'
+            },
+
+            // Trait Manager
+            traitManager: {
+                appendTo: '#settings-panel'
+            },
+
+            // Selector Manager
+            selectorManager: {
+                appendTo: '#styles-panel',
+                componentFirst: true
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // CUSTOM COMPONENT TYPES
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        // Custom Code Component - for embedding videos, scripts, etc.
+        editor.DomComponents.addType('custom-code', {
+            model: {
+                defaults: {
+                    tagName: 'div',
+                    droppable: false,
+                    attributes: { 'data-type': 'custom-code' },
+                    style: {
+                        'max-width': '800px',
+                        'margin': '0 auto',
+                        'min-height': '100px',
+                        'background': '#111',
+                        'border': '1px solid #222',
+                        'border-radius': '12px',
+                        'overflow': 'hidden'
+                    },
+                    'custom-code': '',
+                    traits: [
+                        {
+                            type: 'text',
+                            label: 'Name',
+                            name: 'id',
+                            placeholder: 'e.g. vsl-video'
+                        },
+                        {
+                            type: 'button',
+                            label: 'Embed Code',
+                            text: 'Edit Code',
+                            full: true,
+                            command: 'open-code-editor'
+                        }
+                    ]
+                },
+                init: function() {
+                    this.on('change:custom-code', this.handleCodeChange);
+                    if (!this.get('custom-code')) {
+                        this.components('<div style="padding: 40px; text-align: center;"><div style="font-size: 32px; margin-bottom: 12px;">📝</div><p style="color: #71717a; font-size: 14px; margin: 0;">Custom Code Block</p><p style="color: #52525b; font-size: 12px; margin-top: 8px;">Select and click "Edit Code" in Settings</p></div>');
+                    }
+                },
+                handleCodeChange: function() {
+                    const code = this.get('custom-code');
+                    if (code) {
+                        this.components(code);
+                    }
+                }
+            }
+        });
+
+        // CTA Button Component - with link/action support
+        editor.DomComponents.addType('cta-button', {
+            model: {
+                defaults: {
+                    tagName: 'a',
+                    attributes: { href: '#', class: 'cta-btn' },
+                    style: {
+                        'display': 'inline-flex',
+                        'align-items': 'center',
+                        'gap': '8px',
+                        'background': 'linear-gradient(135deg, #dc2626, #b91c1c)',
+                        'color': '#fff',
+                        'font-size': '18px',
+                        'font-weight': '700',
+                        'padding': '20px 44px',
+                        'border-radius': '12px',
+                        'border': 'none',
+                        'cursor': 'pointer',
+                        'box-shadow': '0 0 40px rgba(220,38,38,0.4)',
+                        'text-decoration': 'none'
+                    },
+                    content: 'Get Approved →',
+                    traits: [
+                        {
+                            type: 'text',
+                            label: 'Button Text',
+                            name: 'content',
+                            changeProp: true
+                        },
+                        {
+                            type: 'select',
+                            label: 'Action Type',
+                            name: 'action-type',
+                            options: [
+                                { value: 'link', name: 'Go to URL' },
+                                { value: 'survey', name: 'Open Survey Modal' },
+                                { value: 'scroll', name: 'Scroll to Section' }
+                            ]
+                        },
+                        {
+                            type: 'text',
+                            label: 'URL / Survey ID / Section ID',
+                            name: 'href',
+                            placeholder: 'https://... or #section-id'
+                        },
+                        {
+                            type: 'select',
+                            label: 'Open In',
+                            name: 'target',
+                            options: [
+                                { value: '_self', name: 'Same Window' },
+                                { value: '_blank', name: 'New Tab' }
+                            ]
+                        }
+                    ]
+                }
+            }
+        });
+
+        // Auto-switch to Settings tab and show custom controls
+        editor.on('component:selected', (component) => {
+            if (!component) return;
+            
+            // Show settings panel
+            showPanel('settings');
+            
+            // Remove any existing custom controls
+            const existingControls = document.getElementById('custom-element-controls');
+            if (existingControls) existingControls.remove();
+            
+            // Get element info
+            const el = component.getEl();
+            const tagName = (component.get('tagName') || '').toLowerCase();
+            const attrs = component.getAttributes();
+            
+            // Find the custom code block - check self and walk up parents
+            let customCodeComponent = null;
+            let checkComponent = component;
+            
+            while (checkComponent) {
+                const checkEl = checkComponent.getEl();
+                const checkAttrs = checkComponent.getAttributes();
+                
+                if (checkAttrs['data-type'] === 'custom-code' || 
+                    (checkEl && checkEl.classList && checkEl.classList.contains('custom-code-block')) ||
+                    (checkEl && checkEl.getAttribute && checkEl.getAttribute('data-type') === 'custom-code')) {
+                    customCodeComponent = checkComponent;
+                    break;
+                }
+                checkComponent = checkComponent.parent();
+            }
+            
+            const isCustomCode = customCodeComponent !== null;
+            const isLink = tagName === 'a';
+            const isButton = tagName === 'button' || (el && el.className && typeof el.className === 'string' && el.className.includes('btn'));
+            
+            // Create custom controls container
+            const controlsDiv = document.createElement('div');
+            controlsDiv.id = 'custom-element-controls';
+            controlsDiv.style.cssText = 'padding: 16px; border-bottom: 1px solid #222;';
+            
+            if (isCustomCode) {
+                // Use the found custom code component
+                const targetComponent = customCodeComponent;
+                
+                // Custom Code controls
+                controlsDiv.innerHTML = 
+                    '<div style="margin-bottom: 12px;">' +
+                    '<div style="font-size: 11px; font-weight: 600; color: #dc2626; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">📝 Custom Code</div>' +
+                    '<button id="editCodeBtn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">Edit Embed Code</button>' +
+                    '</div>';
+                
+                // Insert at top of settings panel
+                const settingsPanel = document.getElementById('settings-panel');
+                settingsPanel.insertBefore(controlsDiv, settingsPanel.firstChild);
+                
+                // Add click handler
+                document.getElementById('editCodeBtn').onclick = function() {
+                    openCodeEditorModal(targetComponent);
+                };
+            } else if (isLink || isButton) {
+                // Get or create button ID (using underscores for valid JS function names)
+                let btnId = component.getAttributes()['data-btn-id'];
+                if (!btnId) {
+                    btnId = 'btn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    component.addAttributes({ 'data-btn-id': btnId });
+                }
+                
+                // Get current settings
+                const currentHref = component.getAttributes().href || '#';
+                const currentAction = component.getAttributes()['data-action'] || 'link';
+                const hasEmbed = buttonEmbedStorage[btnId] ? true : false;
+                
+                controlsDiv.innerHTML = 
+                    '<div style="margin-bottom: 12px;">' +
+                    '<div style="font-size: 11px; font-weight: 600; color: #dc2626; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">🔗 Button Settings</div>' +
+                    '<label style="display: block; font-size: 11px; color: #888; margin-bottom: 6px;">Click Action</label>' +
+                    '<select id="btnActionSelect" style="width: 100%; padding: 10px; background: #111; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 12px; margin-bottom: 12px;">' +
+                    '<option value="link"' + (currentAction === 'link' ? ' selected' : '') + '>Go to URL</option>' +
+                    '<option value="modal"' + (currentAction === 'modal' ? ' selected' : '') + '>Open Survey Modal</option>' +
+                    '</select>' +
+                    '<div id="linkOptions" style="' + (currentAction === 'link' ? '' : 'display:none;') + '">' +
+                    '<label style="display: block; font-size: 11px; color: #888; margin-bottom: 6px;">URL</label>' +
+                    '<input type="text" id="linkUrlInput" value="' + (currentAction === 'link' ? currentHref : '') + '" placeholder="https://..." style="width: 100%; padding: 10px; background: #111; border: 1px solid #333; border-radius: 6px; color: #fff; font-size: 12px;">' +
+                    '</div>' +
+                    '<div id="modalOptions" style="' + (currentAction === 'modal' ? '' : 'display:none;') + '">' +
+                    '<button id="editSurveyBtn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 8px;">Edit Survey Embed Code</button>' +
+                    '<div id="surveyStatus" style="font-size: 11px; color: ' + (hasEmbed ? '#22c55e' : '#71717a') + '; text-align: center;">' + (hasEmbed ? '✅ Survey code saved' : 'No survey code added yet') + '</div>' +
+                    '</div>' +
+                    '</div>';
+                
+                // Insert at top of settings panel
+                const settingsPanel = document.getElementById('settings-panel');
+                settingsPanel.insertBefore(controlsDiv, settingsPanel.firstChild);
+                
+                // Action type change handler
+                document.getElementById('btnActionSelect').onchange = function() {
+                    const action = this.value;
+                    component.addAttributes({ 'data-action': action });
+                    
+                    if (action === 'link') {
+                        document.getElementById('linkOptions').style.display = '';
+                        document.getElementById('modalOptions').style.display = 'none';
+                        component.addAttributes({ href: document.getElementById('linkUrlInput').value || '#' });
+                    } else {
+                        document.getElementById('linkOptions').style.display = 'none';
+                        document.getElementById('modalOptions').style.display = '';
+                        component.addAttributes({ href: '#', onclick: 'openSurveyModal_' + btnId + '(); return false;' });
+                    }
+                };
+                
+                // URL change handler
+                document.getElementById('linkUrlInput').onchange = function() {
+                    component.addAttributes({ href: this.value });
+                };
+                
+                // Survey embed button handler
+                document.getElementById('editSurveyBtn').onclick = function() {
+                    openSurveyEmbedModal(component, btnId);
+                };
+            }
+        });
+        
+        // Store button survey embeds
+        const buttonEmbedStorage = {};
+        
+        // Survey embed modal function
+        function openSurveyEmbedModal(component, btnId) {
+            const currentCode = buttonEmbedStorage[btnId] || '';
+            
+            const modal = document.createElement('div');
+            modal.className = 'code-editor-modal active';
+            modal.id = 'surveyEditorModal';
+            modal.innerHTML = 
+                '<div class="code-editor-box">' +
+                '<div class="code-editor-header">' +
+                '<h3>📋 Edit Survey Embed Code</h3>' +
+                '<button class="code-editor-close" id="closeSurveyEditor">×</button>' +
+                '</div>' +
+                '<div class="code-editor-body">' +
+                '<div class="code-editor-hint">Paste your survey embed code below (GHL survey, Typeform, etc.). The survey will open in a modal popup when the button is clicked.</div>' +
+                '<textarea id="surveyCodeInput" placeholder="<iframe src=&quot;https://api.leadconnectorhq.com/widget/survey/...&quot;></iframe>"></textarea>' +
+                '</div>' +
+                '<div class="code-editor-footer">' +
+                '<button class="btn btn-dark" id="cancelSurveyEditor">Cancel</button>' +
+                '<button class="btn btn-red" id="saveSurveyEditor">Save Survey</button>' +
+                '</div>' +
+                '</div>';
+            
+            document.body.appendChild(modal);
+            
+            const textarea = document.getElementById('surveyCodeInput');
+            textarea.value = currentCode;
+            textarea.focus();
+            
+            // Close handlers
+            document.getElementById('closeSurveyEditor').onclick = function() { modal.remove(); };
+            document.getElementById('cancelSurveyEditor').onclick = function() { modal.remove(); };
+            
+            // Save handler
+            document.getElementById('saveSurveyEditor').onclick = function() {
+                const code = textarea.value;
+                buttonEmbedStorage[btnId] = code;
+                
+                // Update button attributes
+                component.addAttributes({ 
+                    'data-action': 'modal',
+                    'data-btn-id': btnId,
+                    href: '#',
+                    onclick: 'openSurveyModal_' + btnId + '(); return false;'
+                });
+                
+                // Update status
+                const statusEl = document.getElementById('surveyStatus');
+                if (statusEl) {
+                    statusEl.textContent = code ? '✅ Survey code saved' : 'No survey code added yet';
+                    statusEl.style.color = code ? '#22c55e' : '#71717a';
+                }
+                
+                modal.remove();
+                showStatus('✓ Survey saved! Click Preview to test.');
+            };
+            
+            modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+        }
+        
+        // Code editor modal function
+        function openCodeEditorModal(component) {
+            // Get or create unique ID for this custom code block
+            let blockId = component.getAttributes()['data-code-id'];
+            if (!blockId) {
+                blockId = 'cc-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                component.addAttributes({ 'data-code-id': blockId });
+            }
+            
+            // Get current code - check storage first, then component property
+            let currentCode = customCodeStorage[blockId] || component.get('custom-code') || '';
+            
+            // If no stored code, check innerHTML but filter out placeholder
+            if (!currentCode) {
+                const innerHTML = component.getInnerHTML() || '';
+                // Don't use innerHTML if it's the placeholder
+                if (!innerHTML.includes('Custom Code Block') && !innerHTML.includes('Edit Embed Code')) {
+                    currentCode = innerHTML;
+                }
+            }
+            
+            const modal = document.createElement('div');
+            modal.className = 'code-editor-modal active';
+            modal.id = 'codeEditorModal';
+            modal.innerHTML = 
+                '<div class="code-editor-box">' +
+                '<div class="code-editor-header">' +
+                '<h3>📝 Edit Embed Code</h3>' +
+                '<button class="code-editor-close" id="closeCodeEditor">×</button>' +
+                '</div>' +
+                '<div class="code-editor-body">' +
+                '<div class="code-editor-hint">Paste your embed code below (Wistia, YouTube, Vimeo, survey forms, scripts, etc.)</div>' +
+                '<textarea id="embedCodeInput" placeholder="Paste your embed code here..."></textarea>' +
+                '</div>' +
+                '<div class="code-editor-footer">' +
+                '<button class="btn btn-dark" id="cancelCodeEditor">Cancel</button>' +
+                '<button class="btn btn-red" id="saveCodeEditor">Save Code</button>' +
+                '</div>' +
+                '</div>';
+            
+            document.body.appendChild(modal);
+            
+            // Set textarea value after adding to DOM (avoids HTML encoding issues)
+            const textarea = document.getElementById('embedCodeInput');
+            textarea.value = currentCode;
+            textarea.focus();
+            
+            // Close handlers
+            document.getElementById('closeCodeEditor').onclick = function() {
+                modal.remove();
+            };
+            document.getElementById('cancelCodeEditor').onclick = function() {
+                modal.remove();
+            };
+            
+            // Save handler
+            document.getElementById('saveCodeEditor').onclick = function() {
+                const code = textarea.value;
+                
+                // Store in global storage for export
+                customCodeStorage[blockId] = code;
+                
+                // Also store on component
+                component.set('custom-code', code);
+                
+                // Update visual representation (without scripts for editor display)
+                if (code.trim()) {
+                    // For editor display, show a preview or placeholder for script content
+                    const hasScript = code.includes('<script');
+                    if (hasScript) {
+                        // Show a visual indicator that code is saved (with data attribute for easy removal in preview)
+                        component.components('<div data-editor-only="true" style="padding: 40px; text-align: center; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; margin: 10px;"><div style="font-size: 32px; margin-bottom: 12px;">✅</div><p style="color: #22c55e; font-size: 14px; margin: 0;">Embed Code Saved</p><p style="color: #71717a; font-size: 12px; margin-top: 8px;">Script will render in Preview/Export</p></div>');
+                    } else {
+                        component.components(code);
+                    }
+                } else {
+                    component.components('<div data-editor-only="true" style="padding: 40px; text-align: center;"><div style="font-size: 32px; margin-bottom: 12px;">📝</div><p style="color: #71717a; font-size: 14px;">Custom Code Block</p><p style="color: #52525b; font-size: 12px; margin-top: 8px;">Click "Edit Embed Code" to add content</p></div>');
+                }
+                
+                modal.remove();
+                showStatus('✓ Code saved!');
+                setTimeout(reinjectCSS, 100);
+            };
+            
+            // Close on escape or background click
+            modal.onclick = function(e) {
+                if (e.target === modal) modal.remove();
+            };
+        }
+
+        // Add default traits to link elements
+        editor.DomComponents.addType('link', {
+            model: {
+                defaults: {
+                    traits: [
+                        {
+                            type: 'text',
+                            label: 'URL',
+                            name: 'href',
+                            placeholder: 'https://... or #section-id'
+                        },
+                        {
+                            type: 'select',
+                            label: 'Open In',
+                            name: 'target',
+                            options: [
+                                { value: '_self', name: 'Same Window' },
+                                { value: '_blank', name: 'New Tab' }
+                            ]
+                        },
+                        {
+                            type: 'text',
+                            label: 'Title',
+                            name: 'title',
+                            placeholder: 'Link title (hover text)'
+                        }
+                    ]
+                }
+            }
+        });
+
+        // Add traits to buttons (for onclick actions)
+        editor.DomComponents.addType('button', {
+            model: {
+                defaults: {
+                    traits: [
+                        {
+                            type: 'text',
+                            label: 'Button Text',
+                            name: 'text'
+                        },
+                        {
+                            type: 'text',
+                            label: 'On Click',
+                            name: 'onclick',
+                            placeholder: "window.location='https://...'"
+                        }
+                    ]
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FUNNEL BLOCKS
+        // ═══════════════════════════════════════════════════════════════════════
+        const bm = editor.BlockManager;
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // BASIC ELEMENTS
+        // ─────────────────────────────────────────────────────────────────────────
+        bm.add('section', {
+            label: 'Section',
+            category: 'Basic',
+            content: `<section style="padding: 80px 24px; max-width: 1100px; margin: 0 auto;"></section>`
+        });
+
+        bm.add('container', {
+            label: 'Container',
+            category: 'Basic',
+            content: `<div style="max-width: 800px; margin: 0 auto; padding: 0 24px;"></div>`
+        });
+
+        bm.add('text', {
+            label: 'Text',
+            category: 'Basic',
+            content: `<p style="font-size: 16px; color: #a1a1aa; line-height: 1.7;">Your text here. Click to edit.</p>`
+        });
+
+        bm.add('heading', {
+            label: 'Heading',
+            category: 'Basic',
+            content: `<h2 style="font-size: 40px; font-weight: 800; color: #fff; margin-bottom: 16px;">Your Headline</h2>`
+        });
+
+        bm.add('image', {
+            label: 'Image',
+            category: 'Basic',
+            content: { type: 'image' }
+        });
+
+        bm.add('link', {
+            label: 'Link',
+            category: 'Basic',
+            content: `<a href="#" style="color: #dc2626;">Link Text</a>`
+        });
+
+        bm.add('divider', {
+            label: 'Divider',
+            category: 'Basic',
+            content: `<hr style="border: none; border-top: 1px solid #222; margin: 40px 0;">`
+        });
+
+        bm.add('spacer', {
+            label: 'Spacer',
+            category: 'Basic',
+            content: `<div style="height: 60px;"></div>`
+        });
+
+        bm.add('custom-code', {
+            label: 'Custom Code',
+            category: 'Basic',
+            content: '<div class="custom-code-block" data-type="custom-code" style="max-width: 800px; margin: 0 auto; min-height: 100px; background: #111; border: 1px solid #222; border-radius: 12px; overflow: hidden;"><div data-editor-only="true" style="padding: 40px; text-align: center;"><div style="font-size: 32px; margin-bottom: 12px;">📝</div><p style="color: #71717a; font-size: 14px; margin: 0;">Custom Code Block</p><p style="color: #52525b; font-size: 12px; margin-top: 8px;">Click "Edit Embed Code" in Settings</p></div></div>'
+        });
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // HERO ELEMENTS
+        // ─────────────────────────────────────────────────────────────────────────
+        bm.add('eyebrow', {
+            label: 'Eyebrow',
+            category: 'Hero',
+            content: `<div style="display: inline-block; background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); border: 1px solid rgba(220,38,38,0.3); border-radius: 8px; padding: 10px 18px; margin-bottom: 24px;">
+                <span style="font-size: 13px; color: #a1a1aa;"><strong style="color: #dc2626;">ATTENTION:</strong> Business owners earning $7K–$50K/month who keep getting denied</span>
+            </div>`
+        });
+
+        bm.add('hero-headline', {
+            label: 'Hero Headline',
+            category: 'Hero',
+            content: `<div style="text-align: center; margin-bottom: 28px;">
+                <span style="display: block; font-size: 18px; font-weight: 500; color: #71717a; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px;">Deploy The</span>
+                <span style="display: block; font-size: 52px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1;">Your Mechanism™</span>
+                <span style="display: block; font-size: 42px; font-weight: 800; color: #fff; margin-top: 16px;">to Unlock $50K–$150K+</span>
+            </div>`
+        });
+
+        bm.add('subheadline', {
+            label: 'Subheadline',
+            category: 'Hero',
+            content: `<p style="font-size: 17px; color: #71717a; text-align: center; max-width: 520px; margin: 0 auto 40px; line-height: 1.7;">Without getting denied again, sacrificing collateral, or destroying your credit with predatory MCAs</p>`
+        });
+
+        bm.add('timeframe-pill', {
+            label: 'Timeframe Pill',
+            category: 'Hero',
+            content: `<div style="display: inline-flex; align-items: center; gap: 10px; background: #111; border: 1px solid #222; color: #a1a1aa; font-size: 15px; font-weight: 600; padding: 14px 28px; border-radius: 100px;">
+                <span>⏱</span> In 14 Days or Less
+            </div>`
+        });
+
+        bm.add('vsl-container', {
+            label: 'VSL Container',
+            category: 'Hero',
+            content: `<div style="max-width: 800px; margin: 0 auto 48px; aspect-ratio: 16/9; background: #111; border: 1px solid #222; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 40px rgba(220,38,38,0.4);">
+                        <span style="font-size: 32px; margin-left: 4px;">▶</span>
+                    </div>
+                    <span style="color: #71717a; font-size: 14px;">Watch Video (3 min)</span>
+                </div>
+            </div>`
+        });
+
+        bm.add('cta-button', {
+            label: 'CTA Button',
+            category: 'Hero',
+            content: `<a href="#" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; font-size: 18px; font-weight: 700; padding: 20px 44px; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 0 40px rgba(220,38,38,0.4); text-decoration: none;">See If You Qualify →</a>`
+        });
+
+        bm.add('trust-badges', {
+            label: 'Trust Badges',
+            category: 'Hero',
+            content: `<div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #71717a; background: rgba(255,255,255,0.02); border: 1px solid #222; padding: 6px 12px; border-radius: 100px; text-transform: uppercase;">
+                    <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span> 130+ Funded
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #71717a; background: rgba(255,255,255,0.02); border: 1px solid #222; padding: 6px 12px; border-radius: 100px; text-transform: uppercase;">🔒 Bank-Level Security</div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #71717a; background: rgba(255,255,255,0.02); border: 1px solid #222; padding: 6px 12px; border-radius: 100px; text-transform: uppercase;">⚡ 14-Day Average</div>
+            </div>`
+        });
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // PROOF ELEMENTS
+        // ─────────────────────────────────────────────────────────────────────────
+        bm.add('result-card', {
+            label: 'Result Card',
+            category: 'Proof',
+            content: `<div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; transition: all 0.3s;">
+                <div style="font-size: 40px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;">$75,000</div>
+                <div style="font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Business Funding</div>
+                <p style="font-size: 14px; color: #a1a1aa; line-height: 1.7; font-style: italic;">"Quote from happy client goes here."</p>
+            </div>`
+        });
+
+        bm.add('results-grid', {
+            label: 'Results Grid',
+            category: 'Proof',
+            content: `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$75K</div>
+                    <p style="font-size: 13px; color: #71717a; margin-top: 8px;">"Client quote here"</p>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$110K</div>
+                    <p style="font-size: 13px; color: #71717a; margin-top: 8px;">"Client quote here"</p>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$150K</div>
+                    <p style="font-size: 13px; color: #71717a; margin-top: 8px;">"Client quote here"</p>
+                </div>
+            </div>`
+        });
+
+        bm.add('stat-card', {
+            label: 'Stat Card',
+            category: 'Proof',
+            content: `<div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 32px; text-align: center;">
+                <div style="font-size: 44px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; margin-bottom: 8px;">$6M+</div>
+                <div style="font-size: 13px; color: #71717a; text-transform: uppercase; letter-spacing: 0.1em;">Total Funded</div>
+            </div>`
+        });
+
+        bm.add('stats-row', {
+            label: 'Stats Row',
+            category: 'Proof',
+            content: `<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; text-align: center;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">$6M+</div>
+                    <div style="font-size: 12px; color: #71717a; text-transform: uppercase; margin-top: 6px;">Total Funded</div>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; text-align: center;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">130+</div>
+                    <div style="font-size: 12px; color: #71717a; text-transform: uppercase; margin-top: 6px;">Clients Served</div>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; text-align: center;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">93%</div>
+                    <div style="font-size: 12px; color: #71717a; text-transform: uppercase; margin-top: 6px;">Approval Rate</div>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; text-align: center;">
+                    <div style="font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">14</div>
+                    <div style="font-size: 12px; color: #71717a; text-transform: uppercase; margin-top: 6px;">Days Average</div>
+                </div>
+            </div>`
+        });
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // CONTENT ELEMENTS
+        // ─────────────────────────────────────────────────────────────────────────
+        bm.add('section-header', {
+            label: 'Section Header',
+            category: 'Content',
+            content: `<div style="text-align: center; margin-bottom: 48px;">
+                <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #dc2626; margin-bottom: 16px;">
+                    <span style="width: 20px; height: 2px; background: #dc2626;"></span> Section Label
+                </span>
+                <h2 style="font-size: 40px; font-weight: 800; color: #fff;">Section Headline</h2>
+            </div>`
+        });
+
+        bm.add('step-card', {
+            label: 'Step Card',
+            category: 'Content',
+            content: `<div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; margin-bottom: 16px;">1</div>
+                <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px;">Step Title</h3>
+                <p style="font-size: 14px; color: #a1a1aa; line-height: 1.6;">Step description goes here.</p>
+            </div>`
+        });
+
+        bm.add('steps-grid', {
+            label: '3-Step Grid',
+            category: 'Content',
+            content: `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; margin-bottom: 16px;">1</div>
+                    <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px;">Step One</h3>
+                    <p style="font-size: 14px; color: #a1a1aa;">Description here.</p>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; margin-bottom: 16px;">2</div>
+                    <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px;">Step Two</h3>
+                    <p style="font-size: 14px; color: #a1a1aa;">Description here.</p>
+                </div>
+                <div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                    <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; margin-bottom: 16px;">3</div>
+                    <h3 style="font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 10px;">Step Three</h3>
+                    <p style="font-size: 14px; color: #a1a1aa;">Description here.</p>
+                </div>
+            </div>`
+        });
+
+        bm.add('faq-card', {
+            label: 'FAQ Card',
+            category: 'Content',
+            content: `<div style="background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px;">
+                <div style="font-size: 28px; margin-bottom: 16px;">💳</div>
+                <p style="font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.3;">"Question goes here?"</p>
+                <p style="font-size: 14px; color: #a1a1aa; line-height: 1.7;">Answer goes here explaining the solution.</p>
+            </div>`
+        });
+
+        bm.add('guarantee-card', {
+            label: 'Guarantee Box',
+            category: 'Content',
+            content: `<div style="max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, rgba(220,38,38,0.08), rgba(249,115,22,0.04)); border: 2px solid #dc2626; border-radius: 24px; padding: 44px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 20px;">🛡️</div>
+                <h3 style="font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 14px;">100% Money-Back Guarantee</h3>
+                <p style="font-size: 16px; color: #a1a1aa; line-height: 1.7;">Your guarantee details go here.</p>
+            </div>`
+        });
+
+        bm.add('comparison', {
+            label: 'Comparison',
+            category: 'Content',
+            content: `<div style="display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #222; border-radius: 16px; overflow: hidden;">
+                <div style="padding: 32px; background: rgba(239,68,68,0.02); border-right: 1px solid #222;">
+                    <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: #ef4444; margin-bottom: 24px;">✕ Without Us</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #ef4444;">✕</span> Pain point one</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #ef4444;">✕</span> Pain point two</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #ef4444;">✕</span> Pain point three</div>
+                </div>
+                <div style="padding: 32px; background: rgba(34,197,94,0.02);">
+                    <div style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: #22c55e; margin-bottom: 24px;">✓ With Us</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #22c55e;">✓</span> Benefit one</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #22c55e;">✓</span> Benefit two</div>
+                    <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; font-size: 14px; color: #a1a1aa;"><span style="color: #22c55e;">✓</span> Benefit three</div>
+                </div>
+            </div>`
+        });
+
+        // ─────────────────────────────────────────────────────────────────────────
+        // FULL SECTIONS
+        // ─────────────────────────────────────────────────────────────────────────
+        bm.add('hero-section', {
+            label: 'Full Hero',
+            category: 'Sections',
+            content: `<section style="padding: 80px 24px 100px; text-align: center; position: relative;">
+                <div style="max-width: 900px; margin: 0 auto;">
+                    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 32px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #71717a; background: rgba(255,255,255,0.02); border: 1px solid #222; padding: 6px 12px; border-radius: 100px; text-transform: uppercase;"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%;"></span> 130+ Funded</div>
+                        <div style="font-size: 11px; font-weight: 600; color: #71717a; background: rgba(255,255,255,0.02); border: 1px solid #222; padding: 6px 12px; border-radius: 100px; text-transform: uppercase;">🔒 Bank-Level Security</div>
+                    </div>
+                    <div style="display: inline-block; background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); border: 1px solid rgba(220,38,38,0.3); border-radius: 8px; padding: 10px 18px; margin-bottom: 24px;">
+                        <span style="font-size: 13px; color: #a1a1aa;"><strong style="color: #dc2626;">ATTENTION:</strong> Your qualifier here</span>
+                    </div>
+                    <h1 style="font-size: 52px; font-weight: 900; background: linear-gradient(135deg, #dc2626, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.1; margin-bottom: 16px;">Your Headline Here</h1>
+                    <p style="font-size: 17px; color: #71717a; max-width: 520px; margin: 0 auto 40px;">Your subheadline goes here</p>
+                    <div style="max-width: 700px; margin: 0 auto 40px; aspect-ratio: 16/9; background: #111; border: 1px solid #222; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(220,38,38,0.4);"><span style="font-size: 32px; margin-left: 4px;">▶</span></div>
+                    </div>
+                    <button style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; font-size: 18px; font-weight: 700; padding: 20px 44px; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 0 40px rgba(220,38,38,0.4);">Get Started →</button>
+                </div>
+            </section>`
+        });
+
+        bm.add('cta-section', {
+            label: 'CTA Section',
+            category: 'Sections',
+            content: `<section style="padding: 100px 24px; text-align: center;">
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #dc2626; margin-bottom: 16px;"><span style="width: 20px; height: 2px; background: #dc2626;"></span> Get Started</span>
+                    <h2 style="font-size: 44px; font-weight: 800; color: #fff; margin-bottom: 16px;">Ready to Get Funded?</h2>
+                    <p style="font-size: 17px; color: #a1a1aa; margin-bottom: 32px;">Your call to action subtext here.</p>
+                    <button style="background: linear-gradient(135deg, #dc2626, #b91c1c); color: #fff; font-size: 18px; font-weight: 700; padding: 20px 44px; border-radius: 12px; border: none; cursor: pointer; box-shadow: 0 0 40px rgba(220,38,38,0.4);">Check Your Eligibility →</button>
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(249,115,22,0.12); color: #f97316; font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 100px; margin-top: 20px; border: 1px solid rgba(249,115,22,0.25);">🔥 Limited Spots This Month</div>
+                </div>
+            </section>`
+        });
+
+        bm.add('footer', {
+            label: 'Footer',
+            category: 'Sections',
+            content: `<footer style="padding: 40px 24px; border-top: 1px solid #222; text-align: center;">
+                <p style="font-size: 12px; color: #71717a;">© 2025 Your Company. All rights reserved.</p>
+            </footer>`
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        // Panel switching
+        function showPanel(panel) {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.panel-tab[onclick="showPanel('${panel}')"]`).classList.add('active');
+            document.getElementById(`${panel}-panel`).classList.add('active');
+        }
+
+        // Color mode state
+        let colorMode = 'text'; // 'text' or 'bg'
+
+        // Set color mode
+        function setColorMode(mode) {
+            colorMode = mode;
+            document.getElementById('colorModeText').classList.toggle('active', mode === 'text');
+            document.getElementById('colorModeBg').classList.toggle('active', mode === 'bg');
+        }
+
+        // Apply color based on current mode
+        function applySelectedColor(color) {
+            const selected = editor.getSelected();
+            if (selected) {
+                if (colorMode === 'text') {
+                    selected.addStyle({ color: color });
+                    showStatus(`✓ Text color: ${color}`);
+                } else {
+                    selected.addStyle({ 'background-color': color });
+                    showStatus(`✓ Background: ${color}`);
+                }
+            } else {
+                showStatus('⚠️ Select an element first');
+            }
+        }
+
+        // Apply color to selected element
+        function applyColor(color) {
+            const selected = editor.getSelected();
+            if (selected) {
+                selected.addStyle({ color: color });
+                showStatus(`✓ Applied ${color}`);
+            } else {
+                showStatus('⚠️ Select an element first');
+            }
+        }
+
+        // Apply background color to selected element
+        function applyBgColor(color) {
+            const selected = editor.getSelected();
+            if (selected) {
+                selected.addStyle({ 'background-color': color });
+                showStatus(`✓ Applied background ${color}`);
+            } else {
+                showStatus('⚠️ Select an element first');
+            }
+        }
+
+        // Device switching
+        function setDevice(device) {
+            editor.setDevice(device);
+            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Load Modal
+        function openLoadModal() { document.getElementById('loadModal').classList.add('active'); }
+        function closeLoadModal() { document.getElementById('loadModal').classList.remove('active'); }
+
+        // Export Modal
+        function openExportModal() {
+            let html = editor.getHtml();
+            
+            // Create a temporary DOM to manipulate
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Remove all editor-only elements first
+            const editorOnlyElements = tempDiv.querySelectorAll('[data-editor-only]');
+            editorOnlyElements.forEach(function(el) {
+                el.remove();
+            });
+            
+            // Find all custom code blocks and replace their content with stored code
+            const codeBlocks = tempDiv.querySelectorAll('[data-code-id]');
+            codeBlocks.forEach(function(block) {
+                const blockId = block.getAttribute('data-code-id');
+                if (blockId && customCodeStorage[blockId]) {
+                    block.innerHTML = customCodeStorage[blockId];
+                }
+            });
+            
+            // Also find blocks by class and replace
+            const placeholders = tempDiv.querySelectorAll('.custom-code-block');
+            placeholders.forEach(function(block) {
+                const blockId = block.getAttribute('data-code-id');
+                if (blockId && customCodeStorage[blockId]) {
+                    block.innerHTML = customCodeStorage[blockId];
+                }
+            });
+            
+            html = tempDiv.innerHTML;
+            
+            // Generate modal HTML and JS for survey buttons
+            let modalHTML = '';
+            let modalJS = '';
+            
+            for (const [btnId, embedCode] of Object.entries(buttonEmbedStorage)) {
+                if (embedCode) {
+                    // Sanitize btnId for use in function names (replace dashes with underscores)
+                    const safeBtnId = btnId.replace(/-/g, '_');
+                    
+                    modalHTML += '\n    <!-- Survey Modal for ' + btnId + ' -->\n    <div id="surveyModal_' + safeBtnId + '" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">\n        <div style="background:#0a0a0a;border:1px solid #222;border-radius:16px;max-width:650px;width:100%;min-height:500px;position:relative;margin:auto;">\n            <button onclick="closeSurveyModal_' + safeBtnId + '()" style="position:absolute;top:10px;right:10px;background:#222;border:none;color:#fff;font-size:20px;cursor:pointer;z-index:10;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;">&times;</button>\n            <div style="padding:50px 20px 20px 20px;min-height:480px;">' + embedCode + '</div>\n        </div>\n    </div>';
+                    
+                    modalJS += '\n    function openSurveyModal_' + safeBtnId + '() { document.getElementById("surveyModal_' + safeBtnId + '").style.display = "flex"; document.body.style.overflow = "hidden"; }\n    function closeSurveyModal_' + safeBtnId + '() { document.getElementById("surveyModal_' + safeBtnId + '").style.display = "none"; document.body.style.overflow = ""; }';
+                }
+            }
+            
+            // Add click handlers to buttons with data-btn-id
+            let buttonClickJS = '\n    document.addEventListener("DOMContentLoaded", function() {';
+            for (const [btnId, embedCode] of Object.entries(buttonEmbedStorage)) {
+                if (embedCode) {
+                    const safeBtnId = btnId.replace(/-/g, '_');
+                    buttonClickJS += '\n        document.querySelectorAll(\'[data-btn-id="' + btnId + '"]\').forEach(function(btn) { btn.addEventListener("click", function(e) { e.preventDefault(); openSurveyModal_' + safeBtnId + '(); }); });';
+                }
+            }
+            buttonClickJS += '\n    });';
+            
+            // Use the stored CSS (preserves all properties) + any new styles from editor
+            const editorCss = editor.getCss();
+            const css = loadedCSS || editorCss;
+            const baseCSS = 'html,body{margin:0;padding:0;background:#0a0a0a;color:#fff;font-family:"Inter",sans-serif;}*{box-sizing:border-box;}[id^="surveyModal_"] iframe{width:100%!important;min-height:450px!important;border:none!important;}';
+            
+            let fullCode = '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Landing Page</title>\n    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">\n    <style>\n' + baseCSS + '\n' + css + '\n    </style>\n</head>\n<body>\n' + html + modalHTML;
+            
+            if (modalJS) {
+                fullCode += '\n<scr' + 'ipt>' + modalJS + buttonClickJS + '\n</scr' + 'ipt>';
+            }
+            
+            fullCode += '\n</body>\n</html>';
+            
+            document.getElementById('exportCode').value = fullCode;
+            document.getElementById('exportModal').classList.add('active');
+        }
+        function closeExportModal() { document.getElementById('exportModal').classList.remove('active'); }
+
+        // Load code
+        function loadCode() {
+            const code = document.getElementById('loadCode').value.trim();
+            if (!code) { alert('Paste HTML first'); return; }
+
+            let html = '', css = '';
+            const styleMatch = code.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+            if (styleMatch) css = styleMatch.map(m => m.match(/<style[^>]*>([\s\S]*?)<\/style>/i)?.[1] || '').join('\n');
+            const bodyMatch = code.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+            html = bodyMatch ? bodyMatch[1].trim() : code;
+
+            // Store CSS globally for export
+            loadedCSS = css;
+
+            // Clear editor
+            editor.DomComponents.clear();
+            editor.CssComposer.clear();
+            
+            // Set HTML components
+            editor.setComponents(html);
+
+            // Function to inject CSS into iframe
+            function injectCSS() {
+                const frame = editor.Canvas.getFrameEl();
+                if (frame && frame.contentDocument) {
+                    const doc = frame.contentDocument;
+                    
+                    // Set background
+                    doc.documentElement.style.background = '#0a0a0a';
+                    doc.body.style.background = '#0a0a0a';
+                    doc.body.style.margin = '0';
+                    doc.body.style.padding = '0';
+                    
+                    // Remove any existing injected style
+                    const existingStyle = doc.getElementById('injected-styles');
+                    if (existingStyle) existingStyle.remove();
+                    
+                    // Create and inject style element with FULL CSS
+                    const styleEl = doc.createElement('style');
+                    styleEl.id = 'injected-styles';
+                    styleEl.textContent = css;
+                    doc.head.appendChild(styleEl);
+                    
+                    return true;
+                }
+                return false;
+            }
+
+            // Try multiple times to ensure CSS is injected
+            injectCSS();
+            setTimeout(injectCSS, 50);
+            setTimeout(injectCSS, 150);
+            setTimeout(injectCSS, 300);
+
+            closeLoadModal();
+            document.getElementById('loadCode').value = '';
+            showStatus('✓ Loaded!');
+        }
+
+        // Preview
+        function previewPage() {
+            let html = editor.getHtml();
+            const css = loadedCSS || editor.getCss();
+            
+            // Create a temporary DOM to manipulate
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Remove all editor-only elements first
+            const editorOnlyElements = tempDiv.querySelectorAll('[data-editor-only]');
+            editorOnlyElements.forEach(function(el) {
+                el.remove();
+            });
+            
+            // Find all custom code blocks and replace their content with stored code
+            const codeBlocks = tempDiv.querySelectorAll('[data-code-id]');
+            codeBlocks.forEach(function(block) {
+                const blockId = block.getAttribute('data-code-id');
+                if (blockId && customCodeStorage[blockId]) {
+                    block.innerHTML = customCodeStorage[blockId];
+                }
+            });
+            
+            // Also find blocks by class and replace
+            const placeholders = tempDiv.querySelectorAll('.custom-code-block');
+            placeholders.forEach(function(block) {
+                const blockId = block.getAttribute('data-code-id');
+                if (blockId && customCodeStorage[blockId]) {
+                    block.innerHTML = customCodeStorage[blockId];
+                }
+            });
+            
+            html = tempDiv.innerHTML;
+            
+            // Generate modal HTML and JS for survey buttons
+            let modalHTML = '';
+            let modalJS = '';
+            
+            for (const [btnId, embedCode] of Object.entries(buttonEmbedStorage)) {
+                if (embedCode) {
+                    // Sanitize btnId for use in function names (replace dashes with underscores)
+                    const safeBtnId = btnId.replace(/-/g, '_');
+                    
+                    modalHTML += '<div id="surveyModal_' + safeBtnId + '" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;"><div style="background:#0a0a0a;border:1px solid #222;border-radius:16px;max-width:650px;width:100%;min-height:500px;position:relative;margin:auto;"><button onclick="closeSurveyModal_' + safeBtnId + '()" style="position:absolute;top:10px;right:10px;background:#222;border:none;color:#fff;font-size:20px;cursor:pointer;z-index:10;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;">&times;</button><div style="padding:50px 20px 20px 20px;min-height:480px;">' + embedCode + '</div></div></div>';
+                    
+                    modalJS += 'function openSurveyModal_' + safeBtnId + '(){document.getElementById("surveyModal_' + safeBtnId + '").style.display="flex";document.body.style.overflow="hidden";}function closeSurveyModal_' + safeBtnId + '(){document.getElementById("surveyModal_' + safeBtnId + '").style.display="none";document.body.style.overflow="";}';
+                }
+            }
+            
+            // Add click handlers to buttons with data-btn-id (since onclick attributes may not export)
+            let buttonClickJS = 'document.addEventListener("DOMContentLoaded",function(){';
+            for (const [btnId, embedCode] of Object.entries(buttonEmbedStorage)) {
+                if (embedCode) {
+                    const safeBtnId = btnId.replace(/-/g, '_');
+                    buttonClickJS += "document.querySelectorAll('[data-btn-id=\"" + btnId + "\"]').forEach(function(btn){btn.addEventListener('click',function(e){e.preventDefault();openSurveyModal_" + safeBtnId + "();});});";
+                }
+            }
+            buttonClickJS += '});';
+            
+            // Add base styles - ensure proper layout and iframe styling
+            const baseCSS = 'html,body{margin:0;padding:0;background:#0a0a0a;color:#fff;font-family:"Inter",sans-serif;}*{box-sizing:border-box;}[id^="surveyModal_"] iframe{width:100%!important;min-height:450px!important;border:none!important;}';
+            
+            const win = window.open('', '_blank');
+            let previewHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style>' + baseCSS + css + '</style></head><body>' + html + modalHTML;
+            if (modalJS) {
+                previewHTML += '<scr' + 'ipt>' + modalJS + buttonClickJS + '</scr' + 'ipt>';
+            }
+            previewHTML += '</body></html>';
+            win.document.write(previewHTML);
+            win.document.close();
+        }
+
+        // Copy
+        function copyCode() {
+            document.getElementById('exportCode').select();
+            document.execCommand('copy');
+            showStatus('✓ Copied!');
+        }
+
+        // Download
+        function downloadFile() {
+            const code = document.getElementById('exportCode').value;
+            const blob = new Blob([code], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'landing-page.html';
+            a.click();
+        }
+
+        // Status
+        function showStatus(msg) {
+            const s = document.getElementById('statusBar');
+            s.textContent = msg;
+            s.classList.add('show');
+            setTimeout(() => s.classList.remove('show'), 2000);
+        }
+
+        // Function to inject stored CSS into canvas
+        function reinjectCSS() {
+            if (!loadedCSS) return;
+            const frame = editor.Canvas.getFrameEl();
+            if (frame && frame.contentDocument) {
+                const doc = frame.contentDocument;
+                doc.documentElement.style.background = '#0a0a0a';
+                doc.body.style.background = '#0a0a0a';
+                
+                // Check if our style exists
+                let styleEl = doc.getElementById('injected-styles');
+                if (!styleEl) {
+                    styleEl = doc.createElement('style');
+                    styleEl.id = 'injected-styles';
+                    doc.head.appendChild(styleEl);
+                }
+                styleEl.textContent = loadedCSS;
+            }
+        }
+
+        // Refresh styles manually
+        function refreshStyles() {
+            if (!loadedCSS) {
+                showStatus('⚠️ No styles to refresh - load a page first');
+                return;
+            }
+            reinjectCSS();
+            showStatus('✓ Styles refreshed!');
+        }
+
+        // Keyboard
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeLoadModal(); closeExportModal(); closeTemplatesModal(); }
+        });
+
+        // Force canvas to show black background on load
+        editor.on('load', () => {
+            const frame = editor.Canvas.getFrameEl();
+            if (frame && frame.contentDocument) {
+                const doc = frame.contentDocument;
+                if (doc.documentElement) {
+                    doc.documentElement.style.background = '#0a0a0a';
+                }
+                if (doc.body) {
+                    doc.body.style.background = '#0a0a0a';
+                    doc.body.style.minHeight = '100vh';
+                }
+            }
+            reinjectCSS();
+        });
+
+        // Re-inject CSS on canvas render
+        editor.on('canvas:frame:load', reinjectCSS);
+
+        // Also update canvas on component changes
+        editor.on('component:add', () => {
+            setTimeout(() => {
+                const frame = editor.Canvas.getFrameEl();
+                if (frame && frame.contentDocument && frame.contentDocument.body) {
+                    frame.contentDocument.body.style.background = '#0a0a0a';
+                    frame.contentDocument.documentElement.style.background = '#0a0a0a';
+                }
+                reinjectCSS();
+            }, 50);
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // TEMPLATES
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        function openTemplatesModal() {
+            document.getElementById('templatesModal').classList.add('active');
+        }
+        
+        function closeTemplatesModal() {
+            document.getElementById('templatesModal').classList.remove('active');
+        }
+        
+        // VSL Template
+        const VSL_TEMPLATE_HTML = `
+<div class="vsl-page" style="background:#0a0a0a;color:#fff;font-family:'Inter',sans-serif;min-height:100vh;">
+    
+    <!-- Hero Section -->
+    <section class="hero" style="text-align:center;padding:60px 20px 40px;max-width:800px;margin:0 auto;">
+        <p class="eyebrow" style="color:#f59e0b;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">Attention Business Owners</p>
+        <h1 class="headline" style="font-size:42px;font-weight:800;line-height:1.15;margin:0 0 20px;color:#fff;">Banks Keep Rejecting You.<br><span style="color:#22c55e;">We Don't.</span></h1>
+        <p class="subheadline" style="font-size:20px;color:#a1a1aa;line-height:1.6;margin:0 0 30px;">Discover how business owners are getting $50K-$150K in 0% interest funding — without begging banks, destroying their credit, or falling into the MCA trap.</p>
+    </section>
+
+    <!-- Video Section -->
+    <section class="video-section" style="max-width:900px;margin:0 auto;padding:0 20px 40px;">
+        <div class="video-container" style="background:#111;border:2px solid #222;border-radius:16px;padding:40px;text-align:center;">
+            <div class="play-button" style="width:80px;height:80px;background:#8b5cf6;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;cursor:pointer;">
+                <span style="font-size:32px;margin-left:4px;">▶</span>
+            </div>
+            <p style="color:#888;font-size:14px;margin:0;">Watch: How It Works (3 min)</p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" style="text-align:center;padding:20px 20px 50px;">
+        <a href="#" class="cta-button" style="display:inline-block;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:18px;font-weight:700;padding:18px 48px;border-radius:8px;text-decoration:none;transition:transform 0.2s;">Get Approved →</a>
+        <p style="color:#888;font-size:14px;margin-top:12px;">See how much 0% capital you qualify for</p>
+    </section>
+
+    <!-- Trust Stats -->
+    <section class="trust-stats" style="display:flex;justify-content:center;gap:60px;padding:40px 20px;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;flex-wrap:wrap;">
+        <div style="text-align:center;">
+            <p style="font-size:32px;font-weight:800;color:#22c55e;margin:0;">$6M+</p>
+            <p style="font-size:14px;color:#888;margin:4px 0 0;">Funded</p>
+        </div>
+        <div style="text-align:center;">
+            <p style="font-size:32px;font-weight:800;color:#22c55e;margin:0;">94%</p>
+            <p style="font-size:14px;color:#888;margin:4px 0 0;">Approval Rate</p>
+        </div>
+        <div style="text-align:center;">
+            <p style="font-size:32px;font-weight:800;color:#22c55e;margin:0;">14</p>
+            <p style="font-size:14px;color:#888;margin:4px 0 0;">Days Avg</p>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section" style="max-width:700px;margin:0 auto;padding:60px 20px;">
+        <h2 style="font-size:28px;font-weight:700;text-align:center;margin:0 0 30px;">Sound Familiar?</h2>
+        <div style="background:#111;border:1px solid #222;border-radius:12px;padding:30px;">
+            <p style="color:#a1a1aa;font-size:16px;line-height:1.8;margin:0 0 20px;">❌ Banks want 3 years of financials, perfect credit, and your firstborn — then still say no.</p>
+            <p style="color:#a1a1aa;font-size:16px;line-height:1.8;margin:0 0 20px;">❌ MCAs promise fast cash but charge 50-100% effective APR and drain your account daily.</p>
+            <p style="color:#a1a1aa;font-size:16px;line-height:1.8;margin:0 0 20px;">❌ You're stuck choosing between growing slow or going into debt that kills your margins.</p>
+            <p style="color:#22c55e;font-size:16px;line-height:1.8;margin:0;font-weight:600;">✓ There's a better way — and smart business owners are using it right now.</p>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section" style="max-width:700px;margin:0 auto;padding:0 20px 60px;">
+        <h2 style="font-size:28px;font-weight:700;text-align:center;margin:0 0 12px;">The 0% Credit Stacking Method</h2>
+        <p style="text-align:center;color:#888;font-size:16px;margin:0 0 40px;">How ordinary business owners access $50K-$150K at 0% interest</p>
+        
+        <div style="display:grid;gap:20px;">
+            <div style="background:#111;border:1px solid #222;border-radius:12px;padding:24px;display:flex;gap:16px;align-items:flex-start;">
+                <span style="background:#22c55e;color:#000;font-weight:700;padding:8px 14px;border-radius:6px;">1</span>
+                <div>
+                    <h3 style="margin:0 0 8px;font-size:18px;">We Analyze Your Profile</h3>
+                    <p style="margin:0;color:#888;font-size:14px;line-height:1.6;">Quick assessment of your credit, business, and goals. No hard pulls, no obligations.</p>
+                </div>
+            </div>
+            <div style="background:#111;border:1px solid #222;border-radius:12px;padding:24px;display:flex;gap:16px;align-items:flex-start;">
+                <span style="background:#22c55e;color:#000;font-weight:700;padding:8px 14px;border-radius:6px;">2</span>
+                <div>
+                    <h3 style="margin:0 0 8px;font-size:18px;">Strategic Card Stacking</h3>
+                    <p style="margin:0;color:#888;font-size:14px;line-height:1.6;">We identify the best 0% APR business cards for your situation and apply strategically.</p>
+                </div>
+            </div>
+            <div style="background:#111;border:1px solid #222;border-radius:12px;padding:24px;display:flex;gap:16px;align-items:flex-start;">
+                <span style="background:#22c55e;color:#000;font-weight:700;padding:8px 14px;border-radius:6px;">3</span>
+                <div>
+                    <h3 style="margin:0 0 8px;font-size:18px;">Access Your Capital</h3>
+                    <p style="margin:0;color:#888;font-size:14px;line-height:1.6;">Get funded in as little as 14 days. Use for inventory, hiring, equipment, marketing — anything.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" style="background:#111;padding:60px 20px;">
+        <h2 style="font-size:28px;font-weight:700;text-align:center;margin:0 0 40px;">Real Results</h2>
+        <div style="max-width:900px;margin:0 auto;display:grid;gap:20px;">
+            <div style="background:#0a0a0a;border:1px solid #222;border-radius:12px;padding:24px;">
+                <p style="color:#a1a1aa;font-size:15px;line-height:1.7;margin:0 0 16px;">"Got $85K in 0% credit to open my second location. Banks wanted 6 months of paperwork. These guys got it done in 3 weeks."</p>
+                <p style="margin:0;font-weight:600;font-size:14px;">— Marcus T., Restaurant Owner</p>
+            </div>
+            <div style="background:#0a0a0a;border:1px solid #222;border-radius:12px;padding:24px;">
+                <p style="color:#a1a1aa;font-size:15px;line-height:1.7;margin:0 0 16px;">"I was drowning in MCA payments. Refinanced into 0% cards and cut my monthly payments by 70%. Wish I found this sooner."</p>
+                <p style="margin:0;font-weight:600;font-size:14px;">— Diana R., E-commerce Seller</p>
+            </div>
+            <div style="background:#0a0a0a;border:1px solid #222;border-radius:12px;padding:24px;">
+                <p style="color:#a1a1aa;font-size:15px;line-height:1.7;margin:0 0 16px;">"$120K at 0% interest. Used it to hire two employees and 3x my revenue in 8 months. The ROI is insane when you're not paying interest."</p>
+                <p style="margin:0;font-weight:600;font-size:14px;">— James L., Marketing Agency</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta" style="text-align:center;padding:80px 20px;max-width:600px;margin:0 auto;">
+        <h2 style="font-size:32px;font-weight:800;margin:0 0 16px;">Ready to Get Funded?</h2>
+        <p style="color:#888;font-size:16px;line-height:1.6;margin:0 0 30px;">See how much 0% capital you qualify for. Takes 2 minutes. No hard credit pull.</p>
+        <a href="#" class="cta-button" style="display:inline-block;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:18px;font-weight:700;padding:18px 48px;border-radius:8px;text-decoration:none;">Get Approved →</a>
+        <p style="color:#666;font-size:13px;margin-top:16px;">Join 500+ business owners who got funded this year</p>
+    </section>
+
+    <!-- Footer -->
+    <footer style="border-top:1px solid #1a1a1a;padding:30px 20px;text-align:center;">
+        <p style="color:#555;font-size:12px;margin:0;">© 2025 Your Company. All rights reserved.</p>
+    </footer>
+</div>
+`;
+
+        const VSL_TEMPLATE_CSS = `
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0a0a; color: #fff; font-family: 'Inter', sans-serif; }
+.cta-button:hover { transform: scale(1.02); opacity: 0.95; }
+.play-button:hover { transform: scale(1.05); }
+@media (max-width: 600px) {
+    .headline { font-size: 28px !important; }
+    .subheadline { font-size: 16px !important; }
+    .trust-stats { gap: 30px !important; }
+}
+`;
+
+        function loadTemplate(templateName) {
+            if (templateName === 'vsl') {
+                // Clear editor
+                editor.DomComponents.clear();
+                
+                // Set components
+                editor.setComponents(VSL_TEMPLATE_HTML);
+                
+                // Store CSS
+                loadedCSS = VSL_TEMPLATE_CSS;
+                
+                // Inject CSS
+                setTimeout(() => {
+                    reinjectCSS();
+                }, 100);
+                
+                closeTemplatesModal();
+                showStatus('✓ VSL Template loaded!');
+            }
+        }
+
+        // Close templates modal with Escape
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { closeTemplatesModal(); }
+        });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AI PROMPT GENERATOR
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        // Toggle AI Panel
+        function toggleAIPanel() {
+            const panel = document.getElementById('aiPanel');
+            panel.classList.toggle('active');
+        }
+        
+        // Get current funnel content for context
+        function getFunnelContent() {
+            const html = editor.getHtml();
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            return tempDiv.innerText.trim();
+        }
+        
+        // The copywriting knowledge base
+        const COPY_FRAMEWORKS = `
+## COPYWRITING FRAMEWORKS YOU MUST USE
+
+### The Rule of One
+- Every great promotion has ONE powerful idea at its core
+- One good idea, one core emotion, one captivating story, one desirable benefit, one inevitable response
+- The idea must be: Big enough to stir interest, Easy to understand, Immediately convincing, Clearly useful
+
+### The 6 Great Leads (from most direct to most indirect):
+1. OFFER LEAD - Lead with the deal itself. Use when audience is "most aware" and ready to buy.
+2. PROMISE LEAD - Lead with the biggest benefit. Example: "Retire a millionaire in 5 years..."
+3. PROBLEM-SOLUTION LEAD - Agitate the pain, then present solution.
+4. SECRET LEAD - Tease hidden knowledge. Example: "The weird trick that..."
+5. PROCLAMATION LEAD - Make a bold, newsworthy statement.
+6. STORY LEAD - Start with an engaging narrative. Most indirect.
+
+### Unique Mechanism
+Three ways to develop your unique mechanism:
+1. Existing Mechanism - Highlight a truly unique element/ingredient
+2. Unspoken Mechanism - Take something everyone does but no one talks about
+3. Transubstantiated Mechanism - Give an old thing a new name (Trump Bonus Checks = dividend income)
+
+### Digestibility Rules
+- No more than 4 lines of text per paragraph block
+- 4x4 (4 lines, 4 blocks) = Curiosity mostly
+- 4x8 = Balanced curiosity + intent
+- 4x12 = Intent mostly, super high checkout
+
+### Enemy Positioning
+Don't say "You're struggling, let me fix you"
+Say "X is holding you back. I have tools to beat it."
+- Find the audience's enemy, Expose it, Show how your product beats it
+
+### Fear & Motivation
+- Fear = lack of capability to solve something
+- Men's core motivation = Status
+- Women's core motivation = Security
+- Remove fear by providing: Insights → Knowledge → Competence → Confidence → Capability
+`;
+
+        const MARKET_CONTEXT = `
+## TARGET MARKET: Business Funding (0% Credit Cards)
+
+### Customer Avatars:
+1. Expansion-Oriented Owner - Growth-driven, 30s-40s, proven business, wants to scale
+2. Crisis/Survival Mode Owner - In cash crunch, desperate, burned by MCAs
+3. Margin Maximizer - Financially savvy, wants to optimize costs
+4. New Venture Entrepreneur - Starting out, limited options
+5. Strategic Upgrader - Needs specific upgrade to grow
+
+### Key Pain Points:
+- Banks too slow, require too much documentation
+- MCAs are predatory traps ("never ending cycle")
+- Personal credit getting destroyed
+- "Banks throw money at you when you don't need it but hide when you need help"
+
+### Desires:
+- Fast access to capital
+- 0% interest or low APR
+- No personal credit damage
+- Simple, transparent terms
+
+### Real Market Quotes to Reference:
+- "I did this 2 years ago - got $180,000 in 0% cards, used it to buy a business that netted $420,000 a year"
+- "If you can't pay it off within the year, then it ain't for you"
+- "Why pay 15% to a lender when you could pay 0% for 12 months?"
+- "MCA sounded great. Quick cash. No collateral. Now I'm getting calls every day from collectors."
+- "Those 'easy' funds became a noose around our business's neck"
+- "Banks will throw money at you when you don't need it but hide when you actually need help"
+`;
+
+        // Generate prompt based on type
+        function generatePrompt(type) {
+            const funnelContent = getFunnelContent();
+            const customInput = document.getElementById('customPromptInput').value.trim();
+            let prompt = '';
+            
+            switch(type) {
+                case 'headlines':
+                    prompt = `You are a world-class direct response copywriter. Generate 5 headline options for a business funding offer (0% interest credit cards for business owners).
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create 5 headlines using DIFFERENT lead types:
+1. One using OFFER LEAD (lead with the deal)
+2. One using PROMISE LEAD (lead with biggest benefit)
+3. One using PROBLEM-SOLUTION LEAD (agitate then solve)
+4. One using SECRET LEAD (tease hidden knowledge)
+5. One using ENEMY POSITIONING (blame banks/MCAs)
+
+Make them punchy, specific, and use the Rule of One. Include a subheadline for each.`;
+                    break;
+                    
+                case 'vsl':
+                    prompt = `You are a world-class direct response copywriter. Write a 3-5 minute VSL script for a business funding offer (0% interest credit cards for business owners).
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Structure:
+1. HOOK (first 30 seconds) - Pattern interrupt, call out avatar, big promise
+2. PROBLEM (agitate) - Paint the pain of banks rejecting them, MCAs destroying businesses
+3. ENEMY - Position banks and MCAs as the villain holding them back
+4. UNIQUE MECHANISM - Introduce the "0% Credit Stacking" method
+5. SOLUTION - How it works (simple 3-step process)
+6. PROOF - Results, testimonials, numbers
+7. OFFER - What they get
+8. CTA - Clear call to action with urgency
+
+Use conversational tone. Follow digestibility rules (short paragraphs). Include stage directions [pause], [lean in], etc.`;
+                    break;
+                    
+                case 'hero':
+                    prompt = `You are a world-class direct response copywriter. Generate a complete hero section for a business funding landing page.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create:
+1. HEADLINE - Using enemy positioning against banks/MCAs
+2. SUBHEADLINE - Expand on the promise, add specificity
+3. CTA BUTTON TEXT - Action-oriented, low friction
+4. 3 TRUST INDICATORS - Short stats/proof points (e.g., "$6M+ Funded")
+5. Optional: Video section headline
+
+Follow the Rule of One - one big idea, one emotion. Make it specific to business owners seeking funding.`;
+                    break;
+                    
+                case 'cta':
+                    prompt = `You are a world-class direct response copywriter. Generate CTA (call-to-action) copy for a business funding offer.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create:
+1. 5 different CTA button text options (varying urgency levels)
+2. Supporting microcopy for beneath each button (1-2 lines)
+3. 3 "safety copy" options (reducing friction, e.g., "No credit check to see options")
+
+Focus on: Urgency, removing risk, making the next step feel easy and safe.`;
+                    break;
+                    
+                case 'proof':
+                    prompt = `You are a world-class direct response copywriter. Generate a social proof section for a business funding landing page.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create:
+1. 3 TESTIMONIALS - Realistic quotes with names, business types, and specific results (e.g., "Got $85K in 0% credit to open my second location")
+2. 3 STATISTICS - Impressive numbers to display (e.g., "$6M+ Funded", "94% Approval Rate")
+3. TRUST ELEMENTS - Suggestions for badges, logos, guarantees to include
+
+Make testimonials sound authentic, not salesy. Include specific details and emotions.`;
+                    break;
+                    
+                case 'bullets':
+                    prompt = `You are a world-class direct response copywriter. Generate bullet points for a business funding offer.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create 10 TRIPLE-STACK BULLETS using this format:
+- [Curiosity hook]...
+- [Expand with benefit]...
+- [Payoff with specificity]
+
+Topics to cover:
+- Speed of funding vs banks
+- 0% interest advantage
+- No collateral needed
+- Protecting personal credit
+- Beating the MCA trap
+- Simple qualification process
+
+Make each bullet create desire and curiosity. Use specific numbers where possible.`;
+                    break;
+                    
+                case 'email':
+                    prompt = `You are a world-class direct response copywriter. Write an email for a business funding offer.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Write a 3-email welcome/nurture sequence:
+
+EMAIL 1: "The Banks Don't Want You to Know This"
+- Hook with enemy positioning
+- Introduce the 0% credit concept
+- Soft CTA to learn more
+
+EMAIL 2: "How [Name] Got $150K at 0% Interest"
+- Story lead with a case study
+- Show the transformation
+- CTA to see if they qualify
+
+EMAIL 3: "Last Chance" (urgency)
+- Scarcity/urgency angle
+- Overcome final objections
+- Strong CTA
+
+Follow digestibility rules. 4 lines max per paragraph. Conversational tone.`;
+                    break;
+                    
+                case 'ad':
+                    prompt = `You are a world-class direct response copywriter. Write ad copy for a business funding offer.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+Create 3 Facebook/Instagram ad variations:
+
+AD 1: Problem-Agitate-Solution (longer form)
+- Hook with pain point
+- Agitate the bank/MCA frustration  
+- Present 0% credit as solution
+- CTA
+
+AD 2: Secret/Curiosity (medium length)
+- "The weird way business owners are getting $50-150K at 0%..."
+- Build curiosity
+- CTA
+
+AD 3: Direct Offer (short)
+- Lead with the offer
+- Quick benefits
+- CTA
+
+Include: Primary text, Headline, Description for each. Follow 4-line digestibility rule.`;
+                    break;
+                    
+                case 'analyze':
+                    prompt = `You are a world-class direct response copywriter. Analyze this funnel copy and provide detailed feedback.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+CURRENT FUNNEL CONTENT:
+"""
+${funnelContent || '[No content loaded - load a page first]'}
+"""
+
+Analyze:
+1. HEADLINE - Is it using a clear lead type? Does it follow Rule of One?
+2. UNIQUE MECHANISM - Is there one? Is it clear?
+3. ENEMY POSITIONING - Is there a villain? Is blame shifted from the reader?
+4. DIGESTIBILITY - Are paragraphs 4 lines or less?
+5. CTA - Is it clear, urgent, low-friction?
+6. PROOF - Is there enough social proof?
+7. EMOTIONAL TRIGGERS - Which emotions are being targeted?
+
+Provide specific, actionable feedback for each element.`;
+                    break;
+                    
+                case 'improve':
+                    prompt = `You are a world-class direct response copywriter. Suggest improvements for this funnel.
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+CURRENT FUNNEL CONTENT:
+"""
+${funnelContent || '[No content loaded - load a page first]'}
+"""
+
+Provide:
+1. TOP 3 PRIORITY FIXES - The changes that will have the biggest impact
+2. HEADLINE REWRITE - Give me a better headline using enemy positioning
+3. CTA IMPROVEMENT - Make the call-to-action stronger
+4. ONE NEW SECTION SUGGESTION - What's missing that should be added?
+
+Be specific. Give me actual copy I can use, not just advice.`;
+                    break;
+                    
+                case 'custom':
+                    if (!customInput) {
+                        showStatus('⚠️ Enter a custom request first');
+                        return;
+                    }
+                    prompt = `You are a world-class direct response copywriter helping with a business funding offer (0% interest credit cards for business owners).
+
+${COPY_FRAMEWORKS}
+${MARKET_CONTEXT}
+
+${funnelContent ? `CURRENT FUNNEL CONTENT:
+"""
+${funnelContent}
+"""
+
+` : ''}USER REQUEST:
+${customInput}
+
+Provide detailed, actionable copy that follows direct response principles. Be specific and give actual copy, not just advice.`;
+                    break;
+            }
+            
+            // Show the output area
+            document.querySelector('.prompt-gen-body').style.display = 'none';
+            document.getElementById('promptOutputArea').style.display = 'flex';
+            document.getElementById('promptOutput').value = prompt;
+        }
+        
+        // Hide prompt output and go back
+        function hidePromptOutput() {
+            document.querySelector('.prompt-gen-body').style.display = 'block';
+            document.getElementById('promptOutputArea').style.display = 'none';
+        }
+        
+        // Copy prompt to clipboard
+        function copyPromptToClipboard() {
+            const promptText = document.getElementById('promptOutput').value;
+            navigator.clipboard.writeText(promptText).then(() => {
+                showStatus('✓ Prompt copied! Paste into Claude');
+            }).catch(() => {
+                // Fallback
+                document.getElementById('promptOutput').select();
+                document.execCommand('copy');
+                showStatus('✓ Prompt copied! Paste into Claude');
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FUNNEL GENERATOR
+        // ═══════════════════════════════════════════════════════════════════════
+        
+        let fgSelectedColor = 'emerald';
+        let fgSelectedPage = 'landing';
+        let fgGeneratedCode = { landing: '', thankyou: '' };
+        let fgCurrentTab = 'landing';
+        
+        const FG_COLORS = {
+            emerald: { accent: '#10B981', hover: '#0d9668', rgb: '16, 185, 129', inputBg: '#064e3b', placeholder: '#6ee7b7' },
+            blue: { accent: '#3B82F6', hover: '#2563eb', rgb: '59, 130, 246', inputBg: '#1e3a5f', placeholder: '#93c5fd' },
+            violet: { accent: '#8B5CF6', hover: '#7c3aed', rgb: '139, 92, 246', inputBg: '#4c1d95', placeholder: '#c4b5fd' },
+            amber: { accent: '#F59E0B', hover: '#d97706', rgb: '245, 158, 11', inputBg: '#78350f', placeholder: '#fcd34d' },
+            coral: { accent: '#F97316', hover: '#ea580c', rgb: '249, 115, 22', inputBg: '#7c2d12', placeholder: '#fdba74' },
+            cyan: { accent: '#06B6D4', hover: '#0891b2', rgb: '6, 182, 212', inputBg: '#164e63', placeholder: '#67e8f9' }
+        };
+        
+        function openFunnelGenerator() {
+            document.getElementById('funnelGenModal').classList.add('active');
+            loadFgApiKey();
+        }
+        
+        function closeFunnelGenerator() {
+            document.getElementById('funnelGenModal').classList.remove('active');
+        }
+        
+        function loadFgApiKey() {
+            const saved = localStorage.getItem('fg_api_key');
+            if (saved) {
+                document.getElementById('fgApiKey').value = saved;
+                document.getElementById('fgApiStatus').textContent = '🟢';
+            }
+        }
+        
+        function saveFgApiKey() {
+            const key = document.getElementById('fgApiKey').value;
+            if (key && key.startsWith('sk-')) {
+                localStorage.setItem('fg_api_key', key);
+                document.getElementById('fgApiStatus').textContent = '🟢';
+            } else {
+                document.getElementById('fgApiStatus').textContent = '🔴';
+            }
+        }
+        
+        function selectFgColor(el) {
+            document.querySelectorAll('.fg-color-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            fgSelectedColor = el.dataset.color;
+        }
+        
+        function selectFgPage(el) {
+            document.querySelectorAll('.fg-page-btn').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            fgSelectedPage = el.dataset.page;
+        }
+        
+        async function generateFunnel() {
+            const apiKey = document.getElementById('fgApiKey').value;
+            const mechanism = document.getElementById('fgMechanism').value;
+            
+            if (!apiKey || !apiKey.startsWith('sk-')) {
+                showStatus('⚠️ Enter a valid API key');
+                return;
+            }
+            if (!mechanism.trim()) {
+                showStatus('⚠️ Enter your Unique Mechanism name');
+                return;
+            }
+            
+            // Show progress
+            document.getElementById('fgForm').style.display = 'none';
+            document.getElementById('fgProgress').classList.add('active');
+            document.getElementById('fgOutput').classList.remove('active');
+            
+            const color = FG_COLORS[fgSelectedColor];
+            const prompt = buildFunnelPrompt(mechanism, color, fgSelectedPage);
+            
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 16000,
+                        messages: [{ role: 'user', content: prompt }]
+                    })
+                });
+                
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                const content = data.content[0].text;
+                
+                // Parse the response
+                parseFunnelResponse(content);
+                
+                // Show output
+                document.getElementById('fgProgress').classList.remove('active');
+                document.getElementById('fgOutput').classList.add('active');
+                renderFgTabs();
+                
+                showStatus('✓ Funnel generated!');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('fgProgress').classList.remove('active');
+                document.getElementById('fgForm').style.display = 'block';
+                showStatus('❌ Generation failed: ' + error.message);
+            }
+        }
+        
+        function parseFunnelResponse(content) {
+            // Extract landing page
+            const landingMatch = content.match(/\[LANDING_START\]([\s\S]*?)\[LANDING_END\]/);
+            if (landingMatch) {
+                fgGeneratedCode.landing = landingMatch[1].trim();
+                fgCurrentTab = 'landing'; // Switch to the generated page
+            } else if (content.includes('<!DOCTYPE html') && fgSelectedPage === 'landing') {
+                // If no markers but landing was requested, assume the whole thing is the landing page
+                const htmlMatch = content.match(/(<!DOCTYPE html[\s\S]*<\/html>)/i);
+                if (htmlMatch) {
+                    fgGeneratedCode.landing = htmlMatch[1];
+                    fgCurrentTab = 'landing';
+                }
+            }
+            
+            // Extract thank you page
+            const thankyouMatch = content.match(/\[THANKYOU_START\]([\s\S]*?)\[THANKYOU_END\]/);
+            if (thankyouMatch) {
+                fgGeneratedCode.thankyou = thankyouMatch[1].trim();
+                fgCurrentTab = 'thankyou'; // Switch to the generated page
+            } else if (content.includes('<!DOCTYPE html') && fgSelectedPage === 'thankyou' && !landingMatch) {
+                // If no markers but thank you was requested, assume the whole thing is the thank you page
+                const htmlMatch = content.match(/(<!DOCTYPE html[\s\S]*<\/html>)/i);
+                if (htmlMatch) {
+                    fgGeneratedCode.thankyou = htmlMatch[1];
+                    fgCurrentTab = 'thankyou';
+                }
+            }
+            
+            // If both were generated, default to landing
+            if (landingMatch && thankyouMatch) {
+                fgCurrentTab = 'landing';
+            }
+        }
+        
+        function renderFgTabs() {
+            const tabsContainer = document.getElementById('fgOutputTabs');
+            const hasLanding = fgGeneratedCode.landing && fgGeneratedCode.landing.length > 0;
+            const hasThankyou = fgGeneratedCode.thankyou && fgGeneratedCode.thankyou.length > 0;
+            
+            let tabs = '';
+            
+            // Landing Page Tab
+            tabs += `<button class="fg-output-tab ${fgCurrentTab === 'landing' ? 'active' : ''} ${!hasLanding ? 'empty' : ''}" onclick="switchFgTab('landing')">
+                🎬 Landing Page
+                <span class="tab-status ${hasLanding ? 'ready' : 'empty'}"></span>
+            </button>`;
+            
+            // Thank You Page Tab
+            tabs += `<button class="fg-output-tab ${fgCurrentTab === 'thankyou' ? 'active' : ''} ${!hasThankyou ? 'empty' : ''}" onclick="switchFgTab('thankyou')">
+                ✅ Thank You
+                <span class="tab-status ${hasThankyou ? 'ready' : 'empty'}"></span>
+            </button>`;
+            
+            tabsContainer.innerHTML = tabs;
+            
+            // Update preview
+            updatePreview();
+        }
+        
+        function switchFgTab(tab) {
+            fgCurrentTab = tab;
+            renderFgTabs();
+        }
+        
+        function updatePreview() {
+            const iframe = document.getElementById('fgPreviewIframe');
+            const emptyState = document.getElementById('fgPreviewEmpty');
+            const previewLabel = document.getElementById('fgPreviewLabel');
+            const code = fgGeneratedCode[fgCurrentTab];
+            
+            if (code && code.length > 0) {
+                // Show iframe with content
+                iframe.style.display = 'block';
+                emptyState.style.display = 'none';
+                
+                // Write content to iframe
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.open();
+                doc.write(code);
+                doc.close();
+                
+                previewLabel.textContent = fgCurrentTab === 'landing' ? 'Landing Page Preview' : 'Thank You Page Preview';
+            } else {
+                // Show empty state
+                iframe.style.display = 'none';
+                emptyState.style.display = 'flex';
+                previewLabel.textContent = fgCurrentTab === 'landing' ? 'Landing Page (Not Generated)' : 'Thank You Page (Not Generated)';
+            }
+        }
+        
+        function openPreviewNewTab() {
+            const code = fgGeneratedCode[fgCurrentTab];
+            if (!code) {
+                showStatus('⚠️ No page to preview');
+                return;
+            }
+            
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(code);
+            newWindow.document.close();
+        }
+        
+        function generateMissingPage() {
+            // Set the page type to the current (missing) tab
+            fgSelectedPage = fgCurrentTab;
+            
+            // Update the page selector UI
+            document.querySelectorAll('.fg-page-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.dataset.page === fgCurrentTab) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // Show the form again but keep existing generated code
+            document.getElementById('fgOutput').classList.remove('active');
+            document.getElementById('fgForm').style.display = 'block';
+            
+            showStatus('ℹ️ Generate the ' + (fgCurrentTab === 'landing' ? 'Landing Page' : 'Thank You Page'));
+        }
+        
+        function loadGeneratedToEditor() {
+            const code = fgGeneratedCode[fgCurrentTab];
+            if (!code) {
+                showStatus('⚠️ No code to load');
+                return;
+            }
+            
+            // Extract CSS and HTML
+            const cssMatch = code.match(/<style[^>]*>([\s\S]*?)<\/style>/gi);
+            const bodyMatch = code.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+            
+            let cssCode = '';
+            if (cssMatch) {
+                cssMatch.forEach(style => {
+                    cssCode += style.replace(/<\/?style[^>]*>/gi, '') + '\n';
+                });
+            }
+            
+            let htmlCode = '';
+            if (bodyMatch) {
+                htmlCode = bodyMatch[1];
+                // Remove script tags
+                htmlCode = htmlCode.replace(/<script[\s\S]*?<\/script>/gi, '');
+            }
+            
+            // Load into editor
+            loadedCSS = cssCode;
+            editor.setComponents(htmlCode);
+            editor.setStyle(cssCode);
+            
+            closeFunnelGenerator();
+            showStatus('✓ Loaded into editor!');
+        }
+        
+        function copyGeneratedCode() {
+            const code = fgGeneratedCode[fgCurrentTab];
+            if (!code) {
+                showStatus('⚠️ No code to copy');
+                return;
+            }
+            
+            navigator.clipboard.writeText(code).then(() => {
+                showStatus('✓ Code copied!');
+            });
+        }
+        
+        function resetFunnelGenerator(keepExisting = false) {
+            if (!keepExisting) {
+                fgGeneratedCode = { landing: '', thankyou: '' };
+            }
+            document.getElementById('fgForm').style.display = 'block';
+            document.getElementById('fgProgress').classList.remove('active');
+            document.getElementById('fgOutput').classList.remove('active');
+        }
+        
+        function buildFunnelPrompt(mechanism, color, pageType) {
+            const basePrompt = `Act as an ELITE direct response copywriter + frontend developer who builds INSANELY detailed, high-converting funding landing pages.
+
+═══════════════════════════════════════════════════════════════════════════════════════
+UNIQUE MECHANISM: "${mechanism}"
+ACCENT COLOR: ${color.accent} (hover: ${color.hover}, glow: rgba(${color.rgb}, 0.3))
+SECONDARY COLOR: #F59E0B (gold/amber for highlights)
+═══════════════════════════════════════════════════════════════════════════════════════
+
+DESIGN SYSTEM (USE EXACTLY):
+--bg-primary: #0a0a0a
+--bg-card: #111111
+--bg-card-hover: #161616
+--border-color: #222222
+--text-primary: #ffffff
+--text-secondary: #a1a1aa
+--text-muted: #71717a
+--accent: ${color.accent}
+--accent-hover: ${color.hover}
+--accent-glow: rgba(${color.rgb}, 0.4)
+--secondary: #F59E0B
+--red: #ef4444
+--green: #22c55e
+
+CRITICAL CSS PATTERNS:
+- Font: 'Inter' from Google Fonts (weights: 400,500,600,700,800,900)
+- Container max-width: 1100px with padding: 0 24px
+- Card styling: background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px;
+- Section padding: 100px 0
+- Button glow: box-shadow: 0 0 50px var(--accent-glow), 0 4px 20px rgba(0,0,0,0.3)
+- Gradient text: background: linear-gradient(135deg, var(--accent), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+- Section labels: font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); with ::before pseudo-element showing 20px horizontal line
+
+COPYWRITING RULES:
+- Enemy = Banks, MCAs, credit bureaus, traditional lenders
+- "It's not your fault" - blame the system, not the prospect
+- Specific numbers: $50K-$250K, 14-30 days, 0% APR, 12-21 months
+- Max 3-4 lines per paragraph
+- 70% towards (gains) / 30% away (pain)
+`;
+
+            let pageInstructions = '';
+            
+            if (pageType === 'landing' || pageType === 'both') {
+                pageInstructions += `
+[LANDING_START]
+Generate a COMPLETE, PRODUCTION-READY landing page with these EXACT sections:
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 1: HERO (min-height: 100vh, position: relative)
+═══════════════════════════════════════════════════════════════════════════════════════
+A) MINI BADGES ROW (3 inline badges at top):
+   - Badge 1: Green pulsing dot + "130+ Funded"
+   - Badge 2: "🔒 Bank-Level Security"
+   - Badge 3: "⚡ 14-Day Results"
+   Style: display: flex; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 100px; font-size: 11px;
+
+B) EYEBROW BANNER:
+   "<strong>ATTENTION:</strong> Business owners earning $7K–$50K/month who keep getting denied"
+   Style: background: linear-gradient(135deg, rgba(accent, 0.15), rgba(accent, 0.05)); border: 1px solid rgba(accent, 0.3); border-radius: 8px; padding: 10px 18px;
+
+C) STACKED HEADLINE (centered, each line separate):
+   Row 1: "DEPLOY THE" (small, muted, uppercase, letter-spacing: 0.15em)
+   Row 2: "${mechanism}" (HUGE gradient text, 58px, font-weight: 900)
+   Row 3: "to Unlock" + AMOUNT BOX "$50K–$250K+" (amount in gold border box)
+   Row 4: "in 0% Capital" (large white text)
+
+D) TIMEFRAME PILL:
+   "⏱ In 30 Days or Less"
+   Style: background: var(--bg-card); border: 1px solid var(--border-color); padding: 14px 28px; border-radius: 100px;
+
+E) SUBHEADLINE:
+   "Without getting denied again, sacrificing collateral, or destroying your credit with predatory MCAs"
+
+F) VSL CONTAINER (max-width: 800px):
+   - Border: 1px solid var(--border-color) that changes to accent on hover
+   - Aspect ratio: 16/9
+   - Badge in top-left: red pulsing dot + "Watch Now"
+   - Center: Large play button (88px circle, accent gradient background, white triangle)
+   - Below play button: "See How It Works (3 min)"
+   - Hover effect: border-color: var(--accent); box-shadow: 0 0 60px var(--accent-glow); transform: scale(1.01);
+
+G) CTA BUTTON:
+   "See If You Qualify →"
+   Style: padding: 22px 48px; border-radius: 14px; font-size: 18px; font-weight: 700;
+   Add shimmer animation: @keyframes shine that moves left to right
+   Subtext below: "Takes 2 minutes • No credit check required"
+
+H) SOCIAL PROOF ROW (border-top, padding-top: 32px):
+   Three items: "$6M+" Funded | "93%" Approval Rate | "14" Days Avg
+   Numbers in accent color, labels in muted
+
+I) GRID BACKGROUND:
+   Subtle red grid lines with radial mask fade
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 2: RESULTS SHOWCASE
+═══════════════════════════════════════════════════════════════════════════════════════
+Section label: "Real Results"
+Title: "What Our Clients Walk Away With"
+
+3 RESULT CARDS in a row (grid-template-columns: repeat(3, 1fr)):
+Card 1: "$75,000" - "Total Funding" - Quote about being denied 3 times before
+Card 2: "$110,000" - "Business Credit" - Quote about secondary bureaus
+Card 3: "$150,000" - "Total Funding" - Quote about SBA runaround
+
+Each card:
+- Amount: 40px font, gradient accent-to-secondary
+- Label: 12px uppercase, muted
+- Quote: 14px italic, secondary color
+- Hover: translateY(-6px), accent border glow, top gradient bar appears
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 3: MECHANISM INTRODUCTION
+═══════════════════════════════════════════════════════════════════════════════════════
+Small intro badge: "🎯 Introducing"
+Big title: "THE <span class='accent'>${mechanism.toUpperCase()}</span>"
+Description paragraph explaining what the mechanism does (2-3 sentences max)
+
+3 PHASE CARDS (with connecting gradient line between them):
+Phase 1: "Credit Profile Optimization" - Audit all bureaus, remove red flags
+Phase 2: "Strategic Application Sequencing" - Apply in right order to avoid inquiry damage
+Phase 3: "Capital Deployment" - Deploy funding to accounts, use for business
+
+Each phase card:
+- Number in accent-colored rounded square (44px)
+- Title: 17px bold
+- Description: 14px secondary
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 4: "HIDDEN SIGNALS" SECTION (TWO COLUMNS)
+═══════════════════════════════════════════════════════════════════════════════════════
+LEFT SIDE - Copy:
+Section label: "The Hidden Problem"
+Title: "The \\"Hidden Signals\\" That Get You Approved"
+Paragraph: "Banks don't just look at your credit score. They scan for specific 'approval triggers'—inquiry patterns, utilization ratios, account velocity. Most business owners have red flags they don't even know about."
+Add a mockup description of what they're missing.
+
+RIGHT SIDE - "AVAILABLE CREDIT" MOCKUP:
+Create a realistic credit dashboard mockup showing:
+- Header: "Available Credit" with X close button
+- Large amount: "$60,400.00" in gradient text
+- Line items table:
+  * Credit Limit: $85,000.00
+  * Total Balance: $9,720.00
+  * Available Credit: $60,400.00
+  * Pending Charges: $14,500.00
+- Utilization row with progress bar: 8.4%
+- Bottom highlight box: "Open Lines: $175,000"
+
+Style the mockup with:
+- Dark card background (#111)
+- Border: 1px solid var(--border-color)
+- Border-radius: 16px
+- Main amount in large gradient text (32px+)
+- Line items in rows with label left (muted), value right (white)
+- Progress bar for utilization (accent colored fill, 8.4% width)
+- Final "Open Lines" amount in highlighted box with accent border
+
+Below mockup add caption: "This client went from 3 hard approvals to $175K in available 0% capital after strategic sequencing."
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 5: "STRATEGIC SEQUENCING" APPROVAL TABLE
+═══════════════════════════════════════════════════════════════════════════════════════
+Section label: "Proof"
+Title: "This Is What \\"Strategic Sequencing\\" Produces"
+Subtitle: "Below is an actual client stack. Notice how we stacked multiple 0% APR cards across different issuers—and strategically timed to avoid inquiry stacking penalties."
+
+HIGHLIGHT BOX (accent background with border):
+"This person received $155,500 in available capital for $0 at 0% APR for 18-21 months. No collateral. No revenue requirements. Stacks in under 3 months."
+
+APPROVAL TABLE - Create a styled data table:
+Headers: Lender/Card | Status | Credit Limit | APR | 0% Period
+Row 1: Credit Card | Approved (green badge) | $35,000.00 | 0% | 21 months
+Row 2: Credit Card | Approved | $30,000.00 | 0% | 21 months
+Row 3: Credit Card | Approved | $25,000.00 | 0% | 6 months
+Row 4: Credit Card | Approved | $20,000.00 | 0% | 6 months
+Row 5: Credit Card | Approved | $18,000.00 | 0% | 6 months
+Row 6: Line of Credit | Approved | $15,000.00 | 7.5% | N/A
+Row 7: Line of Credit | Pending (muted badge) | — | — | —
+Row 8: Credit Card | Pending | — | — | —
+Footer: Total Funded | | $155,500.00 (bold, accent)
+
+Style:
+- Table background: var(--bg-card)
+- Border: 1px solid var(--border-color), border-radius: 12px
+- Header row: slightly darker background
+- "Approved" status: green background pill, green text
+- "Pending" status: muted background pill
+- Total row: bold with accent colored amount
+- Alternating row backgrounds optional
+
+Below table: "Want to see what your approval table could look like?" + CTA button
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 6: STATS SECTION (full-width dark band)
+═══════════════════════════════════════════════════════════════════════════════════════
+Background: var(--bg-card) with top/bottom borders
+
+4 STAT CARDS in a row (grid-template-columns: repeat(4, 1fr)):
+Stat 1: "$6M+" / "Total Funded" (this one gets highlight border)
+Stat 2: "130+" / "Clients Served"
+Stat 3: "93%" / "Approval Rate"
+Stat 4: "14" / "Days Average"
+
+Each stat card:
+- Background: var(--bg-primary)
+- Border: 1px solid var(--border-color)
+- Border-radius: 20px
+- Padding: 36px 24px
+- Number: 44px gradient text
+- Label: 13px uppercase muted
+
+First card highlight: background: linear-gradient(135deg, rgba(accent, 0.1), rgba(secondary, 0.05)); border-color: var(--accent);
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 7: COMPARISON SECTION
+═══════════════════════════════════════════════════════════════════════════════════════
+Section label: "The Difference"
+Title: "DIY vs. ${mechanism}"
+
+TWO-COLUMN COMPARISON GRID (side by side, max-width: 900px):
+
+LEFT COLUMN - "✕ Doing It Yourself":
+Header: muted color with X icon
+Background: rgba(239, 68, 68, 0.02)
+Items:
+✕ Hidden red flags you don't know about
+✕ Secondary bureaus tanking approvals
+✕ Generic credit repair that doesn't work
+✕ Hard inquiries stacking up for nothing
+✕ Months of waiting, maybe $20K-$30K
+
+RIGHT COLUMN - "✓ ${mechanism}":
+Header: accent color with checkmark
+Background: rgba(accent, 0.02)
+Items:
+✓ Every red flag identified across ALL bureaus
+✓ Secondary bureaus legally cleared
+✓ Surgical attacks using data privacy laws
+✓ Direct lender network = higher approval
+✓ $50K-$150K+ in 14 days
+
+Style:
+- Grid container with border-radius: 20px, overflow: hidden
+- Each column has padding: 32px
+- X icons in muted color
+- Checkmarks in green (#22c55e)
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 8: "YOU MIGHT BE THINKING" OBJECTION CARDS
+═══════════════════════════════════════════════════════════════════════════════════════
+Section label: "Common Questions"
+Title: "You Might Be Thinking..."
+
+3 FAQ/OBJECTION CARDS in a row:
+
+Card 1:
+Icon: 💳 (28px)
+Question: "My credit is destroyed"
+Answer: "We've funded owners with 520 scores. The Bureau Attack clears red flags you don't even know about."
+
+Card 2:
+Icon: 🔄 (28px)
+Question: "I've tried credit repair"
+Answer: "Credit repair only disputes the Big Three. We attack the source—secondary bureaus—using laws they've never heard of."
+
+Card 3:
+Icon: 🎯 (28px)
+Question: "Sounds complicated"
+Answer: "It's 100% done-for-you. You check email and accept approvals. We handle everything else."
+
+Each card style:
+- Background: var(--bg-card)
+- Border: 1px solid var(--border-color)
+- Border-radius: 20px
+- Padding: 28px
+- Hover: border-color: var(--accent), translateY(-4px)
+- Question: 17px bold white
+- Answer: 14px secondary, line-height: 1.7
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 9: GUARANTEE
+═══════════════════════════════════════════════════════════════════════════════════════
+Centered card (max-width: 600px):
+
+- Shield icon container: 72px circle with accent gradient background, "🛡️" emoji centered
+- Title: "100% Money-Back Guarantee" (26px bold)
+- Text: "Your $2,000 deposit is fully refundable if we can't get you approved. No approval, no risk. Simple as that." (16px secondary)
+- 3 checkpoints in a row: 
+  ✓ Refundable deposit
+  ✓ No approval = full refund  
+  ✓ Zero risk
+
+Card style:
+- Background: linear-gradient(135deg, rgba(accent, 0.08), rgba(secondary, 0.04))
+- Border: 2px solid var(--accent)
+- Border-radius: 24px
+- Padding: 44px
+- Add subtle rotating conic gradient animation in background (opacity: 0.08)
+
+═══════════════════════════════════════════════════════════════════════════════════════
+SECTION 10: FINAL CTA
+═══════════════════════════════════════════════════════════════════════════════════════
+Position: relative with overflow: hidden
+Add large radial gradient glow behind (accent color, 40% opacity, centered at bottom)
+
+Section label: "Get Started"
+Title: "Ready to Get Funded?" (48px bold)
+Subtitle: "Take 2 minutes to see if you qualify for $50K–$150K+ in funding." (17px secondary)
+CTA Button: "Check Your Eligibility →" (same style as hero button)
+Urgency badge: "🔥 Limited Spots This Month"
+Badge style: background: rgba(245, 158, 11, 0.12); color: var(--secondary); border: 1px solid rgba(245, 158, 11, 0.25); padding: 10px 18px; border-radius: 100px;
+
+═══════════════════════════════════════════════════════════════════════════════════════
+FOOTER
+═══════════════════════════════════════════════════════════════════════════════════════
+Simple centered: "© 2025 ${mechanism}. All rights reserved."
+Style: padding: 40px 0; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted);
+
+═══════════════════════════════════════════════════════════════════════════════════════
+MODAL - CRITICAL: Must work with iframe embeds
+═══════════════════════════════════════════════════════════════════════════════════════
+IMPORTANT: Use visibility/opacity NOT display:none (iframes don't load inside display:none)
+
+HTML Structure:
+<div id="modal" class="modal">
+  <div class="modal-overlay" onclick="closeModal()"></div>
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="survey-container"><!-- Survey iframe here --></div>
+  </div>
+</div>
+
+MODAL CSS (MUST USE EXACTLY):
+.modal { 
+  position: fixed; 
+  inset: 0; 
+  z-index: 9999; 
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+.modal.active { 
+  visibility: visible;
+  opacity: 1;
+}
+.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); }
+.modal-content { position: relative; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 40px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; }
+.modal-close { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 50%; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+#survey-container iframe { width: 100%; min-height: 500px; border: none; }
+
+MODAL JS:
+function openModal() { document.getElementById('modal').classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeModal() { document.getElementById('modal').classList.remove('active'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+═══════════════════════════════════════════════════════════════════════════════════════
+RESPONSIVE BREAKPOINTS
+═══════════════════════════════════════════════════════════════════════════════════════
+@media (max-width: 900px):
+- Result cards, FAQ cards, phase cards: single column
+- Stats grid: 2 columns
+- Two-column sections: stack vertically
+- Comparison: single column
+
+@media (max-width: 600px):
+- Hero padding reduced
+- CTA button: full width
+- Stats: 2x2 grid
+- Guarantee points: stack vertically
+- All text sizes scale down appropriately
+
+Output complete valid HTML starting with <!DOCTYPE html>
+[LANDING_END]
+`;
+            }
+            
+            if (pageType === 'thankyou' || pageType === 'both') {
+                pageInstructions += `
+[THANKYOU_START]
+Generate a COMPLETE thank you/confirmation page:
+
+EXACT COPY TO USE:
+- Headline: "You're Confirmed"
+- Subheadline: "Check your email for the calendar invite and call details."
+- Section Title: "Before Your Call"
+- Step 1: Check your email for the calendar invite
+- Step 2: Be ready to discuss your current revenue and funding goals
+- Step 3: Check your texts for messages from our team
+
+DESIGN:
+- Background: #000000 (pure black)
+- Centered content, max-width 500px
+- Large checkmark icon at top (80px accent gradient circle with white checkmark)
+- Steps card: #111111 background, NO BORDER, border-radius: 20px, padding: 40px
+- Step numbers in accent-colored circles (36px)
+- Each step: number circle on left, text on right
+- Subtle accent glow behind main card
+
+Output complete valid HTML starting with <!DOCTYPE html>
+[THANKYOU_END]
+`;
+            }
+
+            return basePrompt + pageInstructions + `
+
+═══════════════════════════════════════════════════════════════════════════════════════
+CRITICAL OUTPUT REQUIREMENTS
+═══════════════════════════════════════════════════════════════════════════════════════
+- Output COMPLETE, VALID HTML starting with <!DOCTYPE html>
+- Include ALL CSS in <style> tags within <head> using CSS custom properties
+- Include ALL JavaScript in <script> tags before </body>
+- Make FULLY RESPONSIVE with breakpoints at 900px and 600px
+- Include hover states and transitions (0.3s ease) on all interactive elements
+- Use the EXACT accent color: ${color.accent}
+- Wrap landing page in [LANDING_START] and [LANDING_END]
+- Wrap thank you page in [THANKYOU_START] and [THANKYOU_END]
+- This must be PRODUCTION-READY code
+- NO placeholder comments - every section has real, compelling copy
+- Include smooth scroll: html { scroll-behavior: smooth; }
+- Add fadeIn animations: @keyframes fadeInUp, @keyframes fadeInDown
+- Every interactive element needs :hover state`;
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUTO-IMPORT FROM COMMAND CENTER
+        // ═══════════════════════════════════════════════════════════════════════
+        function checkForImportedPages() {
+            const landing = localStorage.getItem('fg_imported_landing');
+            const thankyou = localStorage.getItem('fg_imported_thankyou');
+            const source = localStorage.getItem('fg_imported_source');
+            const timestamp = localStorage.getItem('fg_imported_timestamp');
+            
+            // Check if there's imported content
+            if ((landing && landing.length > 100) || (thankyou && thankyou.length > 100)) {
+                // Load into fgGeneratedCode
+                if (landing && landing.length > 100) {
+                    fgGeneratedCode.landing = landing;
+                }
+                if (thankyou && thankyou.length > 100) {
+                    fgGeneratedCode.thankyou = thankyou;
+                }
+                
+                // Set current tab to landing if available, otherwise thankyou
+                fgCurrentTab = fgGeneratedCode.landing ? 'landing' : 'thankyou';
+                
+                // Open the funnel generator modal and show results
+                openFunnelGenerator();
+                
+                // Hide form, show output
+                document.getElementById('fgForm').style.display = 'none';
+                document.getElementById('fgOutput').classList.add('active');
+                
+                // Render tabs and preview
+                renderFgTabs();
+                
+                // Show notification
+                if (source) {
+                    showStatus(`✓ Loaded pages from "${source}"`);
+                } else {
+                    showStatus('✓ Imported pages loaded');
+                }
+                
+                // Clear the import data so it doesn't reload on refresh
+                localStorage.removeItem('fg_imported_landing');
+                localStorage.removeItem('fg_imported_thankyou');
+                localStorage.removeItem('fg_imported_source');
+                localStorage.removeItem('fg_imported_timestamp');
+            }
+        }
+        
+        // Check for imports on page load
+        window.addEventListener('load', function() {
+            setTimeout(checkForImportedPages, 500);
+        });
+    </script>
+</body>
+</html>

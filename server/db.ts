@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, generatedAssets, clientTasks, InsertClient, InsertGeneratedAsset, InsertClientTask } from "../drizzle/schema";
+import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import * as bcrypt from 'bcryptjs';
 
@@ -319,4 +319,52 @@ export async function getClientProgress(clientId: number) {
     percentage,
     tasks,
   };
+}
+
+// ============================================================================
+// FUNNEL HELPERS
+// ============================================================================
+
+export async function createFunnel(funnel: InsertFunnel): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(funnels).values(funnel);
+  return result[0].insertId;
+}
+
+export async function getFunnelById(id: number): Promise<Funnel | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(funnels).where(eq(funnels.id, id));
+  return result[0];
+}
+
+export async function getAllFunnels(): Promise<Funnel[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(funnels).orderBy(desc(funnels.updatedAt));
+}
+
+export async function getFunnelsByClientId(clientId: number): Promise<Funnel[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(funnels).where(eq(funnels.clientId, clientId)).orderBy(desc(funnels.updatedAt));
+}
+
+export async function updateFunnel(id: number, updates: Partial<InsertFunnel>): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(funnels).set(updates).where(eq(funnels.id, id));
+}
+
+export async function deleteFunnel(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(funnels).where(eq(funnels.id, id));
 }

@@ -113,6 +113,14 @@ export default function AdminDashboard() {
                 <Users className="h-4 w-4 mr-2" />
                 Manage Clients
               </Button>
+              <Button
+                onClick={() => setLocation("/admin/funnel-builder")}
+                variant="outline"
+                className="bg-violet-600/20 border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Funnel Builder
+              </Button>
               <div className="text-right">
                 <p className="text-sm font-medium text-white">{user.name}</p>
                 <p className="text-xs text-slate-400">{user.email}</p>

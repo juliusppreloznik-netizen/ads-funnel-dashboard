@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funnel Builder</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #original-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="original-frame" src="/funnel-builder-reference.html"></iframe>
+    
+    <script>
+        // Wait for iframe to load
+        const iframe = document.getElementById('original-frame');
+        
+        iframe.onload = function() {
+            const iframeWindow = iframe.contentWindow;
+            const iframeDocument = iframe.contentDocument;
+            
+            // Inject backend integration script
+            const script = iframeDocument.createElement('script');
+            script.textContent = `
+                // Override the generateFunnel function to use backend
+                (function() {
+                    const originalGenerateFunnel = window.generateFunnel;
+                    
+                    window.generateFunnel = async function() {
+                        const mechanism = document.getElementById('fgMechanism').value;
+                        
+                        if (!mechanism.trim()) {
+                            showStatus('⚠️ Enter your Unique Mechanism name');
+                            return;
+                        }
+                        
+                        // Show progress
+                        document.getElementById('fgForm').style.display = 'none';
+                        document.getElementById('fgProgress').classList.add('active');
+                        document.getElementById('fgOutput').classList.remove('active');
+                        
+                        // Send generation request to parent window
+                        window.top.postMessage({
+                            type: 'GENERATE_FUNNEL',
+                            payload: {
+                                mechanism,
+                                colorScheme: window.fgSelectedColor,
+                                pageType: window.fgSelectedPage
+                            }
+                        }, '*');
+                    };
+                    
+                    // Listen for generation responses
+                    window.addEventListener('message', function(event) {
+                        if (event.data.type === 'GENERATION_COMPLETE') {
+                            const { landingHtml, thankyouHtml } = event.data.payload;
+                            
+                            if (landingHtml) {
+                                window.fgGeneratedCode.landing = landingHtml;
+                                window.fgCurrentTab = 'landing';
+                            }
+                            if (thankyouHtml) {
+                                window.fgGeneratedCode.thankyou = thankyouHtml;
+                                window.fgCurrentTab = 'thankyou';
+                            }
+                            
+                            document.getElementById('fgProgress').classList.remove('active');
+                            document.getElementById('fgOutput').classList.add('active');
+                            window.renderFgTabs();
+                            window.showStatus('✓ Funnel generated!');
+                        } else if (event.data.type === 'GENERATION_ERROR') {
+                            document.getElementById('fgProgress').classList.remove('active');
+                            document.getElementById('fgForm').style.display = 'block';
+                            window.showStatus('❌ Generation failed');
+                        } else if (event.data.type === 'TRIGGER_SAVE') {
+                            // Handle save request
+                            const name = prompt('Enter funnel name:', 'My Funnel');
+                            if (name) {
+                                window.top.postMessage({
+                                    type: 'SAVE_FUNNEL',
+                                    payload: {
+                                        name,
+                                        mechanism: document.getElementById('fgMechanism').value,
+                                        colorScheme: window.fgSelectedColor,
+                                        landingHtml: window.fgGeneratedCode.landing || '',
+                                        thankyouHtml: window.fgGeneratedCode.thankyou || ''
+                                    }
+                                }, '*');
+                            }
+                        } else if (event.data.type === 'REQUEST_AUTOSAVE') {
+                            // Send current state for autosave
+                            window.top.postMessage({
+                                type: 'AUTOSAVE_DATA',
+                                payload: {
+                                    landingHtml: window.fgGeneratedCode.landing || '',
+                                    thankyouHtml: window.fgGeneratedCode.thankyou || ''
+                                }
+                            }, '*');
+                        } else if (event.data.type === 'TRIGGER_UNDO') {
+                            if (window.editor && window.editor.UndoManager) {
+                                window.editor.UndoManager.undo();
+                            }
+                        } else if (event.data.type === 'TRIGGER_REDO') {
+                            if (window.editor && window.editor.UndoManager) {
+                                window.editor.UndoManager.redo();
+                            }
+                        }
+                    });
+                    
+                    // Hide API key input
+                    const apiKeyRow = document.querySelector('.fg-input-row:has(#fgApiKey)');
+                    if (apiKeyRow) {
+                        apiKeyRow.style.display = 'none';
+                    }
+                })();
+            `;
+            iframeDocument.body.appendChild(script);
+        };
+        
+        // Forward messages from iframe to parent
+        window.addEventListener('message', function(event) {
+            if (event.source === iframe.contentWindow) {
+                window.parent.postMessage(event.data, '*');
+            }
+        });
+        
+        // Forward messages from parent to iframe
+        window.addEventListener('message', function(event) {
+            if (event.source === window.parent) {
+                iframe.contentWindow.postMessage(event.data, '*');
+            }
+        });
+    </script>
+</body>
+</html>

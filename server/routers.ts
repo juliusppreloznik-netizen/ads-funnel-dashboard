@@ -8,6 +8,7 @@ import { notifyOwner } from "./_core/notification";
 import { sendClientWelcomeEmail } from "./_core/clientEmail";
 import { invokeLLM } from "./_core/llm";
 import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, loadLandingPageTemplate, applyLandingPageReplacements } from "./generationPrompts";
+import { buildFunnelPrompt, FG_COLORS, ColorScheme } from "./funnelPrompts";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -292,6 +293,98 @@ export const appRouter = router({
       }),
 
 
+  }),
+
+  // Funnel Builder
+  funnels: router({
+    generate: protectedProcedure
+      .input(z.object({
+        mechanism: z.string(),
+        colorScheme: z.enum(['emerald', 'blue', 'violet', 'amber', 'coral', 'cyan']),
+        pageType: z.enum(['landing', 'thankyou', 'both']),
+      }))
+      .mutation(async ({ input }) => {
+        const color = FG_COLORS[input.colorScheme];
+        const prompt = buildFunnelPrompt(input.mechanism, color, input.pageType);
+
+        const response = await invokeLLM({
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 16000,
+        });
+
+        const content = response.choices[0].message.content;
+        const fullResponse = typeof content === 'string' ? content : '';
+
+        // Extract landing page
+        let landingHtml = '';
+        const landingMatch = fullResponse.match(/\[LANDING_START\]([\s\S]*?)\[LANDING_END\]/);
+        if (landingMatch) {
+          landingHtml = landingMatch[1].trim();
+        } else if (input.pageType === 'landing' || input.pageType === 'both') {
+          // If no markers, assume entire response is landing page
+          landingHtml = fullResponse.trim();
+        }
+
+        // Extract thank you page
+        let thankyouHtml = '';
+        const thankyouMatch = fullResponse.match(/\[THANKYOU_START\]([\s\S]*?)\[THANKYOU_END\]/);
+        if (thankyouMatch) {
+          thankyouHtml = thankyouMatch[1].trim();
+        } else if (input.pageType === 'thankyou') {
+          thankyouHtml = fullResponse.trim();
+        }
+
+        return {
+          landingHtml,
+          thankyouHtml,
+        };
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        mechanism: z.string(),
+        colorScheme: z.string(),
+        landingHtml: z.string().optional(),
+        thankyouHtml: z.string().optional(),
+        clientId: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createFunnel(input);
+        return { id };
+      }),
+
+    list: protectedProcedure.query(async () => {
+      return await db.getAllFunnels();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFunnelById(input.id);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        landingHtml: z.string().optional(),
+        thankyouHtml: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        await db.updateFunnel(id, updates);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteFunnel(input.id);
+        return { success: true };
+      }),
   }),
 });
 

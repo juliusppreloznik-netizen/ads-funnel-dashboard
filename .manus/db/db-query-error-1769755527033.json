@@ -1,0 +1,8 @@
+{
+  "query": "CREATE TABLE `funnels` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`clientId` int,\n\t`name` varchar(255) NOT NULL,\n\t`mechanism` text,\n\t`color` varchar(50),\n\t`landingHtml` text,\n\t`thankyouHtml` text,\n\t`editorData` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `funnels_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute CREATE TABLE `funnels` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`clientId` int,\n\t`name` varchar(255) NOT NULL,\n\t`mechanism` text,\n\t`color` varchar(50),\n\t`landingHtml` text,\n\t`thankyouHtml` text,\n\t`editorData` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `funnels_id` PRIMARY KEY(`id`)\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1050 (42S01) at line 1: Table 'dDLjqN8avGrS9FkSAJP3wb.funnels' already exists"
+  ]
+}
