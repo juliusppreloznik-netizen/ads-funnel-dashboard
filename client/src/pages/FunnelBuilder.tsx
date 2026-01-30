@@ -16,6 +16,7 @@ export default function FunnelBuilder() {
   const generateMutation = trpc.funnels.generate.useMutation();
   const createMutation = trpc.funnels.create.useMutation();
   const updateMutation = trpc.funnels.update.useMutation();
+  const editWithAIMutation = trpc.funnels.editWithAI.useMutation();
 
   // Handle messages from iframe
   useEffect(() => {
@@ -46,6 +47,8 @@ export default function FunnelBuilder() {
       } else if (event.data.type === 'AUTOSAVE_DATA') {
         // Autosave triggered from iframe
         await handleAutosave(event.data.payload);
+      } else if (event.data.type === 'AI_EDIT_REQUEST') {
+        await handleAIEdit(event.data.payload);
       }
     };
 
@@ -142,6 +145,30 @@ export default function FunnelBuilder() {
       setLastSaved(new Date());
     } catch (error) {
       console.error('Autosave failed:', error);
+    }
+  };
+
+  const handleAIEdit = async (data: { instruction: string; currentHtml: string; context?: string }) => {
+    try {
+      const result = await editWithAIMutation.mutateAsync({
+        currentHtml: data.currentHtml,
+        instruction: data.instruction,
+        context: data.context,
+      });
+
+      // Send modified HTML back to iframe
+      iframeRef.current?.contentWindow?.postMessage({
+        type: 'AI_EDIT_COMPLETE',
+        payload: { modifiedHtml: result.modifiedHtml },
+      }, '*');
+      
+      showToast.success('AI edit applied successfully');
+    } catch (error) {
+      iframeRef.current?.contentWindow?.postMessage({
+        type: 'AI_EDIT_ERROR',
+        payload: { error: 'Failed to apply AI edit' },
+      }, '*');
+      showToast.error('AI edit failed');
     }
   };
 

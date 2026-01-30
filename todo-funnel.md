@@ -27,3 +27,10 @@
 - [x] Add Funnel Builder link to admin dashboard
 - [x] Test generation quality matches original
 - [x] Test all original features still work
+
+## Fixes Needed
+
+- [x] Remove API key field completely (currently still visible)
+- [x] Replace 6 preset colors with full color wheel picker
+- [x] Integrate AI Assistant tab with backend LLM for real-time funnel editing
+- [x] Test all fixes work correctly

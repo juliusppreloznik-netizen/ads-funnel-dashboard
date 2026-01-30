@@ -360,6 +360,35 @@ export const appRouter = router({
       return await db.getAllFunnels();
     }),
 
+    editWithAI: protectedProcedure
+      .input(z.object({
+        currentHtml: z.string(),
+        instruction: z.string(),
+        context: z.string().optional(), // mechanism, color scheme, etc.
+      }))
+      .mutation(async ({ input }) => {
+        const prompt = `You are an expert funnel editor. You will receive HTML code for a landing page and an instruction to modify it.
+
+Current HTML:
+${input.currentHtml}
+
+${input.context ? `Context: ${input.context}\n\n` : ''}User Instruction: ${input.instruction}
+
+Please modify the HTML according to the instruction. Return ONLY the complete modified HTML, no explanations or markdown code blocks. Maintain all existing styling and structure unless specifically asked to change it.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 16000,
+        });
+
+        const content = response.choices[0].message.content;
+        const modifiedHtml = typeof content === 'string' ? content : '';
+
+        return { modifiedHtml };
+      }),
+
     getById: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
