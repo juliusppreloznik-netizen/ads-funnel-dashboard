@@ -11,3 +11,9 @@
 - [x] Integrate AI Assistant chat for live editing
 - [ ] Add element library and drag-drop functionality
 - [x] Test all features end-to-end
+
+## Remove Funnel Builder
+
+- [x] Remove funnel builder button from admin dashboard
+- [x] Remove funnel builder routes from App.tsx
+- [x] Remove funnel builder components and files
