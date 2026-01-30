@@ -156,3 +156,11 @@
 - [x] Add archive button for completed clients
 - [x] Add unarchive functionality for archived clients
 - [x] Test filtering and archiving workflows
+
+## Funnel Builder Performance Fix
+
+- [x] Simplify iframe architecture - remove nested iframe causing message passing delays
+- [x] Add console logging to debug generation timing
+- [ ] Test funnel generation speed and verify 30-60 second completion
+- [x] Fix JavaScript syntax errors in funnel-builder-reference.html (TypeError: can't access property "audiocts", Uncaught SyntaxError)
+- [x] Download GrapesJS files locally to fix 404 CDN errors

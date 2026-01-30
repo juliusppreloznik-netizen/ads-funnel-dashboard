@@ -23,20 +23,27 @@ export default function FunnelBuilder() {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data.type === 'GENERATE_FUNNEL') {
         const { mechanism, colorScheme, pageType } = event.data.payload;
+        console.log('[FunnelBuilder] Generation request received:', { mechanism, colorScheme, pageType });
+        const startTime = Date.now();
         
         try {
+          console.log('[FunnelBuilder] Calling backend API...');
           const result = await generateMutation.mutateAsync({
             mechanism,
             colorScheme,
             pageType,
           });
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`[FunnelBuilder] Generation completed in ${elapsed}s`);
 
           // Send result back to iframe
+          console.log('[FunnelBuilder] Sending result to iframe');
           iframeRef.current?.contentWindow?.postMessage({
             type: 'GENERATION_COMPLETE',
             payload: result,
           }, '*');
         } catch (error) {
+          console.error('[FunnelBuilder] Generation error:', error);
           iframeRef.current?.contentWindow?.postMessage({
             type: 'GENERATION_ERROR',
             payload: { error: 'Failed to generate funnel' },
@@ -219,7 +226,7 @@ export default function FunnelBuilder() {
       <div className="flex-1 relative">
         <iframe
           ref={iframeRef}
-          src="/funnel-builder-integrated.html"
+          src="/funnel-builder-reference.html"
           className="w-full h-full border-none"
           title="Funnel Builder"
         />
