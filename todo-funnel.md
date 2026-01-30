@@ -34,3 +34,11 @@
 - [x] Replace 6 preset colors with full color wheel picker
 - [x] Integrate AI Assistant tab with backend LLM for real-time funnel editing
 - [x] Test all fixes work correctly
+
+## Direct HTML Fixes
+
+- [x] Remove API key HTML section (lines 1272-1279)
+- [x] Remove API key JavaScript functions (saveFgApiKey, etc.)
+- [x] Add color picker input after color presets
+- [x] Convert AI Assistant to live chat interface
+- [x] Test all fixes in browser
