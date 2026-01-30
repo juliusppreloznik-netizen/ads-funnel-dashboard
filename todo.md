@@ -177,3 +177,5 @@
 
 - [x] Revert to original API key approach (backend integration too complex)
 - [x] Ensure color wheel selector works with API generation
+- [x] Remove backend integration code causing AI Assistant errors
+- [x] Ensure AI Assistant works with API key approach

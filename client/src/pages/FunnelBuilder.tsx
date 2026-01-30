@@ -13,55 +13,23 @@ export default function FunnelBuilder() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const autosaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const generateMutation = trpc.funnels.generate.useMutation();
   const createMutation = trpc.funnels.create.useMutation();
   const updateMutation = trpc.funnels.update.useMutation();
-  const editWithAIMutation = trpc.funnels.editWithAI.useMutation();
 
   // Handle messages from iframe
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      if (event.data.type === 'GENERATE_FUNNEL') {
-        const { mechanism, colorScheme, pageType } = event.data.payload;
-        console.log('[FunnelBuilder] Generation request received:', { mechanism, colorScheme, pageType });
-        const startTime = Date.now();
-        
-        try {
-          console.log('[FunnelBuilder] Calling backend API...');
-          const result = await generateMutation.mutateAsync({
-            mechanism,
-            colorScheme,
-            pageType,
-          });
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-          console.log(`[FunnelBuilder] Generation completed in ${elapsed}s`);
-
-          // Send result back to iframe
-          console.log('[FunnelBuilder] Sending result to iframe');
-          iframeRef.current?.contentWindow?.postMessage({
-            type: 'GENERATION_COMPLETE',
-            payload: result,
-          }, '*');
-        } catch (error) {
-          console.error('[FunnelBuilder] Generation error:', error);
-          iframeRef.current?.contentWindow?.postMessage({
-            type: 'GENERATION_ERROR',
-            payload: { error: 'Failed to generate funnel' },
-          }, '*');
-        }
-      } else if (event.data.type === 'SAVE_FUNNEL') {
+      if (event.data.type === 'SAVE_FUNNEL') {
         await handleSave(event.data.payload);
       } else if (event.data.type === 'AUTOSAVE_DATA') {
         // Autosave triggered from iframe
         await handleAutosave(event.data.payload);
-      } else if (event.data.type === 'AI_EDIT_REQUEST') {
-        await handleAIEdit(event.data.payload);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [generateMutation]);
+  }, [createMutation, updateMutation]);
 
   // Setup autosave interval
   useEffect(() => {
@@ -155,29 +123,7 @@ export default function FunnelBuilder() {
     }
   };
 
-  const handleAIEdit = async (data: { instruction: string; currentHtml: string; context?: string }) => {
-    try {
-      const result = await editWithAIMutation.mutateAsync({
-        currentHtml: data.currentHtml,
-        instruction: data.instruction,
-        context: data.context,
-      });
 
-      // Send modified HTML back to iframe
-      iframeRef.current?.contentWindow?.postMessage({
-        type: 'AI_EDIT_COMPLETE',
-        payload: { modifiedHtml: result.modifiedHtml },
-      }, '*');
-      
-      showToast.success('AI edit applied successfully');
-    } catch (error) {
-      iframeRef.current?.contentWindow?.postMessage({
-        type: 'AI_EDIT_ERROR',
-        payload: { error: 'Failed to apply AI edit' },
-      }, '*');
-      showToast.error('AI edit failed');
-    }
-  };
 
   return (
     <div className="h-screen w-screen flex flex-col bg-[#0a0a0a]">
