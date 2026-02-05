@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO clientTasks (clientId, taskName, taskOrder, status, createdAt, updatedAt)\nSELECT id, 'Pre Launch Check', 7, 'not_started', NOW(), NOW() FROM clients\nUNION ALL\nSELECT id, 'Ads Launched', 8, 'not_started', NOW(), NOW() FROM clients;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute INSERT INTO clientTasks (clientId, taskName, taskOrder, status, createdAt, updatedAt)\nSELECT id, 'Pre Launch Check', 7, 'not_started', NOW(), NOW() FROM clients\nUNION ALL\nSELECT id, 'Ads Launched', 8, 'not_started', NOW(), NOW() FROM clients;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 71
+}

@@ -241,6 +241,8 @@ const DEFAULT_TASKS = [
   { name: "VSL and ads scripted", order: 4 },
   { name: "Survey routing set up", order: 5 },
   { name: "Facebook CAPI and pixel set up", order: 6 },
+  { name: "Pre Launch Check", order: 7 },
+  { name: "Ads Launched", order: 8 },
 ];
 
 export async function createDefaultTasksForClient(clientId: number) {

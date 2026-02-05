@@ -17,3 +17,17 @@
 - [x] Remove funnel builder button from admin dashboard
 - [x] Remove funnel builder routes from App.tsx
 - [x] Remove funnel builder components and files
+
+## Add Past Clients
+
+- [x] Insert 7 past clients into database (Alante, Apoleen, Ashton, Christian, Josh, Lee, Tae)
+
+## Copy Tasks to New Clients
+
+- [x] Query existing client tasks to find template
+- [x] Insert task copies for 7 new clients (Alante, Apoleen, Ashton, Christian, Josh, Lee, Tae)
+
+## Add New Standard Tasks
+
+- [x] Add "Pre Launch Check" and "Ads Launched" tasks to all existing clients
+- [x] Update client intake handler to automatically include new tasks for future submissions
