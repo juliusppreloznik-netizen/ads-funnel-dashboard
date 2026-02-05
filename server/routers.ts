@@ -199,6 +199,16 @@ export const appRouter = router({
         await db.updateTaskNotes(input.taskId, input.notes);
         return { success: true };
       }),
+    
+    createCustomTask: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        taskName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.createCustomTask(input.clientId, input.taskName);
+        return { success: true };
+      }),
   }),
 
   // Generated assets management

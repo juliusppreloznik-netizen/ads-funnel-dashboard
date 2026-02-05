@@ -26,6 +26,7 @@ export default function ClientManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [newTaskName, setNewTaskName] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "in_progress" | "completed" | "archived">("all");
   const [createFormData, setCreateFormData] = useState({
     name: "",
@@ -120,6 +121,17 @@ export default function ClientManagement() {
     },
     onError: (error) => {
       toast.error("Failed to create tasks: " + error.message);
+    },
+  });
+
+  const createCustomTaskMutation = trpc.tasks.createCustomTask.useMutation({
+    onSuccess: () => {
+      toast.success("Task created successfully!");
+      setNewTaskName("");
+      refetchTasks();
+    },
+    onError: (error) => {
+      toast.error("Failed to create task: " + error.message);
     },
   });
 
@@ -288,6 +300,48 @@ export default function ClientManagement() {
           )}
 
           {/* Tasks List */}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Tasks</h2>
+            {tasks && tasks.length > 0 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-gradient-to-r from-violet-600 to-indigo-600">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-900 border-white/10">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Create New Task</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="taskName" className="text-white">Task Name</Label>
+                      <Input
+                        id="taskName"
+                        placeholder="Enter task name"
+                        className="bg-slate-800 border-white/10 text-white"
+                        onChange={(e) => setNewTaskName(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        if (newTaskName.trim() && selectedClientId) {
+                          createCustomTaskMutation.mutate({
+                            clientId: selectedClientId,
+                            taskName: newTaskName,
+                          });
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                    >
+                      Create Task
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
           <div className="space-y-4">
             {tasks && tasks.length === 0 && (
               <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">

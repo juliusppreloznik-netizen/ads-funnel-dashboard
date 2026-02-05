@@ -31,3 +31,9 @@
 
 - [x] Add "Pre Launch Check" and "Ads Launched" tasks to all existing clients
 - [x] Update client intake handler to automatically include new tasks for future submissions
+
+## Fix Duplicate Tasks and Add Create Button
+
+- [x] Remove duplicate tasks from all clients (keep only one set of 8 tasks per client)
+- [x] Add "Create Task" button to client management interface
+- [x] Add tRPC procedure to create custom tasks for clients

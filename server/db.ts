@@ -309,6 +309,22 @@ export async function updateTaskNotes(taskId: number, notes: string) {
     .where(eq(clientTasks.id, taskId));
 }
 
+export async function createCustomTask(clientId: number, taskName: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get the max task order for this client
+  const tasks = await getTasksByClientId(clientId);
+  const maxOrder = tasks.length > 0 ? Math.max(...tasks.map(t => t.taskOrder)) : 0;
+  
+  await db.insert(clientTasks).values({
+    clientId,
+    taskName,
+    taskOrder: maxOrder + 1,
+    status: "not_started" as const,
+  });
+}
+
 export async function getClientProgress(clientId: number) {
   const tasks = await getTasksByClientId(clientId);
   const totalTasks = tasks.length;
