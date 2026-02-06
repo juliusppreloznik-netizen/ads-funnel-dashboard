@@ -198,6 +198,15 @@ export async function unarchiveClient(clientId: number) {
     .where(eq(clients.id, clientId));
 }
 
+export async function updateClient(clientId: number, updates: Partial<InsertClient>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(clients)
+    .set({ ...updates, updatedAt: new Date() })
+    .where(eq(clients.id, clientId));
+}
+
 // Generated assets management functions
 export async function createGeneratedAsset(asset: InsertGeneratedAsset) {
   const db = await getDb();

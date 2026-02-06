@@ -37,3 +37,17 @@
 - [x] Remove duplicate tasks from all clients (keep only one set of 8 tasks per client)
 - [x] Add "Create Task" button to client management interface
 - [x] Add tRPC procedure to create custom tasks for clients
+
+
+## Command Center Upgrade - New Generation Features
+
+- [x] Add admin-only fields to client schema: ghl_api_token, ghl_location_id, funnel_accent_color
+- [x] Generate database migration for new fields
+- [x] Create "Generate Funnel" button and backend procedure (landing page + thank you page)
+- [x] Create "Generate Survey CSS" button and backend procedure
+- [x] Create "Revise All Assets" button and backend procedure
+- [ ] Update asset storage to support funnel HTML files
+- [ ] Add asset viewer tabs: VSL Script, Ad Scripts, Landing Page, Thank You Page, Survey CSS
+- [ ] Add copy/download/preview buttons for each asset type
+- [ ] Add version toggle for original vs revised assets
+- [ ] Test all generation flows end-to-end

@@ -9,6 +9,9 @@ import { sendClientWelcomeEmail } from "./_core/clientEmail";
 import { invokeLLM } from "./_core/llm";
 import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, loadLandingPageTemplate, applyLandingPageReplacements } from "./generationPrompts";
 import { buildFunnelPrompt, FG_COLORS, ColorScheme } from "./funnelPrompts";
+import { buildFunnelGenerationPrompt, parseFunnelResponse } from "./funnelGenerationPrompt";
+import { buildSurveyCssPrompt, parseSurveyCssResponse } from "./surveyCssPrompt";
+import { buildAssetRevisionPrompt, parseRevisionResponse } from "./assetRevisionPrompt";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -140,6 +143,22 @@ export const appRouter = router({
       .input(z.object({ clientId: z.number() }))
       .mutation(async ({ input }) => {
         await db.unarchiveClient(input.clientId);
+        return { success: true };
+      }),
+    
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        ghlApiToken: z.string().optional(),
+        ghlLocationId: z.string().optional(),
+        funnelAccentColor: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateClient(input.id, {
+          ghlApiToken: input.ghlApiToken,
+          ghlLocationId: input.ghlLocationId,
+          funnelAccentColor: input.funnelAccentColor,
+        });
         return { success: true };
       }),
   }),
@@ -305,6 +324,212 @@ export const appRouter = router({
 
   // Funnel Builder
   funnels: router({
+    reviseAllAssets: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get all existing assets for this client
+        const assets = await db.getAssetsByClientId(input.clientId);
+        
+        // Find the latest version of each asset type
+        const vslAsset = assets.filter(a => a.assetType === 'vsl').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+        const adsAsset = assets.filter(a => a.assetType === 'ads').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+        const landingAsset = assets.filter(a => a.assetType === 'landing_page_html').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+        const thankyouAsset = assets.filter(a => a.assetType === 'thankyou_page_html').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+        const surveyAsset = assets.filter(a => a.assetType === 'survey_css').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+
+        // Build revision input
+        const revisionInput = {
+          vslScript: vslAsset?.content,
+          adScripts: adsAsset?.content,
+          landingPageHtml: landingAsset?.content,
+          thankyouPageHtml: thankyouAsset?.content,
+          surveyCss: surveyAsset?.content,
+        };
+
+        // Build the revision prompt
+        const prompt = buildAssetRevisionPrompt(revisionInput);
+
+        // Generate with LLM
+        const response = await invokeLLM({
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 16000,
+        });
+
+        const content = response.choices[0].message.content;
+        const fullResponse = typeof content === 'string' ? content : '';
+
+        // Parse the response
+        const revisedAssets = parseRevisionResponse(fullResponse);
+
+        // Save revised assets (originals remain in database)
+        const savedAssets: string[] = [];
+        
+        if (revisedAssets.vslScript) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'vsl',
+            content: revisedAssets.vslScript,
+          });
+          savedAssets.push('VSL Script');
+        }
+
+        if (revisedAssets.adScripts) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'ads',
+            content: revisedAssets.adScripts,
+          });
+          savedAssets.push('Ad Scripts');
+        }
+
+        if (revisedAssets.landingPageHtml) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'landing_page_html',
+            content: revisedAssets.landingPageHtml,
+          });
+          savedAssets.push('Landing Page');
+        }
+
+        if (revisedAssets.thankyouPageHtml) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'thankyou_page_html',
+            content: revisedAssets.thankyouPageHtml,
+          });
+          savedAssets.push('Thank You Page');
+        }
+
+        if (revisedAssets.surveyCss) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'survey_css',
+            content: revisedAssets.surveyCss,
+          });
+          savedAssets.push('Survey CSS');
+        }
+
+        return {
+          success: true,
+          revisedAssets: savedAssets,
+        };
+      }),
+
+    generateSurveyCss: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get client data to retrieve accent color
+        const client = await db.getClientById(input.clientId);
+        if (!client) {
+          throw new Error('Client not found');
+        }
+
+        // Use the stored accent color, or default to purple if not set
+        const accentColor = client.funnelAccentColor || '#8B5CF6';
+
+        // Build the survey CSS prompt
+        const prompt = buildSurveyCssPrompt(accentColor);
+
+        // Generate with LLM
+        const response = await invokeLLM({
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 4000,
+        });
+
+        const content = response.choices[0].message.content;
+        const fullResponse = typeof content === 'string' ? content : '';
+
+        // Parse the response
+        const surveyCss = parseSurveyCssResponse(fullResponse);
+
+        // Save survey CSS to generatedAssets
+        await db.createGeneratedAsset({
+          clientId: input.clientId,
+          assetType: 'survey_css',
+          content: surveyCss,
+        });
+
+        return {
+          surveyCss,
+          accentColor,
+        };
+      }),
+
+    generateForClient: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        mechanismName: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        // Get client data
+        const client = await db.getClientById(input.clientId);
+        if (!client) {
+          throw new Error('Client not found');
+        }
+
+        // Build the comprehensive funnel generation prompt
+        const prompt = buildFunnelGenerationPrompt({
+          businessName: client.businessName,
+          ownerName: client.name,
+          industry: 'Business Funding', // Default - can be enhanced later
+          monthlyRevenue: '$7K-$50K', // Default - can be enhanced later
+          fundingChallenges: 'Getting denied for traditional funding',
+          goals: 'Access capital for business growth',
+          mechanismName: input.mechanismName,
+        });
+
+        // Generate with LLM
+        const response = await invokeLLM({
+          messages: [
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 16000,
+        });
+
+        const content = response.choices[0].message.content;
+        const fullResponse = typeof content === 'string' ? content : '';
+
+        // Parse the response
+        const { landingPageHtml, thankyouPageHtml, accentColor } = parseFunnelResponse(fullResponse);
+
+        // Save landing page HTML to generatedAssets
+        if (landingPageHtml) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'landing_page_html',
+            content: landingPageHtml,
+          });
+        }
+
+        // Save thank you page HTML to generatedAssets
+        if (thankyouPageHtml) {
+          await db.createGeneratedAsset({
+            clientId: input.clientId,
+            assetType: 'thankyou_page_html',
+            content: thankyouPageHtml,
+          });
+        }
+
+        // Update client's funnel accent color if extracted
+        if (accentColor) {
+          await db.updateClient(input.clientId, { funnelAccentColor: accentColor });
+        }
+
+        return {
+          landingPageHtml,
+          thankyouPageHtml,
+          accentColor,
+        };
+      }),
+
     generate: protectedProcedure
       .input(z.object({
         mechanism: z.string(),

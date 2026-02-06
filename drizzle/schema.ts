@@ -38,6 +38,9 @@ export const clients = mysqlTable("clients", {
   driveLink: text("driveLink"),
   password: varchar("password", { length: 255 }), // Hashed password for client portal login
   archived: int("archived").default(0).notNull(), // 0 = active, 1 = archived
+  ghlApiToken: text("ghlApiToken"), // Admin-only: GoHighLevel API token
+  ghlLocationId: varchar("ghlLocationId", { length: 255 }), // Admin-only: GHL location ID
+  funnelAccentColor: varchar("funnelAccentColor", { length: 50 }), // Admin-only: Auto-stored after funnel generation
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -51,7 +54,7 @@ export type InsertClient = typeof clients.$inferInsert;
 export const generatedAssets = mysqlTable("generatedAssets", {
   id: int("id").autoincrement().primaryKey(),
   clientId: int("clientId").notNull(),
-  assetType: mysqlEnum("assetType", ["vsl", "ads", "landing_page"]).notNull(),
+  assetType: mysqlEnum("assetType", ["vsl", "ads", "landing_page", "landing_page_html", "thankyou_page_html", "survey_css"]).notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
