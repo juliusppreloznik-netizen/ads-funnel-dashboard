@@ -51,3 +51,11 @@
 - [ ] Add copy/download/preview buttons for each asset type
 - [ ] Add version toggle for original vs revised assets
 - [ ] Test all generation flows end-to-end
+
+## UI Restructuring - Move Generation Buttons to Admin Dashboard
+
+- [x] Revert ClientManagement.tsx to original version (with progress bars, tasks, archive/filter)
+- [x] Move Generate Funnel, Generate Survey CSS, Revise All Assets buttons to admin dashboard page
+- [x] Add asset viewer tabs to admin dashboard page (alongside existing VSL/Ads generation)
+- [x] Keep Admin Fields dialog on admin dashboard page
+- [x] Ensure mechanism name dialog works on admin dashboard page

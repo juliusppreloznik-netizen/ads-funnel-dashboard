@@ -55,6 +55,7 @@ describe("Client Intake Flow", () => {
       ghlEmail: "ghl@example.com",
       ghlPassword: "password123",
       driveLink: "https://drive.google.com/test",
+      password: "testPassword123",
     });
 
     expect(result).toEqual({ success: true });
