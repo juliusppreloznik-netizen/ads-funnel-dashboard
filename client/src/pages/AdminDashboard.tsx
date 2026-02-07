@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, Globe, Palette } from "lucide-react";
+import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, Globe, Palette, ClipboardCopy, ExternalLink, User, Mail, Building2, KeyRound, Link2 } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
@@ -20,6 +20,8 @@ export default function AdminDashboard() {
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const [uniqueMechanism, setUniqueMechanism] = useState<string>("Funding Optimization");
   const [isAdminFieldsOpen, setIsAdminFieldsOpen] = useState(false);
+  const [isClientDetailsOpen, setIsClientDetailsOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [adminFields, setAdminFields] = useState({
     ghlApiToken: "",
     ghlLocationId: "",
@@ -280,6 +282,77 @@ export default function AdminDashboard() {
                   <p className="text-sm text-slate-500">{selectedClient.email}</p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* Client Details Dialog */}
+                  <Dialog open={isClientDetailsOpen} onOpenChange={(open) => { setIsClientDetailsOpen(open); if (!open) setShowPassword(false); }}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-white hover:bg-white/10"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Client Details
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-slate-900 border-white/10 max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle className="text-white">Client Intake Details</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-2">
+                        <ClientDetailRow
+                          icon={<User className="h-4 w-4 text-violet-400" />}
+                          label="Full Name"
+                          value={selectedClient.name}
+                          onCopy={handleCopyToClipboard}
+                        />
+                        <ClientDetailRow
+                          icon={<Mail className="h-4 w-4 text-blue-400" />}
+                          label="Email Address"
+                          value={selectedClient.email}
+                          onCopy={handleCopyToClipboard}
+                        />
+                        <ClientDetailRow
+                          icon={<Building2 className="h-4 w-4 text-emerald-400" />}
+                          label="Business Name"
+                          value={selectedClient.businessName}
+                          onCopy={handleCopyToClipboard}
+                        />
+                        <div className="border-t border-white/10 pt-4">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">GoHighLevel Credentials</p>
+                          <div className="space-y-3">
+                            <ClientDetailRow
+                              icon={<Mail className="h-4 w-4 text-amber-400" />}
+                              label="GHL Email"
+                              value={selectedClient.ghlEmail || "—"}
+                              onCopy={handleCopyToClipboard}
+                            />
+                            <ClientDetailRow
+                              icon={<KeyRound className="h-4 w-4 text-rose-400" />}
+                              label="GHL Password"
+                              value={selectedClient.ghlPassword || "—"}
+                              masked={!showPassword}
+                              onCopy={handleCopyToClipboard}
+                              onToggleMask={() => setShowPassword(!showPassword)}
+                            />
+                          </div>
+                        </div>
+                        <div className="border-t border-white/10 pt-4">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Resources</p>
+                          <ClientDetailRow
+                            icon={<Link2 className="h-4 w-4 text-cyan-400" />}
+                            label="Google Drive Link"
+                            value={selectedClient.driveLink || "—"}
+                            isLink={!!selectedClient.driveLink}
+                            onCopy={handleCopyToClipboard}
+                          />
+                        </div>
+                        <div className="border-t border-white/10 pt-4">
+                          <p className="text-xs text-slate-500">Submitted {new Date(selectedClient.createdAt).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                   {/* Admin Fields Dialog */}
                   <Dialog open={isAdminFieldsOpen} onOpenChange={setIsAdminFieldsOpen}>
                     <DialogTrigger asChild>
@@ -729,6 +802,74 @@ function EmptyAsset({ label }: { label: string }) {
   return (
     <div className="text-center py-10 text-slate-500">
       No {label} generated yet
+    </div>
+  );
+}
+
+function ClientDetailRow({
+  icon,
+  label,
+  value,
+  masked,
+  isLink,
+  onCopy,
+  onToggleMask,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  masked?: boolean;
+  isLink?: boolean;
+  onCopy: (content: string) => void;
+  onToggleMask?: () => void;
+}) {
+  const displayValue = masked ? "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" : value;
+  const canCopy = value && value !== "\u2014";
+
+  return (
+    <div className="flex items-center gap-3 group">
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-slate-500 mb-0.5">{label}</p>
+        {isLink && value !== "\u2014" ? (
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-cyan-400 hover:text-cyan-300 underline underline-offset-2 truncate block"
+          >
+            {value}
+          </a>
+        ) : (
+          <p className={`text-sm text-white truncate ${masked ? "font-mono tracking-wider" : ""}`}>
+            {displayValue}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onToggleMask && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleMask}
+            className="h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
+        )}
+        {canCopy && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onCopy(value)}
+            className="h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

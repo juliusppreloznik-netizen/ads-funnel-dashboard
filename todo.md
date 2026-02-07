@@ -59,3 +59,9 @@
 - [x] Add asset viewer tabs to admin dashboard page (alongside existing VSL/Ads generation)
 - [x] Keep Admin Fields dialog on admin dashboard page
 - [x] Ensure mechanism name dialog works on admin dashboard page
+
+## Client Details Viewer
+- [x] Add client details dialog to admin dashboard showing all intake form answers
+- [x] Display GHL email, GHL password (masked with show/hide toggle), Google Drive link
+- [x] Add copy buttons for easy credential copying on hover
+- [x] All 18 tests passing
