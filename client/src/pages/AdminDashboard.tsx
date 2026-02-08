@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, Globe, Palette, ClipboardCopy, ExternalLink, User, Mail, Building2, KeyRound, Link2 } from "lucide-react";
+import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, ClipboardCopy, ExternalLink, User, Mail, Building2, KeyRound, Link2 } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
@@ -76,38 +76,6 @@ export default function AdminDashboard() {
     },
   });
 
-  // New mutations
-  const generateFunnelMutation = trpc.funnels.generateForClient.useMutation({
-    onSuccess: () => {
-      toast.success("Funnel generated successfully!");
-      refetchAssets();
-      refetchSelectedClient();
-    },
-    onError: (error: any) => {
-      toast.error("Funnel generation failed: " + error.message);
-    },
-  });
-
-  const generateSurveyCssMutation = trpc.funnels.generateSurveyCss.useMutation({
-    onSuccess: () => {
-      toast.success("Survey CSS generated successfully!");
-      refetchAssets();
-    },
-    onError: (error: any) => {
-      toast.error("Survey CSS generation failed: " + error.message);
-    },
-  });
-
-  const reviseAllAssetsMutation = trpc.funnels.reviseAllAssets.useMutation({
-    onSuccess: (data: any) => {
-      toast.success(`Revised ${data.revisedAssets.join(", ")}!`);
-      refetchAssets();
-    },
-    onError: (error: any) => {
-      toast.error("Asset revision failed: " + error.message);
-    },
-  });
-
   const updateClientMutation = trpc.clients.update.useMutation({
     onSuccess: () => {
       toast.success("Admin fields updated!");
@@ -164,29 +132,6 @@ export default function AdminDashboard() {
     generateAds.mutate({ clientId: selectedClient.id, uniqueMechanism });
   };
 
-  const handleGenerateFunnel = () => {
-    if (!selectedClient) return;
-    if (!uniqueMechanism.trim()) {
-      toast.error("Please enter a unique mechanism");
-      return;
-    }
-    generateFunnelMutation.mutate({ clientId: selectedClient.id, mechanismName: uniqueMechanism });
-  };
-
-  const handleGenerateSurveyCss = () => {
-    if (!selectedClient) return;
-    generateSurveyCssMutation.mutate({ clientId: selectedClient.id });
-  };
-
-  const handleReviseAllAssets = () => {
-    if (!selectedClient) return;
-    if (!assets || assets.length === 0) {
-      toast.error("No assets to revise yet");
-      return;
-    }
-    reviseAllAssetsMutation.mutate({ clientId: selectedClient.id });
-  };
-
   const handleUpdateAdminFields = () => {
     if (!selectedClientId) return;
     updateClientMutation.mutate({
@@ -230,11 +175,7 @@ export default function AdminDashboard() {
 
   const vslAsset = getLatestAsset("vsl");
   const adsAsset = getLatestAsset("ads");
-  const landingPageAsset = getLatestAsset("landing_page_html");
-  const thankyouPageAsset = getLatestAsset("thankyou_page_html");
-  const surveyCssAsset = getLatestAsset("survey_css");
-
-  const anyGenerating = generateVSL.isPending || generateAds.isPending || generateFunnelMutation.isPending || generateSurveyCssMutation.isPending || reviseAllAssetsMutation.isPending;
+  const anyGenerating = generateVSL.isPending || generateAds.isPending;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -490,66 +431,7 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
 
-                {/* Row 2: Funnel + Survey CSS (new) */}
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    onClick={handleGenerateFunnel}
-                    disabled={generateFunnelMutation.isPending || anyGenerating}
-                    size="lg"
-                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 h-16"
-                  >
-                    {generateFunnelMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Generating Funnel...
-                      </>
-                    ) : (
-                      <>
-                        <Globe className="h-5 w-5 mr-2" />
-                        Generate Funnel
-                      </>
-                    )}
-                  </Button>
 
-                  <Button
-                    onClick={handleGenerateSurveyCss}
-                    disabled={generateSurveyCssMutation.isPending || anyGenerating}
-                    size="lg"
-                    className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white border-0 h-16"
-                  >
-                    {generateSurveyCssMutation.isPending ? (
-                      <>
-                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                        Generating CSS...
-                      </>
-                    ) : (
-                      <>
-                        <Palette className="h-5 w-5 mr-2" />
-                        Generate Survey CSS
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Row 3: Revise All Assets (full width) */}
-                <Button
-                  onClick={handleReviseAllAssets}
-                  disabled={reviseAllAssetsMutation.isPending || anyGenerating || !assets || assets.length === 0}
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white border-0 h-16"
-                >
-                  {reviseAllAssetsMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Revising All Assets...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Revise All Assets
-                    </>
-                  )}
-                </Button>
               </div>
             </div>
           </Card>
@@ -561,12 +443,9 @@ export default function AdminDashboard() {
             <div className="p-8">
               <h2 className="text-xl font-bold text-white mb-4">Generated Assets</h2>
               <Tabs defaultValue="vsl" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 bg-slate-800/50 h-auto">
+                <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 h-auto">
                   <TabsTrigger value="vsl" className="text-xs sm:text-sm py-2">VSL Script</TabsTrigger>
                   <TabsTrigger value="ads" className="text-xs sm:text-sm py-2">Ad Scripts</TabsTrigger>
-                  <TabsTrigger value="landing" className="text-xs sm:text-sm py-2">Landing Page</TabsTrigger>
-                  <TabsTrigger value="thankyou" className="text-xs sm:text-sm py-2">Thank You</TabsTrigger>
-                  <TabsTrigger value="survey" className="text-xs sm:text-sm py-2">Survey CSS</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="vsl" className="mt-4">
@@ -594,52 +473,6 @@ export default function AdminDashboard() {
                     />
                   ) : (
                     <EmptyAsset label="ad scripts" />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="landing" className="mt-4">
-                  {landingPageAsset ? (
-                    <AssetDisplay
-                      asset={landingPageAsset}
-                      clientName={selectedClient.name}
-                      fileExt="html"
-                      isHtml
-                      onCopy={handleCopyToClipboard}
-                      onDownload={handleDownload}
-                      onPreview={handlePreview}
-                    />
-                  ) : (
-                    <EmptyAsset label="landing page" />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="thankyou" className="mt-4">
-                  {thankyouPageAsset ? (
-                    <AssetDisplay
-                      asset={thankyouPageAsset}
-                      clientName={selectedClient.name}
-                      fileExt="html"
-                      isHtml
-                      onCopy={handleCopyToClipboard}
-                      onDownload={handleDownload}
-                      onPreview={handlePreview}
-                    />
-                  ) : (
-                    <EmptyAsset label="thank you page" />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="survey" className="mt-4">
-                  {surveyCssAsset ? (
-                    <AssetDisplay
-                      asset={surveyCssAsset}
-                      clientName={selectedClient.name}
-                      fileExt="css"
-                      onCopy={handleCopyToClipboard}
-                      onDownload={handleDownload}
-                    />
-                  ) : (
-                    <EmptyAsset label="survey CSS" />
                   )}
                 </TabsContent>
               </Tabs>

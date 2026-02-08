@@ -145,3 +145,11 @@
 - [x] Green checkmark circle, "You're Confirmed" headline, subtitle, card with 3 bullet points, footer
 - [x] No AI creativity on structure — must match screenshot exactly every time (LOCKED TEMPLATE with 10 TY rules)
 - [x] Run tests and verify all pass (31/31)
+
+## Remove Funnel & Survey CSS Generation
+- [x] Remove "Generate Funnel" button from admin dashboard
+- [x] Remove "Generate Survey CSS" button from admin dashboard
+- [x] Remove "Revise All Assets" button from admin dashboard
+- [x] Remove Landing Page, Thank You Page, Survey CSS tabs from asset viewer
+- [x] Keep VSL and Ads generation buttons and tabs untouched
+- [x] Run tests and verify all pass (31/31)
