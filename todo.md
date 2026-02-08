@@ -97,3 +97,21 @@
 - [x] Rewrite thank you page prompt to match simple format: green checkmark, "You're Confirmed", subtitle, 3 bullet points with green checks, footer
 - [x] Update Ad and VSL prompts with verbatim Copy DNA addendums
 - [x] All 31 tests passing
+
+## Manus Update v2.4 - Copy Variation Engine
+- [x] Add variation instruction to top of landing page prompt
+- [x] Add variation instruction + em dash prohibition rule to funnelGenerationPrompt.ts
+- [x] Add Variation Pool 1: Hero Eyebrow Hooks (8 options)
+- [x] Add Variation Pool 2: Hero Headlines (8 options)
+- [x] Add Variation Pool 3: Core Mechanism Analogies (8 analogies)
+- [x] Add Variation Pool 4: How It Works Step Names & Analogies (4 complete sets)
+- [x] Add Variation Pool 5: Testimonial Personas (14 personas with construction rules)
+- [x] Add Variation Pool 6: Pain Section Card Titles & Copy (3 sets of 4 cards)
+- [x] Add Variation Pool 7: CTA Button Text Rotation (5 positions x 4 options each)
+- [x] Add Variation Pool 8: Guarantee Wording (4 options)
+- [x] Add Variation Pool 9: Approval Table Datasets (3 industry datasets)
+- [x] Add Variation Pool 10: Hidden Problem 85%/15% Stat Alternatives (4 frames)
+- [x] Add ALL 10 variation pools to ad generation prompt in generationPrompts.ts
+- [x] Add ALL 10 variation pools to VSL generation prompt in generationPrompts.ts
+- [x] Add variation instruction + em dash rule to ad and VSL prompts
+- [x] Run tests and verify all pass (31/31)
