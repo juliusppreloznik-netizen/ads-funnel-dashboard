@@ -265,6 +265,7 @@ export const appRouter = router({
 
         const prompt = getVSLPrompt(client, input.uniqueMechanism);
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: "system", content: "You are an elite direct response copywriter specializing in VSL scripts." },
             { role: "user", content: prompt },
@@ -297,6 +298,7 @@ export const appRouter = router({
 
         const prompt = getAdsPrompt(client, input.uniqueMechanism);
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: "system", content: "You are an elite direct response copywriter specializing in short-form video ads." },
             { role: "user", content: prompt },
@@ -351,8 +353,9 @@ export const appRouter = router({
         // Build the revision prompt
         const prompt = buildAssetRevisionPrompt(revisionInput);
 
-        // Generate with LLM
+            // Generate with LLM
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: 'user', content: prompt }
           ],
@@ -438,6 +441,7 @@ export const appRouter = router({
 
         // Generate with LLM
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: 'user', content: prompt }
           ],
@@ -488,6 +492,7 @@ export const appRouter = router({
 
         // Generate with LLM
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: 'user', content: prompt }
           ],
@@ -498,7 +503,7 @@ export const appRouter = router({
         const fullResponse = typeof content === 'string' ? content : '';
 
         // Parse the response
-        const { landingPageHtml, thankyouPageHtml, accentColor } = parseFunnelResponse(fullResponse);
+        const { landingPageHtml, thankyouPageHtml, accentColor, metadata } = parseFunnelResponse(fullResponse);
 
         // Save landing page HTML to generatedAssets
         if (landingPageHtml) {
@@ -518,15 +523,22 @@ export const appRouter = router({
           });
         }
 
-        // Update client's funnel accent color if extracted
-        if (accentColor) {
-          await db.updateClient(input.clientId, { funnelAccentColor: accentColor });
+        // Update client's metadata fields from generation
+        const updateFields: Record<string, string | null> = {};
+        if (accentColor) updateFields.funnelAccentColor = accentColor;
+        if (metadata.accentSecondary) updateFields.funnelSecondaryColor = metadata.accentSecondary;
+        if (metadata.templateUsed) updateFields.templateUsed = metadata.templateUsed;
+        if (metadata.backgroundTreatment) updateFields.backgroundTreatment = metadata.backgroundTreatment;
+        
+        if (Object.keys(updateFields).length > 0) {
+          await db.updateClient(input.clientId, updateFields);
         }
 
         return {
           landingPageHtml,
           thankyouPageHtml,
           accentColor,
+          metadata,
         };
       }),
 
@@ -541,6 +553,7 @@ export const appRouter = router({
         const prompt = buildFunnelPrompt(input.mechanism, color, input.pageType);
 
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: 'user', content: prompt }
           ],
@@ -610,6 +623,7 @@ ${input.context ? `Context: ${input.context}\n\n` : ''}User Instruction: ${input
 Please modify the HTML according to the instruction. Return ONLY the complete modified HTML, no explanations or markdown code blocks. Maintain all existing styling and structure unless specifically asked to change it.`;
 
         const response = await invokeLLM({
+          model: "claude-opus-4-6",
           messages: [
             { role: 'user', content: prompt }
           ],

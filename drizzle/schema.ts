@@ -41,6 +41,9 @@ export const clients = mysqlTable("clients", {
   ghlApiToken: text("ghlApiToken"), // Admin-only: GoHighLevel API token
   ghlLocationId: varchar("ghlLocationId", { length: 255 }), // Admin-only: GHL location ID
   funnelAccentColor: varchar("funnelAccentColor", { length: 50 }), // Admin-only: Auto-stored after funnel generation
+  funnelSecondaryColor: varchar("funnelSecondaryColor", { length: 50 }), // Admin-only: Secondary accent color from generation
+  templateUsed: varchar("templateUsed", { length: 10 }), // Admin-only: Template A/B/C used in last generation
+  backgroundTreatment: varchar("backgroundTreatment", { length: 50 }), // Admin-only: Background treatment used in last generation
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -43,6 +43,13 @@
       "when": 1770367812085,
       "tag": "0005_sparkling_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1770520326243,
+      "tag": "0006_perpetual_vance_astro",
+      "breakpoints": true
     }
   ]
 }

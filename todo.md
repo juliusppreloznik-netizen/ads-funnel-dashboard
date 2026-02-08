@@ -70,3 +70,11 @@
 - [x] Add A2P task for all existing clients
 - [x] Add Domain Set Up task for all existing clients
 - [x] Update default task creation so new clients also get these tasks
+
+## Manus Update Spec v2.1
+- [x] Switch all API calls from claude-sonnet-4-5-20250929 to claude-opus-4-6
+- [x] Add funnel_secondary_color field to schema and database (+ templateUsed, backgroundTreatment)
+- [x] Replace landing page prompt with new version (reference templates, 15-color palette, design variation system)
+- [x] Update response parsing to extract 4 metadata lines (ACCENT_PRIMARY, ACCENT_SECONDARY, TEMPLATE_USED, BACKGROUND_TREATMENT)
+- [x] Store metadata in client record and new fields
+- [x] Write/update tests (26 tests passing)
