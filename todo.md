@@ -65,3 +65,8 @@
 - [x] Display GHL email, GHL password (masked with show/hide toggle), Google Drive link
 - [x] Add copy buttons for easy credential copying on hover
 - [x] All 18 tests passing
+
+## Add A2P and Domain Set Up Tasks
+- [x] Add A2P task for all existing clients
+- [x] Add Domain Set Up task for all existing clients
+- [x] Update default task creation so new clients also get these tasks

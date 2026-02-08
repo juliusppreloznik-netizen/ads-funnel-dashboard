@@ -252,6 +252,8 @@ const DEFAULT_TASKS = [
   { name: "Facebook CAPI and pixel set up", order: 6 },
   { name: "Pre Launch Check", order: 7 },
   { name: "Ads Launched", order: 8 },
+  { name: "A2P", order: 9 },
+  { name: "Domain Set Up", order: 10 },
 ];
 
 export async function createDefaultTasksForClient(clientId: number) {
