@@ -423,8 +423,8 @@ BACKGROUND_TREATMENT:radial_glow
     });
   });
 
-  describe('VSL and Ad Prompts include Copy DNA', () => {
-    it('should include unique mechanism in VSL prompt and be mechanism-adaptive', async () => {
+  describe('VSL and Ad Prompts are niche-locked', () => {
+    it('should detect mortgage niche from mechanism name and lock VSL to mortgage copy', async () => {
       const { getVSLPrompt } = await import('./generationPrompts');
       
       const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Mortgage Ready Blueprint');
@@ -434,29 +434,57 @@ BACKGROUND_TREATMENT:radial_glow
       expect(prompt).toContain('HOOK');
       expect(prompt).toContain('MECHANISM REVEAL');
       expect(prompt).toContain('3,000-4,000 words');
-      // Must contain mechanism-adaptive instructions
-      expect(prompt).toContain('MECHANISM-ADAPTIVE COPY');
-      expect(prompt).toContain('DO NOT default to business funding copy');
-      // Must contain niche inference examples
-      expect(prompt).toContain('Mortgage Ready Blueprint');
-      expect(prompt).toContain('mortgage/home buying niche');
+      // Must be locked to mortgage niche
+      expect(prompt).toContain('NICHE LOCK');
+      expect(prompt).toContain('mortgage readiness and home buying');
+      expect(prompt).toContain('aspiring homeowners');
+      // Must contain forbidden topics
+      expect(prompt).toContain('FORBIDDEN TOPICS');
+      expect(prompt).toContain('Investment returns');
+      expect(prompt).toContain('wealth management');
+      // Must NOT contain funding-specific content
+      expect(prompt).not.toContain('business credit and funding');
     });
 
-    it('should include unique mechanism in Ad prompt and be mechanism-adaptive', async () => {
+    it('should default to funding niche for non-mortgage mechanisms', async () => {
+      const { getVSLPrompt } = await import('./generationPrompts');
+      
+      const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Secondary Bureau Attack Method');
+      
+      expect(prompt).toContain('Secondary Bureau Attack Method');
+      expect(prompt).toContain('NICHE LOCK');
+      expect(prompt).toContain('business credit and funding');
+      expect(prompt).toContain('business owners who need capital');
+      expect(prompt).toContain('FORBIDDEN TOPICS');
+      // Must NOT contain mortgage content
+      expect(prompt).not.toContain('mortgage readiness and home buying');
+    });
+
+    it('should detect mortgage niche in Ads prompt', async () => {
       const { getAdsPrompt } = await import('./generationPrompts');
       
-      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Patient Pipeline Method');
+      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Mortgage Ready Blueprint');
       
-      expect(prompt).toContain('Patient Pipeline Method');
+      expect(prompt).toContain('Mortgage Ready Blueprint');
       expect(prompt).toContain('Test Biz');
       expect(prompt).toContain('Ad 1');
       expect(prompt).toContain('Ad 5');
       expect(prompt).toContain('5 distinct video ad scripts');
-      // Must contain mechanism-adaptive instructions
-      expect(prompt).toContain('MECHANISM-ADAPTIVE COPY');
-      expect(prompt).toContain('DO NOT default to business funding copy');
-      // Ad descriptions must be niche-generic, not funding-specific
-      expect(prompt).toContain('core problem in this niche');
+      expect(prompt).toContain('NICHE LOCK');
+      expect(prompt).toContain('mortgage readiness and home buying');
+      expect(prompt).toContain('FORBIDDEN TOPICS');
+    });
+
+    it('should default to funding niche in Ads prompt for non-mortgage mechanisms', async () => {
+      const { getAdsPrompt } = await import('./generationPrompts');
+      
+      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'The Banker Shortcut');
+      
+      expect(prompt).toContain('The Banker Shortcut');
+      expect(prompt).toContain('NICHE LOCK');
+      expect(prompt).toContain('business credit and funding');
+      expect(prompt).toContain('FORBIDDEN TOPICS');
+      expect(prompt).not.toContain('mortgage readiness and home buying');
     });
   });
 });

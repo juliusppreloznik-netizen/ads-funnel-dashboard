@@ -171,3 +171,10 @@
 - [x] Rewrite Ads prompt to infer niche/industry from mechanism name instead of hardcoding funding copy
 - [x] Keep the same structure quality (hook, body, mechanism reveal, proof, offer, close for VSL; 5 awareness-level ads)
 - [x] Update tests and verify all pass (31/31)
+
+## Lock VSL & Ads to Credit/Funding or Mortgage Only
+- [x] Remove open-ended niche inference — LLM hallucinated investment/wealth management garbage
+- [x] Lock prompts to ONLY two niches: (1) business credit & funding, (2) mortgage readiness
+- [x] Add explicit FORBIDDEN topics list (no investment, wealth management, stocks, portfolio, etc.)
+- [x] Make the prompt detect which of the two niches based on mechanism name (detectNiche function with mortgage keyword matching)
+- [x] Run tests and verify all pass (33/33)
