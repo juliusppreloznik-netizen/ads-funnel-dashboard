@@ -139,3 +139,9 @@
 - [x] Add GHL full-width checks to layout checklist (4 new items)
 - [x] Upgrade sections to use width: 100vw !important for full-bleed rendering
 - [x] All 31 tests passing
+
+## Thank You Page Template Fix
+- [x] Rewrite TY page prompt to produce exact hardcoded template matching user's desired design
+- [x] Green checkmark circle, "You're Confirmed" headline, subtitle, card with 3 bullet points, footer
+- [x] No AI creativity on structure — must match screenshot exactly every time (LOCKED TEMPLATE with 10 TY rules)
+- [x] Run tests and verify all pass (31/31)

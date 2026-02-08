@@ -1820,83 +1820,151 @@ BACKGROUND_TREATMENT: [1-7, name of treatment chosen]
 </html>
 [THANKYOU_END]
 
-THANK YOU PAGE — v2.5 ENHANCED FORMAT:
+=== THANK YOU PAGE — EXACT TEMPLATE (DO NOT DEVIATE) ===
 
-The thank you page must feel like a CONTINUATION of the funnel experience, not a dead end.
-It MUST use the SAME accent colors as the landing page.
+The thank you page is a LOCKED TEMPLATE. You MUST output it EXACTLY as shown below.
+The ONLY things you change are:
+1. The accent color (use the SAME accent color you chose for the landing page)
+2. The business name in the copyright footer
+3. The RGB values for the green checkmark (use 34,197,94 — this is ALWAYS green, NOT the accent color)
 
-=== THANK YOU PAGE REQUIRED STRUCTURE ===
+Do NOT add sections. Do NOT add glows. Do NOT add noise textures. Do NOT add expectation setters.
+Do NOT change the headline. Do NOT change the subtitle. Do NOT change the 3 bullet points.
+Do NOT change the spacing, padding, or layout. This is a PIXEL-PERFECT template.
 
-1. CONFIRMATION HERO (full viewport, centered)
-   - Animated checkmark icon (accent color gradient, pulse animation)
-   - Headline: "You're In. Here's What Happens Next."
-   - Subtext: Brief confirmation message
+The thank you page between [THANKYOU_START] and [THANKYOU_END] MUST be EXACTLY this HTML (with only the business name replaced):
 
-2. NEXT STEPS CARD
-   - Accent-colored left border (3px solid var(--accent-primary))
-   - Header: "BEFORE YOUR CALL" — small uppercase text
-   - 3 checklist items with accent-colored checkmark icons:
-     * "Check your email for the calendar invite"
-     * "Be ready to discuss your current revenue and funding goals"
-     * "Check your texts for messages from our team"
-
-3. EXPECTATION SETTER (optional but recommended)
-   - Timeline: "Within 24 hours, a funding specialist will..."
-   - What to have ready: monthly revenue, funding goals
-   - What NOT to worry about: no credit pull, no obligation
-
-4. FOOTER
-   - Copyright with dynamic year: new Date().getFullYear()
-   - Same bg-secondary as landing page footer
-
-=== THANK YOU PAGE CSS REQUIREMENTS ===
-
-The thank you page MUST include these CSS variables and styles:
-
-:root {
-    --accent-primary: [SAME HEX AS LANDING PAGE];
-    --accent-primary-dark: [DARKER SHADE];
-    --accent-secondary: [SAME AS LANDING PAGE];
-    --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-dark));
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #0c0a10;
-    --bg-card: #12101a;
-    --text-primary: #F0F6FC;
-    --text-secondary: #9CA3AF;
-    --text-muted: #6B7280;
-    --border-color: rgba(255,255,255,0.06);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're Confirmed</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* GHL DEPLOYMENT OVERRIDES */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #0a0a0a !important;
+    color: #F0F6FC !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+}
+.hl_page-creator--content,
+.hl-page-creator--content,
+#section-0,
+#preview-container,
+.page-container,
+[class*="hl_page"],
+[class*="hl-page"],
+[data-page-element],
+.row-fluid,
+.container-fluid,
+.container,
+.row,
+.col-lg-12,
+.col-md-12,
+.col-sm-12,
+.col-xs-12,
+[class*="col-"],
+.inner-container,
+.section-container,
+.content-wrapper {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
 }
 
-/* Checkmark animation */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #0a0a0a;
+    color: #F0F6FC;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ty-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px 40px;
+}
+
+.ty-content {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* Green checkmark circle */
 @keyframes checkPop {
     0% { transform: scale(0); opacity: 0; }
     50% { transform: scale(1.2); }
     100% { transform: scale(1); opacity: 1; }
 }
 .check-icon {
-    width: 80px;
-    height: 80px;
-    background: var(--gradient-primary);
+    width: 72px;
+    height: 72px;
+    background: #22c55e;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 24px;
+    margin: 0 auto 28px;
     animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-    box-shadow: 0 0 40px rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.3);
+}
+.check-icon svg {
+    width: 36px;
+    height: 36px;
+    color: white;
 }
 
-/* Next steps card */
+.ty-headline {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #F0F6FC;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+}
+
+.ty-subtitle {
+    font-size: 1rem;
+    color: #9CA3AF;
+    margin-bottom: 48px;
+}
+
+/* Before Your Call card */
 .next-steps-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--accent-primary);
+    background: rgba(18, 16, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 3px solid #22c55e;
     border-radius: 16px;
     padding: 32px;
-    max-width: 600px;
-    margin: 40px auto;
     text-align: left;
 }
+
+.card-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6B7280;
+    margin-bottom: 24px;
+}
+
 .step-item {
     display: flex;
     align-items: flex-start;
@@ -1906,54 +1974,96 @@ The thank you page MUST include these CSS variables and styles:
 .step-item:last-child {
     margin-bottom: 0;
 }
+
 .step-check {
     width: 24px;
     height: 24px;
-    background: rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.15);
+    min-width: 24px;
+    background: rgba(34, 197, 94, 0.15);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    color: var(--accent-primary);
+    margin-top: 2px;
+}
+.step-check svg {
+    width: 14px;
+    height: 14px;
+    color: #22c55e;
+}
+
+.step-text {
+    font-size: 0.95rem;
+    color: #D1D5DB;
+    line-height: 1.5;
+}
+.step-text strong {
+    color: #F0F6FC;
+    font-weight: 600;
+}
+
+/* Footer */
+.ty-footer {
+    text-align: center;
+    padding: 24px 20px;
+    color: #4B5563;
     font-size: 0.8rem;
 }
 
-=== THANK YOU PAGE MOBILE OPTIMIZATION ===
-
+/* Mobile */
 @media (max-width: 768px) {
-    .ty-hero {
-        min-height: 100vh;
-        min-height: 100dvh;
-        padding: 40px 16px;
-    }
-    .ty-headline {
-        font-size: clamp(1.4rem, 6vw, 2rem) !important;
-    }
-    .next-steps-card {
-        padding: 24px 20px;
-        margin: 24px 16px;
-    }
-    .check-icon {
-        width: 64px;
-        height: 64px;
-    }
+    .ty-main { padding: 40px 16px 24px; }
+    .ty-headline { font-size: 1.6rem; }
+    .ty-subtitle { margin-bottom: 32px; }
+    .next-steps-card { padding: 24px 20px; }
+    .check-icon { width: 60px; height: 60px; }
+    .check-icon svg { width: 30px; height: 30px; }
 }
+</style>
+</head>
+<body>
+<main class="ty-main">
+    <div class="ty-content">
+        <div class="check-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h1 class="ty-headline">You're Confirmed</h1>
+        <p class="ty-subtitle">Check your email for the calendar invite and call details.</p>
+        <div class="next-steps-card">
+            <div class="card-header">BEFORE YOUR CALL</div>
+            <div class="step-item">
+                <div class="step-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                <div class="step-text"><strong>Check your email</strong> for the calendar invite</div>
+            </div>
+            <div class="step-item">
+                <div class="step-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                <div class="step-text"><strong>Be ready to discuss</strong> your current revenue and funding goals</div>
+            </div>
+            <div class="step-item">
+                <div class="step-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                <div class="step-text"><strong>Check your texts</strong> for messages from our team</div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="ty-footer">
+    &copy; <script>document.write(new Date().getFullYear())</script> BUSINESS_NAME_HERE. All rights reserved.
+</footer>
+</body>
+</html>
 
 === MANDATORY THANK YOU PAGE RULES ===
 
-RULE TY1: The thank you page MUST use the same accent colors as the landing page. These are passed in via the accent_primary_hex and accent_secondary_hex variables.
-RULE TY2: Background must be #0a0a0a (same as landing page).
-RULE TY3: Font must be Inter (same as landing page).
-RULE TY4: The confirmation section must be vertically centered using min-height: 100vh; display: flex; align-items: center.
-RULE TY5: Include an animated checkmark icon using the accent gradient (not a static emoji or plain SVG).
-RULE TY6: The next steps card must have an accent-colored left border to create visual connection to the brand.
-RULE TY7: Include the GHL deployment overrides (same as landing page).
-RULE TY8: Include the same noise texture overlay as the landing page for visual continuity.
-RULE TY9: Include at least one background glow (radial gradient) so the page doesn't feel like a flat void.
-RULE TY10: Footer copyright must match the landing page footer style and use dynamic year.
-
-The thank you page MUST also include the GHL DEPLOYMENT OVERRIDES CSS at the top of its style block (same as landing page).
+RULE TY1: The thank you page MUST be output EXACTLY as the template above. The ONLY substitution is replacing BUSINESS_NAME_HERE with the client's actual business name.
+RULE TY2: The checkmark is ALWAYS green (#22c55e). It does NOT use the accent color. Green = confirmation.
+RULE TY3: The headline is ALWAYS "You're Confirmed". Do NOT change it to "You're In" or anything else.
+RULE TY4: The subtitle is ALWAYS "Check your email for the calendar invite and call details." Do NOT change it.
+RULE TY5: The card header is ALWAYS "BEFORE YOUR CALL". Do NOT change it.
+RULE TY6: The 3 bullet points are ALWAYS the exact text shown. Do NOT rewrite, rephrase, or add bullets.
+RULE TY7: Do NOT add any background glows, noise textures, radial gradients, or ambient effects. The page is intentionally minimal.
+RULE TY8: Do NOT add an "expectation setter" section, timeline, or any additional content beyond what is shown.
+RULE TY9: The footer uses dynamic year and the client's business name. That is the ONLY dynamic content.
+RULE TY10: Include the GHL deployment overrides at the top of the style block (already included in the template above).
 
 NOW GENERATE THE COMPLETE LANDING PAGE AND THANK YOU PAGE FOR THIS CLIENT.
 `);
