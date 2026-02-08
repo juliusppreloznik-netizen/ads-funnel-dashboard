@@ -1803,33 +1803,140 @@ BACKGROUND_TREATMENT: [1-7, name of treatment chosen]
 </html>
 [THANKYOU_END]
 
-THANK YOU PAGE — MANDATORY FORMAT:
-The thank you page MUST follow this EXACT simple layout. Do NOT deviate. Do NOT add extra sections, animations, or complexity.
+THANK YOU PAGE — v2.5 ENHANCED FORMAT:
 
-LAYOUT (top to bottom, centered on page):
-1. A large green circle with a white checkmark icon (SVG) — centered at top
-2. Headline: "You're Confirmed" — large, bold, white text, centered
-3. Subtitle: "Check your email for the calendar invite and call details." — smaller gray text, centered
-4. A card/box with dark background and subtle border containing:
-   - Header: "BEFORE YOUR CALL" — small uppercase text, left-aligned
-   - 3 bullet points, each with a small green checkmark icon:
+The thank you page must feel like a CONTINUATION of the funnel experience, not a dead end.
+It MUST use the SAME accent colors as the landing page.
+
+=== THANK YOU PAGE REQUIRED STRUCTURE ===
+
+1. CONFIRMATION HERO (full viewport, centered)
+   - Animated checkmark icon (accent color gradient, pulse animation)
+   - Headline: "You're In. Here's What Happens Next."
+   - Subtext: Brief confirmation message
+
+2. NEXT STEPS CARD
+   - Accent-colored left border (3px solid var(--accent-primary))
+   - Header: "BEFORE YOUR CALL" — small uppercase text
+   - 3 checklist items with accent-colored checkmark icons:
      * "Check your email for the calendar invite"
      * "Be ready to discuss your current revenue and funding goals"
      * "Check your texts for messages from our team"
-5. Footer at bottom: "© {current_year} {businessName}™. All rights reserved." — small gray text, centered
 
-STYLING RULES:
-- Background: solid black (#000000) or very dark (#0a0a0a) — NO gradients, NO patterns, NO noise
-- Font: Inter (same as landing page)
-- The green checkmark circle should use the landing page's accent color (or green #22c55e if accent is not green)
-- The card should have a subtle border (rgba(255,255,255,0.1)) and slightly lighter dark background
-- NO animations, NO glow effects, NO glassmorphism — just clean, simple, minimal
-- The page should be vertically centered
-- Max-width of content: 500px, centered
-- MUST be mobile responsive
+3. EXPECTATION SETTER (optional but recommended)
+   - Timeline: "Within 24 hours, a funding specialist will..."
+   - What to have ready: monthly revenue, funding goals
+   - What NOT to worry about: no credit pull, no obligation
 
-THAT'S IT. Nothing else on the page. No navigation, no extra sections, no social proof, no additional CTAs.
-The thank you page MUST use the SAME accent colors (primary + secondary) as the landing page.
+4. FOOTER
+   - Copyright with dynamic year: new Date().getFullYear()
+   - Same bg-secondary as landing page footer
+
+=== THANK YOU PAGE CSS REQUIREMENTS ===
+
+The thank you page MUST include these CSS variables and styles:
+
+:root {
+    --accent-primary: [SAME HEX AS LANDING PAGE];
+    --accent-primary-dark: [DARKER SHADE];
+    --accent-secondary: [SAME AS LANDING PAGE];
+    --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-primary-dark));
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #0c0a10;
+    --bg-card: #12101a;
+    --text-primary: #F0F6FC;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+    --border-color: rgba(255,255,255,0.06);
+}
+
+/* Checkmark animation */
+@keyframes checkPop {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.check-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+    box-shadow: 0 0 40px rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.3);
+}
+
+/* Next steps card */
+.next-steps-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-primary);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 600px;
+    margin: 40px auto;
+    text-align: left;
+}
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.step-item:last-child {
+    margin-bottom: 0;
+}
+.step-check {
+    width: 24px;
+    height: 24px;
+    background: rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--accent-primary);
+    font-size: 0.8rem;
+}
+
+=== THANK YOU PAGE MOBILE OPTIMIZATION ===
+
+@media (max-width: 768px) {
+    .ty-hero {
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 40px 16px;
+    }
+    .ty-headline {
+        font-size: clamp(1.4rem, 6vw, 2rem) !important;
+    }
+    .next-steps-card {
+        padding: 24px 20px;
+        margin: 24px 16px;
+    }
+    .check-icon {
+        width: 64px;
+        height: 64px;
+    }
+}
+
+=== MANDATORY THANK YOU PAGE RULES ===
+
+RULE TY1: The thank you page MUST use the same accent colors as the landing page. These are passed in via the accent_primary_hex and accent_secondary_hex variables.
+RULE TY2: Background must be #0a0a0a (same as landing page).
+RULE TY3: Font must be Inter (same as landing page).
+RULE TY4: The confirmation section must be vertically centered using min-height: 100vh; display: flex; align-items: center.
+RULE TY5: Include an animated checkmark icon using the accent gradient (not a static emoji or plain SVG).
+RULE TY6: The next steps card must have an accent-colored left border to create visual connection to the brand.
+RULE TY7: Include the GHL deployment overrides (same as landing page).
+RULE TY8: Include the same noise texture overlay as the landing page for visual continuity.
+RULE TY9: Include at least one background glow (radial gradient) so the page doesn't feel like a flat void.
+RULE TY10: Footer copyright must match the landing page footer style and use dynamic year.
+
+The thank you page MUST also include the GHL DEPLOYMENT OVERRIDES CSS at the top of its style block (same as landing page).
 
 NOW GENERATE THE COMPLETE LANDING PAGE AND THANK YOU PAGE FOR THIS CLIENT.
 `);
@@ -2110,6 +2217,344 @@ Frame D... The Two-Layer System:
 ══════════════════ END OF v2.4 COPY VARIATION ENGINE ══════════════════
 `);
 
+
+
+  // SECTION 31: v2.5 MOBILE OPTIMIZATION & GHL DEPLOYMENT
+  parts.push(`══════════════════ v2.5 MOBILE OPTIMIZATION & GHL DEPLOYMENT ══════════════════
+
+=== MOBILE OPTIMIZATION CSS ===
+
+Include this COMPLETE mobile optimization CSS block in every generated landing page. This is NOT optional. Every single rule must be present.
+
+/* ===== MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+    /* EYEBROW: Force single-line wrapping, not flex splitting */
+    .eyebrow {
+        display: inline-block !important;
+        text-align: center;
+        padding: 12px 20px;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        max-width: 90%;
+    }
+
+    /* HERO: Reduce headline size to prevent excessive wrapping */
+    .hero-headline {
+        font-size: clamp(1.8rem, 8vw, 2.5rem) !important;
+        letter-spacing: -0.01em;
+    }
+
+    /* HERO: Tighten subheadline */
+    .hero-sub {
+        font-size: clamp(0.9rem, 3.5vw, 1.05rem) !important;
+        padding: 0 8px;
+    }
+
+    /* HERO: Reduce vertical padding so content doesn't feel lost */
+    .hero {
+        min-height: 100vh;
+        min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+        padding: 60px 16px;
+    }
+
+    /* CTA: Full width on mobile */
+    .cta-wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+    .cta-primary {
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 1rem;
+    }
+    .cta-subtext {
+        width: 100%;
+        padding: 10px 24px;
+    }
+
+    /* CARDS: Stack to single column */
+    .grid-2col,
+    .grid-3col,
+    .grid-4col,
+    .benefits-grid,
+    .killer-cards,
+    .testimonials-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    /* SECTIONS: Reduce padding on mobile */
+    section {
+        padding: 60px 0 !important;
+    }
+
+    /* STATS: Stack vertically, reduce number size */
+    .stats-grid {
+        flex-direction: column;
+        gap: 32px;
+    }
+    .stat-number {
+        font-size: clamp(2.5rem, 12vw, 3.5rem) !important;
+    }
+
+    /* PHASE CARDS: Remove horizontal hover (no hover on mobile) */
+    .phase-card:hover {
+        transform: none !important;
+    }
+
+    /* TABLE: Smaller text, tighter padding */
+    .approval-table th,
+    .approval-table td,
+    .results-table th,
+    .results-table td {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+
+    /* TESTIMONIAL IMAGE: Reduce aspect ratio on mobile */
+    .testimonial-image {
+        aspect-ratio: 16/9;
+    }
+
+    /* GUARANTEE BOX: Stack vertically */
+    .guarantee-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    /* SECTION HEADLINES: Scale down */
+    .section-headline {
+        font-size: clamp(1.4rem, 6vw, 2rem) !important;
+        padding: 0 8px;
+    }
+
+    /* HIDDEN PROBLEM EXPLANATION: Tighter padding */
+    .hidden-killer-explanation,
+    .explain-box {
+        padding: 24px 20px;
+    }
+
+    /* MODAL: Full screen on mobile */
+    .survey-modal-content {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        max-height: 100vh;
+        border-radius: 0;
+        padding: 16px;
+    }
+}
+
+/* Small phones (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .hero-headline {
+        font-size: 1.6rem !important;
+    }
+    .hero-sub {
+        font-size: 0.85rem !important;
+    }
+    .eyebrow {
+        font-size: 0.75rem;
+        padding: 10px 16px;
+    }
+    section {
+        padding: 48px 0 !important;
+    }
+}
+
+=== MANDATORY MOBILE RULES ===
+
+RULE M1: Eyebrow must use display: inline-block on mobile, NEVER inline-flex. Flex causes text to split into columns.
+RULE M2: Use 100dvh alongside 100vh for hero min-height. Mobile browsers have a dynamic toolbar that changes viewport height. dvh accounts for this.
+RULE M3: All grids collapse to single column at 768px.
+RULE M4: CTA buttons must be full-width on mobile.
+RULE M5: Remove all hover transforms on mobile (no translateX, translateY). Mobile has no hover state.
+RULE M6: Section padding reduces to 60px on mobile (not 100px). Screen space is precious.
+RULE M7: Modal becomes full-screen on mobile (no border-radius, 100% width/height).
+RULE M8: Test headline at 375px width. If it exceeds 5 lines, it's too long. Reduce font size.
+
+=== FULL-WIDTH RENDERING FIXES ===
+
+Include these CSS rules in every generated landing page to ensure full-bleed rendering:
+
+/* ===== FULL-WIDTH RENDERING FIXES ===== */
+
+/* Remove ANY max-width constraint on sections themselves */
+section {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Hero glow: extend further and use viewport units */
+.hero::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -10%;
+    width: 80%;
+    height: 120%;
+    background: radial-gradient(ellipse, rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.08) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* CRITICAL: Use overflow: visible on hero, overflow: hidden on body */
+body {
+    overflow-x: hidden; /* Prevents horizontal scroll from oversized glows */
+}
+.hero {
+    overflow: visible; /* Let glows bleed naturally */
+}
+
+/* Ensure sections stretch full viewport width */
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Background on body, not just sections */
+body {
+    background-color: var(--bg-primary);
+}
+
+/* Section dividers: full width */
+.section-divider {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+=== MANDATORY FULL-WIDTH RULES ===
+
+RULE F1: body must have overflow-x: hidden to prevent horizontal scroll caused by glow pseudo-elements.
+RULE F2: Hero section uses overflow: visible (not overflow: hidden). The glows should bleed past the section edges; the body overflow-x clips them.
+RULE F3: Section dividers use width: 100% with max-width: none and margin: 0. Never constrain dividers to a container width.
+RULE F4: Background glows use vw units for width when possible (width: 80vw not width: 80%) to ensure they scale with the full viewport, not the parent.
+RULE F5: NEVER put a max-width on a <section> element. Only .container elements inside sections get max-width constraints.
+
+=== GHL DEPLOYMENT OVERRIDES ===
+
+Add this CSS block to the TOP of every generated landing page and thank you page <style> section. This overrides GoHighLevel's injected styles:
+
+/* ===== GHL DEPLOYMENT OVERRIDES ===== */
+/* Reset GHL's inherited styles */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #0a0a0a !important;
+    color: #F0F6FC !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+}
+
+/* Override GHL wrapper constraints */
+.hl_page-creator--content,
+.hl-page-creator--content,
+#section-0,
+[class*="hl_page"],
+[class*="hl-page"] {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+}
+
+/* GHL sometimes adds its own background */
+div[data-page-element] {
+    background: transparent !important;
+}
+
+/* Ensure iframes in modals render correctly in GHL */
+[id^="surveyModal"] iframe {
+    width: 100% !important;
+    min-height: 500px !important;
+    border: none !important;
+}
+
+/* GHL survey widget fix */
+.survey-modal iframe,
+.modal-card iframe {
+    width: 100% !important;
+    min-height: 450px !important;
+    border: none !important;
+    background: transparent;
+}
+
+=== GHL MODAL SYSTEM ===
+
+Use this JavaScript for modal open/close that works in GHL context. Include in a <script> tag at the end of the HTML:
+
+function openSurveyModal(modalId) {
+    var modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeSurveyModal(modalId) {
+    var modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+/* Close on backdrop click */
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('survey-modal')) {
+        e.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
+/* Close on Escape key */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        var modals = document.querySelectorAll('.survey-modal');
+        modals.forEach(function(m) { m.style.display = 'none'; });
+        document.body.style.overflow = 'auto';
+    }
+});
+
+=== MANDATORY GHL RULES ===
+
+RULE G1: Include the GHL deployment overrides at the TOP of the <style> block in every generated page.
+RULE G2: All CSS must be inline (inside <style> tags within the HTML). No external stylesheets except Google Fonts.
+RULE G3: All JavaScript must be inline (inside <script> tags within the HTML). No external JS files.
+RULE G4: The Google Fonts <link> tag must be placed INSIDE the custom code block, before the <style> tag.
+RULE G5: Use !important on all body/html resets to override GHL's injected styles.
+RULE G6: Survey modal iframes must have width: 100% !important and min-height: 450px !important and border: none !important.
+RULE G7: Use a single shared modal with one iframe. All CTA buttons point to the same modal ID. This reduces HTML bloat. Use ONE modal, ONE iframe.
+RULE G8: Modal backdrop click and Escape key handlers must be added via document.addEventListener, not inline onclick on the overlay div.
+RULE G9: Copyright year must be dynamically generated: new Date().getFullYear().
+RULE G10: The SURVEY_ID_PLACEHOLDER text in iframe src must remain exactly as-is. The Command Center replaces it at deployment time with the client's actual survey ID.
+
+=== SINGLE MODAL PATTERN ===
+
+RULE MOD1: Generate exactly ONE modal div with ONE iframe. All CTA buttons open this same modal. Do NOT generate separate modals per CTA button.
+
+The single shared modal HTML (placed before closing body):
+
+<div id="surveyModal" class="survey-modal">
+    <div class="survey-modal-content">
+        <button onclick="closeSurveyModal('surveyModal')" class="survey-modal-close">&times;</button>
+        <iframe src="https://api.leadconnectorhq.com/widget/survey/SURVEY_ID_PLACEHOLDER"></iframe>
+    </div>
+</div>
+
+All CTA buttons use the same onclick:
+
+<a href="#" class="cta-wrapper" onclick="openSurveyModal('surveyModal');return false;">
+    <span class="cta-primary">Button Text Here</span>
+    <span class="cta-subtext">Subtext here</span>
+</a>
+
+══════════════════ END OF v2.5 MOBILE & GHL OPTIMIZATION ══════════════════
+`);
 
   return parts.join('\n');
 }

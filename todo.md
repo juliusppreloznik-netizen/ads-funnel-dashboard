@@ -115,3 +115,18 @@
 - [x] Add ALL 10 variation pools to VSL generation prompt in generationPrompts.ts
 - [x] Add variation instruction + em dash rule to ad and VSL prompts
 - [x] Run tests and verify all pass (31/31)
+## Manus Update v2.5 - Mobile Optimization, Full-Width Rendering & GHL Deployment
+- [x] Add Mobile Optimization CSS block (@media queries for 768px and 375px) to landing page prompt
+- [x] Add 8 Mandatory Mobile Rules (M1-M8) to landing page prompt
+- [x] Add Full-Width Rendering CSS fixes to landing page prompt
+- [x] Add 5 Mandatory Full-Width Rules (F1-F5) to landing page prompt
+- [x] Add GHL Deployment Overrides CSS to landing page prompt
+- [x] Add GHL Modal System JS (open/close/backdrop/escape) to landing page prompt
+- [x] Add 10 Mandatory GHL Rules (G1-G10) to landing page prompt
+- [x] Add Single Modal pattern (MOD1) to landing page prompt
+- [x] Update Thank You page prompt with v2.5 structure (confirmation hero, next steps card, expectation setter, footer)
+- [x] Add Thank You page CSS requirements (checkmark animation, next-steps-card, step items)
+- [x] Add Thank You page mobile optimization CSS
+- [x] Add 10 Mandatory TY Rules (TY1-TY10) to thank you page prompt
+- [x] Add GHL Deployment Overrides to thank you page prompt
+- [x] Run tests and verify all pass (31/31)
