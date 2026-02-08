@@ -153,3 +153,15 @@
 - [x] Remove Landing Page, Thank You Page, Survey CSS tabs from asset viewer
 - [x] Keep VSL and Ads generation buttons and tabs untouched
 - [x] Run tests and verify all pass (31/31)
+
+## Fix Unique Mechanism in VSL & Ads Generation
+- [ ] Trace uniqueMechanism flow from frontend to backend
+- [ ] Ensure uniqueMechanism is passed to VSL generation prompt
+- [ ] Ensure uniqueMechanism is passed to Ads generation prompt
+- [ ] Run tests and verify all pass
+
+## Revert VSL & Ads Prompts to Original
+- [x] Identify where VSL and Ads prompts are defined (getVSLPrompt, getAdsPrompt)
+- [x] Restore original prompt content from initial checkpoint (7f43eb2)
+- [x] Unique mechanism properly included via ${uniqueMechanism} interpolation throughout
+- [x] Run tests and verify all pass (31/31)

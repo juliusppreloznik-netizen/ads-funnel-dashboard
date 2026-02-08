@@ -424,26 +424,28 @@ BACKGROUND_TREATMENT:radial_glow
   });
 
   describe('VSL and Ad Prompts include Copy DNA', () => {
-    it('should include Copy DNA in VSL prompt', async () => {
+    it('should include unique mechanism in VSL prompt', async () => {
       const { getVSLPrompt } = await import('./generationPrompts');
       
       const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
       
-      expect(prompt).toContain('COPY DNA');
-      expect(prompt).toContain('VOICE');
       expect(prompt).toContain('Test Mechanism');
-      expect(prompt).toContain('VSL COPY ADDENDUM');
+      expect(prompt).toContain('Test Biz');
+      expect(prompt).toContain('HOOK');
+      expect(prompt).toContain('MECHANISM REVEAL');
+      expect(prompt).toContain('3,000-4,000 words');
     });
 
-    it('should include Copy DNA in Ad prompt', async () => {
+    it('should include unique mechanism in Ad prompt', async () => {
       const { getAdsPrompt } = await import('./generationPrompts');
       
       const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
       
-      expect(prompt).toContain('COPY DNA');
-      expect(prompt).toContain('VOICE');
       expect(prompt).toContain('Test Mechanism');
-      expect(prompt).toContain('AD COPY ADDENDUM');
+      expect(prompt).toContain('Test Biz');
+      expect(prompt).toContain('Ad 1');
+      expect(prompt).toContain('Ad 5');
+      expect(prompt).toContain('5 distinct video ad scripts');
     });
   });
 });
