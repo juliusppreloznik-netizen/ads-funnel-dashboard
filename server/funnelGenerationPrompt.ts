@@ -417,6 +417,14 @@ A radial glow centered above a section's main content, creating a 'spotlight fro
   pointer-events: none;
 }
 PURPOSE: Makes the CTA section feel like a finale. The spotlight draws the eye to the center where the button lives.
+
+=== CRITICAL GLOW CONTAINMENT RULES ===
+GLOW RULE 1: Every section that contains a glow (::before, ::after, or child element) MUST have overflow: hidden EXCEPT the hero section.
+GLOW RULE 2: The hero section gets overflow: visible so its ambient glow can bleed naturally. The body's overflow-x: hidden clips it at the viewport edge.
+GLOW RULE 3: NEVER place ANY glow effect (radial-gradient, ambient-glow, ::before, ::after) on or below the footer. The footer is the absolute end of the page.
+GLOW RULE 4: The body element must NOT have any ::after pseudo-element. No page-level trailing glows.
+GLOW RULE 5: All glow pseudo-elements must be position: absolute with pointer-events: none and z-index: 0. They must be INSIDE a section that has position: relative and overflow: hidden.
+GLOW RULE 6: If a glow is visible below the footer in the preview, the page is BROKEN. The footer must clip all effects.
 `);
 
   // ═══════════════════════════════════════════════════════════════
@@ -1092,6 +1100,11 @@ GLOWS & LIGHT:
 [ ] Hero has ambient background glow (off-center, ellipse)
 [ ] Final CTA section has spotlight glow (::before)
 [ ] At least one pulsing glow element on the page
+[ ] NO glow effects on or below the footer — footer has overflow: hidden !important
+[ ] All sections except hero have overflow: hidden !important
+[ ] Hero section has overflow: visible !important
+[ ] body has NO ::after pseudo-element with glow
+[ ] All glow pseudo-elements are position: absolute inside position: relative parents
 
 MOTION:
 [ ] Hero elements have staggered fadeInUp (0s, 0.1s, 0.2s, 0.3s delays)
@@ -1106,6 +1119,10 @@ LAYOUT:
 [ ] Container max-width is 1200px (800px for narrow sections)
 [ ] Benefits grid is max-width: 1000px, centered
 [ ] How It Works phases are vertical stack, not grid
+[ ] Every <section> has width: 100vw !important and max-width: 100vw !important
+[ ] GHL deployment overrides are at the TOP of the <style> block
+[ ] All GHL wrapper classes overridden with max-width: none !important
+[ ] Footer is the LAST element before modal div and </body> — no trailing empty space
 
 COMPONENTS:
 [ ] Every section ends with a stacked CTA (except stats and footer)
@@ -2381,11 +2398,26 @@ Include these CSS rules in every generated landing page to ensure full-bleed ren
 
 /* ===== FULL-WIDTH RENDERING FIXES ===== */
 
-/* Remove ANY max-width constraint on sections themselves */
+/* CRITICAL: Force every section to span the full viewport */
 section {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    position: relative;
+    box-sizing: border-box !important;
+}
+
+/* Container inside sections gets the max-width constraint */
+section > .container,
+section > [class*="container"] {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
     width: 100%;
-    max-width: 100%;
-    margin: 0;
+    box-sizing: border-box;
 }
 
 /* Hero glow: extend further and use viewport units */
@@ -2394,26 +2426,34 @@ section {
     position: absolute;
     top: -30%;
     left: -10%;
-    width: 80%;
+    width: 80vw;
     height: 120%;
     background: radial-gradient(ellipse, rgba(PRIMARY_R,PRIMARY_G,PRIMARY_B,0.08) 0%, transparent 65%);
     pointer-events: none;
     z-index: 0;
 }
 
-/* CRITICAL: Use overflow: visible on hero, overflow: hidden on body */
+/* CRITICAL: overflow rules for glow containment */
 body {
-    overflow-x: hidden; /* Prevents horizontal scroll from oversized glows */
+    overflow-x: hidden !important; /* Prevents horizontal scroll from oversized glows */
+}
+html {
+    overflow-x: hidden !important;
 }
 .hero {
-    overflow: visible; /* Let glows bleed naturally */
+    overflow: visible !important; /* Let hero glows bleed naturally */
+}
+/* ALL other sections clip their glows */
+section:not(.hero):not(:first-of-type) {
+    overflow: hidden !important;
 }
 
-/* Ensure sections stretch full viewport width */
+/* Ensure html/body stretch full viewport width */
 html, body {
-    width: 100%;
-    margin: 0;
-    padding: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Background on body, not just sections */
@@ -2423,25 +2463,38 @@ body {
 
 /* Section dividers: full width */
 .section-divider {
-    width: 100%;
-    max-width: none;
-    margin: 0;
+    width: 100vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+/* Footer: clip everything, no glow leaks */
+footer {
+    overflow: hidden !important;
+    position: relative;
+}
+footer::before,
+footer::after {
+    display: none !important;
 }
 
 === MANDATORY FULL-WIDTH RULES ===
 
-RULE F1: body must have overflow-x: hidden to prevent horizontal scroll caused by glow pseudo-elements.
+RULE F1: body AND html must have overflow-x: hidden !important to prevent horizontal scroll caused by glow pseudo-elements.
 RULE F2: Hero section uses overflow: visible (not overflow: hidden). The glows should bleed past the section edges; the body overflow-x clips them.
-RULE F3: Section dividers use width: 100% with max-width: none and margin: 0. Never constrain dividers to a container width.
+RULE F3: Section dividers use width: 100vw with max-width: none and margin: 0. Never constrain dividers to a container width.
 RULE F4: Background glows use vw units for width when possible (width: 80vw not width: 80%) to ensure they scale with the full viewport, not the parent.
 RULE F5: NEVER put a max-width on a <section> element. Only .container elements inside sections get max-width constraints.
+RULE F6: Every section MUST use width: 100vw !important and max-width: 100vw !important. The inner .container div gets the 1200px max-width.
+RULE F7: The footer MUST have overflow: hidden !important and NO ::before or ::after pseudo-elements with glows.
+RULE F8: All sections except the hero MUST have overflow: hidden !important to contain their glow effects within their boundaries.
 
 === GHL DEPLOYMENT OVERRIDES ===
 
 Add this CSS block to the TOP of every generated landing page and thank you page <style> section. This overrides GoHighLevel's injected styles:
 
 /* ===== GHL DEPLOYMENT OVERRIDES ===== */
-/* Reset GHL's inherited styles */
+/* NUCLEAR RESET: Override ALL GHL container constraints */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -2450,24 +2503,76 @@ html, body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     overflow-x: hidden !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
 }
 
-/* Override GHL wrapper constraints */
+/* Override ALL GHL wrapper and grid constraints */
 .hl_page-creator--content,
 .hl-page-creator--content,
 #section-0,
+#preview-container,
+.page-container,
 [class*="hl_page"],
-[class*="hl-page"] {
+[class*="hl-page"],
+[data-page-element],
+.row-fluid,
+.container-fluid,
+.container,
+.row,
+.col-lg-12,
+.col-md-12,
+.col-sm-12,
+.col-xs-12,
+[class*="col-"],
+.inner-container,
+.section-container,
+.content-wrapper {
     max-width: none !important;
     width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     background: transparent !important;
+    box-sizing: border-box !important;
 }
 
-/* GHL sometimes adds its own background */
-div[data-page-element] {
+/* GHL adds its own background and padding to various wrappers */
+div[data-page-element],
+div[class*="inner"],
+.hl_wrapper {
     background: transparent !important;
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* ===== GLOW CONTAINMENT ===== */
+/* Prevent glows from bleeding past sections */
+section {
+    position: relative;
+    overflow: hidden !important;
+}
+/* Only the hero gets overflow visible for its glow */
+section:first-of-type,
+.hero {
+    overflow: visible !important;
+}
+/* The LAST section and footer MUST clip all glows */
+footer,
+section:last-of-type {
+    overflow: hidden !important;
+}
+/* Background glows must be contained within their parent section */
+.ambient-glow,
+[class*="glow"] {
+    position: absolute !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+}
+/* NO background effects below the footer */
+body::after {
+    display: none !important;
 }
 
 /* Ensure iframes in modals render correctly in GHL */
@@ -2532,6 +2637,11 @@ RULE G7: Use a single shared modal with one iframe. All CTA buttons point to the
 RULE G8: Modal backdrop click and Escape key handlers must be added via document.addEventListener, not inline onclick on the overlay div.
 RULE G9: Copyright year must be dynamically generated: new Date().getFullYear().
 RULE G10: The SURVEY_ID_PLACEHOLDER text in iframe src must remain exactly as-is. The Command Center replaces it at deployment time with the client's actual survey ID.
+RULE G11: NEVER place any radial-gradient glow, ambient-glow, or ::before/::after pseudo-element glow BELOW the last content section. The footer section and everything after it must have overflow: hidden and NO glow effects.
+RULE G12: Every section except the hero MUST have overflow: hidden to contain its glows within its own boundaries. Glows must NOT bleed into adjacent sections or below the page.
+RULE G13: The body element must NOT have any ::after pseudo-element with a glow. If you need a page-level ambient effect, place it inside a specific section with overflow: hidden.
+RULE G14: All GHL wrapper classes (.row-fluid, .container-fluid, .container, .row, [class*="col-"], .inner-container, .section-container, .content-wrapper, [data-page-element]) must be overridden with max-width: none !important and width: 100% !important. This is NON-NEGOTIABLE for full-width rendering in GHL.
+RULE G15: The footer must be the LAST element before the modal div and closing </body>. There must be NO empty space, no extra divs, and no background effects after the footer.
 
 === SINGLE MODAL PATTERN ===
 

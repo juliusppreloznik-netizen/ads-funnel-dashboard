@@ -130,3 +130,12 @@
 - [x] Add 10 Mandatory TY Rules (TY1-TY10) to thank you page prompt
 - [x] Add GHL Deployment Overrides to thank you page prompt
 - [x] Run tests and verify all pass (31/31)
+
+## GHL Rendering Fixes
+- [x] Fix full-width: Add stronger GHL container overrides to force 100vw width (override .row-fluid, .container-fluid, .col-*, .container, .row, .inner-container, .section-container, .content-wrapper, [data-page-element], #preview-container, .page-container, .hl_wrapper)
+- [x] Fix glow bleed: Constrain background glows with overflow:hidden on all sections except hero, footer clips all effects, body has no ::after glow
+- [x] Add explicit instructions in prompt to NOT place radial gradient glows below the last section (GLOW RULES 1-6, G11-G15, F6-F8)
+- [x] Add glow containment checks to quality checklist (5 new items)
+- [x] Add GHL full-width checks to layout checklist (4 new items)
+- [x] Upgrade sections to use width: 100vw !important for full-bleed rendering
+- [x] All 31 tests passing
