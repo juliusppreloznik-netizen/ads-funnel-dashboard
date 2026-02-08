@@ -8,6 +8,43 @@ Client Information:
 - Business Name: ${client.businessName}
 - Unique Mechanism: "${uniqueMechanism}"
 
+=== COPY DNA — VOICE & TONE ===
+VOICE CHARACTERISTICS:
+- Confident but not arrogant — 'We've funded 500+ businesses' not 'We're the best in the world'
+- Specific over vague — '$2.4M funded last quarter' not 'lots of money funded'
+- Empathetic to pain — acknowledge the struggle before presenting the solution
+- Urgency without desperation — 'Limited spots available this month' not 'ACT NOW!!!'
+- Professional but conversational — like a trusted advisor, not a corporate brochure
+- Direct response principles — every sentence moves toward the CTA
+
+TONE RULES:
+1. Use second person ('you', 'your') — speak directly to the reader
+2. Use present tense — 'You get approved' not 'You will get approved'
+3. Use active voice — 'We fund your business' not 'Your business is funded by us'
+4. Use concrete numbers — '$50K-$500K' not 'significant funding'
+5. Use power words — 'unlock', 'secure', 'guaranteed', 'proven', 'exclusive'
+6. Avoid jargon — 'business credit lines' not 'revolving credit facilities'
+7. Short sentences for impact — vary between 5-word punches and 15-word explanations
+8. One idea per paragraph — don't stack multiple concepts
+
+=== VSL COPY ADDENDUM ===
+VSL STRUCTURE:
+1. Hook (0-30 seconds): Shocking stat or bold claim that stops the scroll
+2. Problem Agitation (30-90 seconds): Paint the pain vividly. Make them feel it.
+3. Failed Solutions (90-120 seconds): Why banks, online lenders, and DIY approaches fail
+4. Mechanism Reveal (120-180 seconds): Introduce your unique approach
+5. How It Works (180-240 seconds): Simple 3-step explanation
+6. Social Proof (240-300 seconds): 2-3 client success stories with specific numbers
+7. Offer + CTA (300-360 seconds): What they get, the guarantee, and exactly what to do next
+
+VSL TONE:
+- Conversational, like talking to a friend over coffee
+- Use 'you' and 'your' constantly
+- Short sentences. Punchy. Direct.
+- Pause indicators: '...' for dramatic pauses
+- Emphasis indicators: [CAPS] for words to stress
+
+=== ORIGINAL VSL STRUCTURE REQUIREMENTS ===
 Your task is to write a complete VSL script that follows the exact style, voicing, and structure of the "Secondary Bureau Attack Method VSL" reference.
 
 STYLE & VOICING REQUIREMENTS:
@@ -77,6 +114,54 @@ Client Information:
 - Business Name: ${client.businessName}
 - Unique Mechanism: "${uniqueMechanism}"
 
+=== COPY DNA — VOICE & TONE ===
+VOICE CHARACTERISTICS:
+- Confident but not arrogant — 'We've funded 500+ businesses' not 'We're the best in the world'
+- Specific over vague — '$2.4M funded last quarter' not 'lots of money funded'
+- Empathetic to pain — acknowledge the struggle before presenting the solution
+- Urgency without desperation — 'Limited spots available this month' not 'ACT NOW!!!'
+- Professional but conversational — like a trusted advisor, not a corporate brochure
+- Direct response principles — every sentence moves toward the CTA
+
+TONE RULES:
+1. Use second person ('you', 'your') — speak directly to the reader
+2. Use present tense — 'You get approved' not 'You will get approved'
+3. Use active voice — 'We fund your business' not 'Your business is funded by us'
+4. Use concrete numbers — '$50K-$500K' not 'significant funding'
+5. Use power words — 'unlock', 'secure', 'guaranteed', 'proven', 'exclusive'
+6. Avoid jargon — 'business credit lines' not 'revolving credit facilities'
+7. Short sentences for impact — vary between 5-word punches and 15-word explanations
+8. One idea per paragraph — don't stack multiple concepts
+
+HEADLINE PATTERNS:
+Pattern 1: [Mechanism] That [Benefit] — [Timeframe]
+Pattern 2: The [Adjective] Way to [Benefit] Without [Pain Point]
+Pattern 3: How [Audience] Are [Achieving Result] Using [Mechanism]
+Pattern 4: Stop [Pain]. Start [Benefit].
+Pattern 5: [Number] [Audience] Can't Be Wrong — [Social Proof Statement]
+
+=== AD COPY ADDENDUM ===
+AD HEADLINE RULES:
+- Max 40 characters for primary headline
+- Use numbers: '$50K-$500K' not 'significant funding'
+- Lead with benefit or pain: 'Denied by Banks?' or 'Get $100K in 48hrs'
+- Include the mechanism name when possible
+
+AD BODY RULES:
+- Max 125 characters for primary text
+- One clear CTA per ad
+- Social proof number in every ad: '500+ businesses funded'
+- Urgency element: 'Limited spots' or 'This month only'
+
+AD VARIATIONS:
+Generate 5 distinct ad variations per client:
+1. Pain-focused: Lead with the problem
+2. Benefit-focused: Lead with the outcome
+3. Social proof-focused: Lead with numbers/testimonials
+4. Mechanism-focused: Lead with the unique approach
+5. Urgency-focused: Lead with scarcity/timeline
+
+=== ORIGINAL AD STRUCTURE ===
 Your task is to write 5 distinct video ad scripts (45-90 seconds each when read aloud) using "${uniqueMechanism}" as the core mechanism.
 
 STYLE & VOICING REQUIREMENTS:
@@ -212,17 +297,11 @@ export function applyLandingPageReplacements(
     result = result.replace(/#ED6D05/gi, hexColor);
   }
 
-  // Apply text replacements (minimal - just the key copy elements)
-  // Note: The template uses Framer components, so we need to find and replace within the HTML structure
-  // For now, just return the template as-is since the structure is complex
-  // In a production system, you'd parse the HTML and replace specific text nodes
-
   return result;
 }
 
 export function loadLandingPageTemplate(): string {
   try {
-    // Use absolute path from project root since __dirname varies in dev vs prod
     const templatePath = join(process.cwd(), 'server/landingPageTemplate.html');
     return readFileSync(templatePath, 'utf-8');
   } catch (error) {

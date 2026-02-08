@@ -78,3 +78,15 @@
 - [x] Update response parsing to extract 4 metadata lines (ACCENT_PRIMARY, ACCENT_SECONDARY, TEMPLATE_USED, BACKGROUND_TREATMENT)
 - [x] Store metadata in client record and new fields
 - [x] Write/update tests (26 tests passing)
+
+## Manus Update v2.2 CopyDNA + v2.3 DesignOverhaul + Design Bible
+- [x] Rewrite funnelGenerationPrompt.ts with complete Design Bible (16 chapters)
+- [x] Include v2.3 Design Overhaul (18 mandatory rules, 5 new components, 11-section order)
+- [x] Include v2.2 Copy DNA (voice & tone, headline patterns, section-by-section copy guide)
+- [x] Include v2.2 Landing Page Copy Guide
+- [x] Include v2.2 Ad Copy Addendum in generationPrompts.ts
+- [x] Include v2.2 VSL Copy Addendum in generationPrompts.ts
+- [x] Include 3 Reference Templates (A: Purple Glassmorphism, B: Matrix/Hacker, C: Dark Fintech)
+- [x] Include output format with metadata lines
+- [x] Fix parseFunnelResponse to handle both old and new TY delimiters
+- [x] All 31 tests passing (funnels: 21, clients: 9, auth: 1)

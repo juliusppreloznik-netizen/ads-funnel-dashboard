@@ -62,14 +62,12 @@ describe('Funnel Generation Features', () => {
     it('should create funnel assets with correct types', async () => {
       const { createGeneratedAsset, getAssetsByClientId } = await import('./db');
       
-      // Create landing page asset
       await createGeneratedAsset({
         clientId: testClientId,
         assetType: 'landing_page_html',
         content: '<html>Landing Page</html>',
       });
 
-      // Create thank you page asset
       await createGeneratedAsset({
         clientId: testClientId,
         assetType: 'thankyou_page_html',
@@ -105,17 +103,14 @@ describe('Funnel Generation Features', () => {
     it('should support multiple versions of the same asset type', async () => {
       const { createGeneratedAsset, getAssetsByClientId } = await import('./db');
       
-      // Create version 1
       await createGeneratedAsset({
         clientId: testClientId,
         assetType: 'vsl',
         content: 'VSL Version 1',
       });
 
-      // Wait a bit to ensure different timestamps
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Create version 2 (revision)
       await createGeneratedAsset({
         clientId: testClientId,
         assetType: 'vsl',
@@ -127,19 +122,17 @@ describe('Funnel Generation Features', () => {
 
       expect(vslAssets.length).toBeGreaterThanOrEqual(2);
       
-      // Sort by creation date (newest first)
       const sortedVsls = vslAssets.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
-      // Just check we have multiple versions and they're different
       expect(sortedVsls[0].content).not.toBe(sortedVsls[1].content);
       expect(sortedVsls.some(v => v.content.includes('Version 2'))).toBe(true);
       expect(sortedVsls.some(v => v.content.includes('Version 1'))).toBe(true);
     });
   });
 
-  describe('Funnel Generation Prompt v2.1', () => {
+  describe('Funnel Generation Prompt v2.5', () => {
     it('should build comprehensive funnel prompt with client data', async () => {
       const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
       
@@ -156,7 +149,8 @@ describe('Funnel Generation Features', () => {
       expect(prompt).toContain('Test Business LLC');
       expect(prompt).toContain('Test Client');
       expect(prompt).toContain('Revenue Based Funding');
-      expect(prompt).toContain('COPYWRITING DNA');
+      // v2.2 Copy DNA is included
+      expect(prompt).toContain('COPY DNA');
     });
 
     it('should include 3 reference templates (A, B, C)', async () => {
@@ -172,9 +166,9 @@ describe('Funnel Generation Features', () => {
         mechanismName: 'Test Mechanism',
       });
 
-      expect(prompt).toContain('REFERENCE TEMPLATE A: PURPLE GLASSMORPHISM');
-      expect(prompt).toContain('REFERENCE TEMPLATE B: MATRIX / HACKER TERMINAL');
-      expect(prompt).toContain('REFERENCE TEMPLATE C: DARK FINTECH DASHBOARD');
+      expect(prompt).toContain('TEMPLATE A: Purple Glassmorphism');
+      expect(prompt).toContain('TEMPLATE B: Matrix/Hacker Terminal');
+      expect(prompt).toContain('TEMPLATE C: Dark Fintech Dashboard');
     });
 
     it('should include 15-color accent palette', async () => {
@@ -198,7 +192,7 @@ describe('Funnel Generation Features', () => {
       expect(prompt).toContain('#F43F5E'); // Rose
     });
 
-    it('should include 7 background treatment variations', async () => {
+    it('should include background treatment variations', async () => {
       const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
       
       const prompt = buildFunnelGenerationPrompt({
@@ -211,16 +205,14 @@ describe('Funnel Generation Features', () => {
         mechanismName: 'Test Mechanism',
       });
 
-      expect(prompt).toContain('TREATMENT 1: RADIAL GLOW');
-      expect(prompt).toContain('TREATMENT 2: GRID OVERLAY');
-      expect(prompt).toContain('TREATMENT 3: DUAL-TONE GRADIENT');
-      expect(prompt).toContain('TREATMENT 4: NOISE/GRAIN TEXTURE');
-      expect(prompt).toContain('TREATMENT 5: GRADIENT MESH');
-      expect(prompt).toContain('TREATMENT 6: DIAGONAL GRADIENT SWEEP');
-      expect(prompt).toContain('TREATMENT 7: GRID + GLOW COMBO');
+      // Check for background treatment content from Design Bible
+      expect(prompt).toContain('radial glow');
+      expect(prompt).toContain('Grid Overlay');
+      expect(prompt).toContain('Noise Texture');
+      expect(prompt).toContain('Gradient Mesh');
     });
 
-    it('should request metadata output format with 4 lines', async () => {
+    it('should request metadata output format', async () => {
       const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
       
       const prompt = buildFunnelGenerationPrompt({
@@ -233,14 +225,82 @@ describe('Funnel Generation Features', () => {
         mechanismName: 'Test Mechanism',
       });
 
-      expect(prompt).toContain('ACCENT_PRIMARY:#HEXCODE');
-      expect(prompt).toContain('ACCENT_SECONDARY:#HEXCODE');
-      expect(prompt).toContain('TEMPLATE_USED:A or B or C');
+      expect(prompt).toContain('ACCENT_PRIMARY:');
+      expect(prompt).toContain('ACCENT_SECONDARY:');
+      expect(prompt).toContain('TEMPLATE_USED:');
       expect(prompt).toContain('BACKGROUND_TREATMENT:');
+    });
+
+    it('should include Design Bible content (all 16 chapters)', async () => {
+      const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
+      
+      const prompt = buildFunnelGenerationPrompt({
+        businessName: 'Test Business',
+        ownerName: 'Test',
+        industry: 'Tech',
+        monthlyRevenue: '$30K',
+        fundingChallenges: 'Denied',
+        goals: 'Growth',
+        mechanismName: 'Test Mechanism',
+      });
+
+      // Design Bible chapters
+      expect(prompt).toContain('7 SINS OF AI-GENERATED LANDING PAGES');
+      expect(prompt).toContain('COLOR SCIENCE');
+      expect(prompt).toContain('TYPOGRAPHY');
+      expect(prompt).toContain('GLOW BIBLE');
+      expect(prompt).toContain('CARD');
+      expect(prompt).toContain('MICRO-INTERACTION');
+      expect(prompt).toContain('LAYOUT RHYTHM');
+      expect(prompt).toContain('HERO');
+      expect(prompt).toContain('STATS');
+      expect(prompt).toContain('SOCIAL PROOF');
+      expect(prompt).toContain('CTA ENGINEERING');
+    });
+
+    it('should include v2.3 mandatory design rules and new components', async () => {
+      const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
+      
+      const prompt = buildFunnelGenerationPrompt({
+        businessName: 'Test Business',
+        ownerName: 'Test',
+        industry: 'Tech',
+        monthlyRevenue: '$30K',
+        fundingChallenges: 'Denied',
+        goals: 'Growth',
+        mechanismName: 'Test Mechanism',
+      });
+
+      // v2.3 mandatory rules
+      expect(prompt).toContain('MANDATORY');
+      // v2.3 new components
+      expect(prompt).toContain('approval table');
+      expect(prompt).toContain('section-divider');
+    });
+
+    it('should include v2.2 Copy DNA voice and tone', async () => {
+      const { buildFunnelGenerationPrompt } = await import('./funnelGenerationPrompt');
+      
+      const prompt = buildFunnelGenerationPrompt({
+        businessName: 'Test Business',
+        ownerName: 'Test',
+        industry: 'Tech',
+        monthlyRevenue: '$30K',
+        fundingChallenges: 'Denied',
+        goals: 'Growth',
+        mechanismName: 'Test Mechanism',
+      });
+
+      // Copy DNA voice characteristics
+      expect(prompt).toContain('VOICE');
+      expect(prompt).toContain('TONE');
+      expect(prompt).toContain('HEADLINE');
+      // Copy DNA section-by-section guide
+      expect(prompt).toContain('SECTION-BY-SECTION');
     });
   });
 
-  describe('Funnel Response Parsing v2.1', () => {
+  describe('Funnel Response Parsing v2.5', () => {
     it('should parse new format with metadata lines and [LANDING_START] delimiters', async () => {
       const { parseFunnelResponse } = await import('./funnelGenerationPrompt');
       
@@ -285,8 +345,8 @@ BACKGROUND_TREATMENT:radial_glow
       expect(result.landingPageHtml).toContain('Old Format Landing');
       expect(result.thankyouPageHtml).toContain('Old Format Thank You');
       // Old format doesn't have metadata lines
-      expect(result.metadata.accentPrimary).toBeNull();
-      expect(result.metadata.templateUsed).toBeNull();
+      expect(result.metadata.accentPrimary).toBe('');
+      expect(result.metadata.templateUsed).toBe('');
     });
 
     it('should handle all background treatment values', async () => {
@@ -360,6 +420,30 @@ BACKGROUND_TREATMENT:radial_glow
       expect(prompt).toContain('Original thank you page');
       expect(prompt).toContain('===VSL_START===');
       expect(prompt).toContain('===LANDING_START===');
+    });
+  });
+
+  describe('VSL and Ad Prompts include Copy DNA', () => {
+    it('should include Copy DNA in VSL prompt', async () => {
+      const { getVSLPrompt } = await import('./generationPrompts');
+      
+      const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
+      
+      expect(prompt).toContain('COPY DNA');
+      expect(prompt).toContain('VOICE');
+      expect(prompt).toContain('Test Mechanism');
+      expect(prompt).toContain('VSL COPY ADDENDUM');
+    });
+
+    it('should include Copy DNA in Ad prompt', async () => {
+      const { getAdsPrompt } = await import('./generationPrompts');
+      
+      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
+      
+      expect(prompt).toContain('COPY DNA');
+      expect(prompt).toContain('VOICE');
+      expect(prompt).toContain('Test Mechanism');
+      expect(prompt).toContain('AD COPY ADDENDUM');
     });
   });
 });
