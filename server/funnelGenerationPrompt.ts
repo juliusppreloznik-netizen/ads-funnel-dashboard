@@ -1318,191 +1318,387 @@ Between EVERY section, include a gradient divider line (<div class="section-divi
 `);
 
   // ═══════════════════════════════════════════════════════════════
-  // SECTION 22: v2.2 COPY DNA — VOICE & TONE
   // ═══════════════════════════════════════════════════════════════
-  parts.push(`=== v2.2 COPY DNA — VOICE & TONE ===
-The Copy DNA defines HOW to write the text content for every section. This is the voice of a premium business funding company.
+  // SECTION 22: v2.2 COPY DNA — THE NEW COPY DNA (VERBATIM)
+  // ═══════════════════════════════════════════════════════════════
+  parts.push(`══════════════════ START OF COPY DNA ══════════════════
 
-VOICE CHARACTERISTICS:
-- Confident but not arrogant — 'We've funded 500+ businesses' not 'We're the best in the world'
-- Specific over vague — '$2.4M funded last quarter' not 'lots of money funded'
-- Empathetic to pain — acknowledge the struggle before presenting the solution
-- Urgency without desperation — 'Limited spots available this month' not 'ACT NOW!!!'
-- Professional but conversational — like a trusted advisor, not a corporate brochure
-- Direct response principles — every sentence moves toward the CTA
+=== VOICE & TONE ===
+Write like a knowledgeable insider having a direct conversation with a business owner — NOT like a corporate brochure. The tone is confident, specific, slightly irreverent, and loaded with insider knowledge the reader has never heard before.
 
-TONE RULES:
-1. Use second person ('you', 'your') — speak directly to the reader
-2. Use present tense — 'You get approved' not 'You will get approved'
-3. Use active voice — 'We fund your business' not 'Your business is funded by us'
-4. Use concrete numbers — '$50K-$500K' not 'significant funding'
-5. Use power words — 'unlock', 'secure', 'guaranteed', 'proven', 'exclusive'
-6. Avoid jargon — 'business credit lines' not 'revolving credit facilities'
-7. Short sentences for impact — vary between 5-word punches and 15-word explanations
-8. One idea per paragraph — don't stack multiple concepts
+RULES:
+- Write in second person ('you') and first person plural ('we') — NEVER third person corporate voice
+- Use short sentences. Then shorter ones. Like this.
+- Use ellipsis (...) to create pacing and pull readers forward
+- Bold key phrases for emphasis — the way someone would stress words in conversation
+- Use pattern interrupts: ask a question, then answer it unexpectedly
+- Drop specific numbers and data points — '85% of the lending weight' not 'most of the criteria'
+- Use analogies from everyday life (nightclub VIP lines, restaurant reservations, golf buddies) to explain complex financial concepts
+- Address the reader's internal monologue — say what they're already thinking, then redirect
+- NEVER use phrases like: 'Sound familiar?', 'We understand', 'Many business owners face', 'Our team of experts', 'comprehensive solution', 'streamlined process', 'tailored approach'
+- NEVER start sections with generic corporate headers. Use conversational hooks instead.
 
-HEADLINE PATTERNS:
-Pattern 1: [Mechanism] That [Benefit] — [Timeframe]
-Example: 'Revenue-Based Funding That Scales With Your Business — In 48 Hours'
+GOOD example: 'Here's the crazy part... we've found a way to essentially trick the lenders into seeing you as the ideal borrower. By simply removing the red flags they didn't even know they had.'
+BAD example: 'Our comprehensive approach addresses the key challenges business owners face in securing adequate funding solutions.'
 
-Pattern 2: The [Adjective] Way to [Benefit] Without [Pain Point]
-Example: 'The Fastest Way to Get $50K-$500K Without Perfect Credit'
+=== HEADLINE PATTERNS ===
+Headlines should create an 'aha moment' by revealing something the reader didn't know. They should feel like insider knowledge, not a sales pitch.
 
-Pattern 3: How [Audience] Are [Achieving Result] Using [Mechanism]
-Example: 'How Smart Business Owners Are Securing 6-Figure Funding Using Our Approval System'
+PATTERN 1 — The Hidden Truth Reveal:
+'The Real Reason Banks Keep Denying You Has Nothing To Do With Your Revenue'
+'What 85% Of Business Owners Don't Know About Their Own Credit Profile'
+'The Invisible Data Points That Are Costing You $50K-$250K In Available Capital'
 
-Pattern 4: Stop [Pain]. Start [Benefit].
-Example: 'Stop Getting Denied. Start Getting Funded.'
+PATTERN 2 — The Insider Mechanism:
+'The {Mechanism Name} That Forces Banks To See You As Their Ideal Borrower'
+'How A 2-Step Process Unlocks Capital That Was Always Available To You'
+'The Documentation Formatting Secret That Turns Denials Into Approvals'
 
-Pattern 5: [Number] [Audience] Can't Be Wrong — [Social Proof Statement]
-Example: '500+ Business Owners Can't Be Wrong — $47M Funded and Counting'
+PATTERN 3 — The Contrast/Reframe:
+'While Everyone Else Gets Auto-Rejected By Algorithms... You Get A Personal Call Asking How Much You Need'
+'Stop Applying For Loans. Start Getting Invited To Funding.'
 
-SUBHEADLINE PATTERNS:
-- Always follow the headline with 1-2 sentences that expand on the promise
-- Include a specific number or timeframe
-- Address the primary objection
-Example: 'Our proprietary approval system has helped 500+ businesses secure $50K-$500K in funding — even with imperfect credit, limited history, or previous denials.'
+NEVER use: 'Unlock Your Business Potential', 'Your Solution Is Here', 'Ready To Transform Your Business', or any headline that could apply to literally any company in any industry.
+
+=== OPENING / HERO SECTION ===
+The hero section should hit like a pattern interrupt — NOT a corporate value proposition. Open with the thing the reader believes is wrong, then immediately reframe it.
+
+STRUCTURE:
+1. Eyebrow: A short, punchy qualifying statement that makes the RIGHT person stop scrolling
+   GOOD: 'Getting denied despite strong revenue? Read this.'
+   GOOD: 'Making $10K+/month but can't get approved? Here's why.'
+   BAD: 'Denied traditional funding? Your solution is here.'
+
+2. Headline: Reveal the hidden truth or mechanism (see patterns above)
+
+3. Subheadline: Address EXACTLY what they won't have to do/fear
+   GOOD: 'Without putting up your house, destroying your personal credit, or sitting through another denial.'
+   BAD: 'Without getting denied again, sacrificing collateral, or being forced into predatory daily repayment plans.'
+   (The bad example is close but too formal — 'predatory daily repayment plans' sounds like a policy document. Say 'another MCA draining your account every morning' instead.)
+
+=== PAIN POINT SECTION ===
+Do NOT list pain points as corporate bullet cards with emoji icons. Instead, use a CONVERSATIONAL revealing structure that makes the reader say 'wait, THAT's why I keep getting denied?'
+
+STRUCTURE — The Revealing Cascade:
+Start by challenging what they think the problem is, then reveal the real problem layer by layer:
+
+'And contrary to what everyone thinks, these approval signals have very little to do with:
+how much money your business makes...
+how established your business is...
+or how much collateral you have.
+
+In fact, things like cash flow statements, personal income and years in business only make up 15% of the lending "weight".
+
+The other 85%?
+
+A few very specific data points on your personal credit profile...
+And something insiders call "documentation formatting".'
+
+This structure works because it:
+- Challenges their existing belief (they think revenue/collateral matters most)
+- Drops a specific number (15%/85%) that creates an 'aha' moment
+- Introduces insider terminology they've never heard ('documentation formatting')
+- Creates a knowledge gap they MUST fill by reading further
+
+PAIN POINTS TO WEAVE IN (use conversationally, NOT as bullet lists):
+- Secondary bureau data that's incomplete, inaccurate, or invisible to them
+- The MCA debt trap — 'relentless daily payments that put a stranglehold on cash flow'
+- The feeling of being 'targeted when vulnerable' by predatory lenders after PPP/EIDL
+- Hidden industry codes flagging them as 'high risk' incorrectly
+- The frustration of strong revenue + repeated denials = 'something is wrong but I don't know what'
+- Personal credit getting destroyed from floating business expenses on personal cards
+- The tightrope of cash flow timing — profitable on paper, panicking in reality
+
+=== MECHANISM SECTION ===
+The mechanism should feel like a SECRET being revealed, not a product feature being listed. Position it as 'what insiders know that regular business owners don't.'
+
+STRUCTURE — The Insider Reveal:
+'Here's the crazy part...
+
+Thanks to this 2-step process, you don't need:
+- years of spotless financial records
+- millions in revenue
+- the best personal credit score known to man
+- putting up every asset you've ever owned as collateral
+
+To access this kind of capital.'
+
+Then explain the mechanism using an ANALOGY:
+'It's like being the bank president's golf buddy when everyone else is filling out loan applications online.
+
+While they're getting auto-rejected by algorithms, you're getting a personal call asking "How much do you need and when do you want it transferred?"'
+
+MECHANISM FRAMING RULES:
+- Always use a vivid, relatable analogy (nightclub VIP, restaurant reservation, golf buddy, knowing the bouncer)
+- Explain what the mechanism DOES using insider language ('documentation formatting', 'approval signals', 'lending weight', 'red flags')
+- Position the client's company as having a 'private network' of executive underwriters, funding managers, and bank VPs
+- Mention specific institution names where appropriate (JP Morgan Chase, US Bank, Citizens) — this creates concrete credibility
+- Frame it as 'bypassing the gatekeeping responsible for 87% of funding rejections'
+- Use the phrase 'off-market capital originators who usually have a 12-month waitlist'
+- The mechanism should feel like ACCESS to a private world, not a service being sold
+
+=== HOW IT WORKS SECTION ===
+The steps should each open with a STORYTELLING analogy, not a process description. Each step gets a vivid name and an analogy before the explanation.
+
+STRUCTURE — Story-First Steps:
+Step 1: 'Skipping The Line'
+'Imagine strolling right past the line at the busiest nightclub in the city because you're friends with the owner...'
+Then explain: A funding specialist assesses your 'red flags' in business filing documentation and personal credit profile. They create a custom optimization game plan.
+
+Step 2: 'Optimization' (or mechanism-specific name)
+'Our in-house consumer data team gets to work removing the red flag items from your personal credit profile. At the same time, underwriting specialists pick apart your filing documents and position your business in a way that makes lenders see you as a "safe bet" to give capital to.'
+
+Step 3: 'Capital Deployment'
+'While other business owners are refreshing their email hoping for an approval... you're choosing which offers to accept.'
+Then explain: Strategic application sequencing to maximize approval amounts across multiple sources.
+
+RULES:
+- Each step MUST open with a vivid analogy or scene-setting line BEFORE the explanation
+- Use conversational language: 'gets to work', 'pick apart', 'safe bet' — NOT 'conduct', 'facilitate', 'leverage'
+- Step names should be punchy and memorable, not generic ('Skipping The Line' not 'Profile Assessment & Optimization')
+
+=== SOCIAL PROOF / TESTIMONIALS ===
+Testimonials should sound like REAL people talking, not polished marketing quotes. Include specific details that make them feel authentic.
+
+GOOD testimonial: 'I was drowning in two MCAs. Daily debits eating $800/week from my account. {Business Name} cleaned up my profile in 3 weeks and got me $150K in 0% capital. I literally cried when the approval came through. — Marcus T., Landscaping, Tampa FL, funded $150K in 22 days'
+
+BAD testimonial: 'After months of rejection, they helped me secure $120,000 in just 3 weeks! It's given my e-commerce store the breathing room to scale. — John S., E-commerce Founder, Austin TX'
+
+The bad example is technically fine but feels WRITTEN. The good example has:
+- A specific painful detail (two MCAs, $800/week daily debits)
+- An emotional reaction (literally cried)
+- Exact numbers ($150K, 22 days)
+- The 'before' state built into the testimonial
+
+TESTIMONIAL RULES:
+- Include a specific BEFORE state (what they were dealing with before)
+- Include specific dollar amounts ($50K-$250K range)
+- Include specific timeframes (14-45 days)
+- Include specific business types and city/state
+- Include an emotional reaction or moment ('I couldn't believe it', 'my wife started crying', 'I finally took a vacation')
+- Use casual voice: contractions, fragments, dashes — how people actually talk
+- Vary the business types: landscaping, e-commerce, restaurant, auto shop, medical practice, real estate, construction, salon, HVAC, trucking
+
+=== STATS BAR ===
+Stats should feel like PROOF, not decoration. Use the client's provided data or defaults:
+- Total funded: {total_funded} (default: '$25M+')
+- Clients served: {clients_served} (default: '500+')
+- Approval rate: {approval_rate} (default: '94%')
+Optional additional stats that add credibility:
+- Average funding time: '14 Days Average'
+- Average funding amount per client: '$87K Average'
+- Industries served: '47+ Industries'
+
+=== CTA BUTTON COPY ===
+CTAs should feel like the obvious next step, not a sales push.
+
+GOOD CTA text: 'Get Me Funded', 'See What I Qualify For', 'Check My Fundability'
+BAD CTA text: 'Stop The Frustration', 'See My Success Story', 'Understand The Mechanism'
+
+GOOD subtext: 'Takes 60 seconds. No credit impact.', 'Free assessment — zero obligation', '347 business owners checked this week'
+BAD subtext: 'Discover Your Funding Potential Today', 'What Are You Waiting For?'
+
+RULES:
+- CTA text should use first person when possible ('Get ME funded' not 'Get funded')
+- Subtext should reduce friction (time, cost, risk) or add social proof (number of people who took action)
+- Vary the CTA text across sections — don't use the same text for every button
+- Final CTA should be the most urgent: 'Get My Funding Blueprint Now' with subtext 'Only 7 spots left this month'
+
+=== GUARANTEE SECTION ===
+The guarantee should feel like a confident bet, not a corporate disclaimer.
+
+GOOD: 'Look — if we can't find you at least one viable path to capital, you don't pay us a dime. Simple as that. We've done this for 500+ business owners and we wouldn't make that promise if we weren't damn confident in the process.'
+
+BAD: 'Our Funding Optimization Guarantee: We're confident in our process. If we can't identify a path to capital for your business, you pay nothing.'
+
+RULES:
+- Use casual, confident language
+- Include a specific number (how many people this has worked for)
+- Make it feel like a personal promise, not a policy
+
+══════════════════ END OF COPY DNA ══════════════════
 `);
 
   // ═══════════════════════════════════════════════════════════════
-  // SECTION 23: v2.2 COPY DNA — SECTION-BY-SECTION COPY GUIDE
+  // SECTION 23: v2.2 LANDING PAGE COPY GUIDE (SECTION-BY-SECTION)
   // ═══════════════════════════════════════════════════════════════
-  parts.push(`=== v2.2 COPY DNA — SECTION-BY-SECTION COPY GUIDE ===
+  parts.push(`══════════════════ START OF LANDING PAGE COPY GUIDE ══════════════════
 
-HERO COPY:
-- Eyebrow: Short authority statement. 'Trusted by 500+ Businesses' or 'Rated #1 in [City]' or '[Mechanism Name] Specialists'
-- Headline: Use Pattern 1 or 2. The mechanism name should be in gradient text.
-- Subheadline: 1-2 sentences. Expand the promise. Include a number. Address the main objection.
-- CTA button text: Action-oriented. 'See If You Qualify' or 'Check Your Eligibility' or 'Get Your Free Assessment'
-- CTA subtext: Reduce friction. 'No credit check required • 2-minute application' or 'Free consultation • No obligation'
+=== LANDING PAGE COPY — SECTION BY SECTION ===
 
-STATS COPY:
-- Badge: 'BY THE NUMBERS' or 'OUR TRACK RECORD' or 'PROVEN RESULTS'
-- Headline: 'The Numbers Speak for Themselves' or 'Results That Matter'
-- Stats (pick 3-4):
-  * Total funded: '$47M+' / 'Total Capital Deployed'
-  * Businesses helped: '500+' / 'Businesses Funded'
-  * Approval rate: '94%' / 'Approval Rate'
-  * Average timeline: '48hrs' / 'Average Approval Time'
-  * Average amount: '$127K' / 'Average Funding Amount'
-  * Satisfaction: '4.9/5' / 'Client Satisfaction'
+SECTION 1: HERO
+- Eyebrow: Short, qualifying, pattern-interrupt. Use bold. Never generic.
+  WRITE: 'Making $10K+/month but keep getting denied? Read this.'
+  DON'T WRITE: 'Denied traditional funding? Your solution is here.'
+- Headline: Use Hidden Truth Reveal or Insider Mechanism pattern (see Headline Patterns above)
+- Subheadline: Conversational 'without' statement using real language
+  WRITE: 'Without putting up your house, tanking your personal credit, or sitting through another BS denial.'
+  DON'T WRITE: 'Without sacrificing collateral or being forced into predatory repayment structures.'
+- CTA: First-person, action-oriented ('Get Me Funded', 'Check My Fundability')
 
-PAIN SECTION COPY:
-- Headline: 'Sound Familiar?' or 'The Funding Problem Nobody Talks About' or 'Why Traditional Funding Fails [Industry] Businesses'
-- Pain points (2-column grid, 4-6 items):
-  * 'Denied by banks despite strong revenue'
-  * 'Endless paperwork with no guarantee'
-  * 'Weeks of waiting for a decision'
-  * 'Credit score holding you back'
-  * 'Predatory rates from online lenders'
-  * 'One-size-fits-all solutions that don't fit'
-- Each pain point gets an icon + title + 1-sentence description
+SECTION 2: PAIN / PROBLEM REVEAL
+- DO NOT use a grid of cards with emoji icons and safe descriptions
+- Instead, use the Cascading Reveal structure (see Pain Point Section above)
+- If the template requires cards/grid layout, make each card's CONTENT conversational:
+  WRITE card title: 'The 85% They Never Tell You About'
+  WRITE card body: 'Cash flow, revenue, time in business? That's only 15% of the lending decision. The rest comes down to data points you've never even seen — and they're probably working against you right now.'
+  DON'T WRITE card title: 'Incomplete Secondary Bureau Data'
+  DON'T WRITE card body: 'Your business credit profile might be missing crucial information, leading to automatic denials.'
 
-HIDDEN PROBLEM COPY:
-- Headline: 'The Hidden Reasons [Industry] Businesses Get Denied'
-- Killer cards (3-4 problems):
-  * Problem: 'Cash Flow Timing' — 'Banks look at your lowest balance, not your average. One slow month can tank your application.'
-  * Problem: 'Industry Risk Classification' — 'Your industry might be flagged as "high risk" — even if YOUR business is rock solid.'
-  * Problem: 'Credit Utilization Spikes' — 'Using more than 30% of available credit signals distress to algorithms, even when you're growing.'
-  * Problem: 'Time in Business Gaps' — 'Most lenders require 2+ years. If you're newer, you're invisible to their systems.'
-- Explanation box: 'This is exactly why we built [Mechanism Name]. Instead of fighting against these hidden filters, our system works WITH the approval algorithms...'
+SECTION 3: STATS BAR
+- Use client data or defaults. No copy changes needed — numbers speak for themselves.
 
-MECHANISM COPY:
-- Headline: 'Introducing [Mechanism Name]' or 'How [Mechanism Name] Works Differently'
-- Body: 2-3 paragraphs explaining the unique approach. Use specific details. Explain WHY it works, not just WHAT it does.
-- Key differentiators: 3-4 bullet points of what makes this mechanism unique
+SECTION 4: SOCIAL PROOF / TESTIMONIALS
+- Use the testimonial format from Social Proof section above
+- Each testimonial must include a BEFORE state, specific dollars, specific timeline, and emotional reaction
+- Vary business types across the 3 testimonials
 
-HOW IT WORKS COPY:
-- Badge: 'THE PROCESS' or 'HOW IT WORKS' or 'YOUR PATH TO FUNDING'
-- Process intro: 'Getting funded shouldn't feel like a second job. Here's our streamlined 3-step process:'
-- Phases (3-4 steps):
-  * Phase 1: 'Quick Assessment' — 'Tell us about your business in 2 minutes. No credit check, no commitment. We'll show you exactly what you qualify for.'
-  * Phase 2: 'Custom Strategy' — 'Our funding specialists build a personalized plan targeting the programs where you have the highest approval odds.'
-  * Phase 3: 'Fast Funding' — 'We submit your optimized applications and manage the process. Most clients see funds in 48-72 hours.'
-  * Phase 4 (optional): 'Ongoing Support' — 'Your dedicated advisor helps you leverage your funding for maximum growth and prepares you for future rounds.'
+SECTION 5: MECHANISM REVEAL
+- Use 'Introducing' label + mechanism name in gradient headline
+- Body copy should use the Insider Reveal structure (see Mechanism Section above)
+- Include at least one vivid analogy
+- Include the 'private network' + specific bank names positioning
+- End with: 'This isn't a loan application. This is access to a private network of capital that most business owners don't even know exists.'
 
-APPROVAL TABLE COPY:
-- Headline: 'Recent Approval Results' or 'Real Results From Real Businesses'
-- Table rows should show diverse industries, varying amounts ($25K-$500K), fast timelines (24hrs-7 days), all with 'Approved ✓' status
-- Total row: 'Total Funded This Quarter: $2.4M+'
+SECTION 6: HOW IT WORKS (3 Steps/Phases)
+- Each step gets a STORY-FIRST name and analogy (see How It Works section above)
+- Step names should be memorable: 'Skipping The Line', 'Removing The Red Flags', 'Getting The Call'
+- NOT: 'Profile Assessment', 'Strategic Optimization', 'Capital Deployment'
+- Each step description opens with the analogy, THEN explains the process
 
-SOCIAL PROOF COPY:
-- Headline: 'What Our Clients Say' or 'Don't Take Our Word For It'
-- Each testimonial needs:
-  * A realistic quote (3-4 sentences) mentioning specific amounts, timelines, and the mechanism
-  * Client name (realistic, diverse)
-  * Business name and type
-  * 'Funded: $X in Y days' meta line
-- Example: '"I was denied by 3 banks before finding [Company]. They got me $175K in business credit lines within 72 hours. The process was incredibly smooth — I just filled out a quick form and their team handled everything. Game changer for my construction business." — Marcus Johnson, Johnson Construction LLC, Funded: $175,000 in 3 days'
+SECTION 7: FINAL CTA + GUARANTEE
+- Guarantee uses conversational, confident tone (see Guarantee section above)
+- Final CTA is the most urgent: stronger text + scarcity subtext
+- Headline for this section should create urgency without being cheesy
+  WRITE: 'Your Business Is Leaving Money On The Table. Let's Fix That.'
+  DON'T WRITE: 'Ready to Unlock Your Business's Potential?'
 
-GUARANTEE COPY:
-- Headline: 'Our [Guarantee Name] Guarantee' or 'Zero Risk. Maximum Reward.'
-- Body: Bold guarantee statement. 'If we can't find you at least one funding option, we'll [specific guarantee]. No questions asked.'
-- Specifics: What exactly is guaranteed, what the fallback is, why they have nothing to lose
-
-FINAL CTA COPY:
-- Headline: 'Ready to Get Funded?' or 'Your Business Deserves Better Funding'
-- Subheadline: Urgency + specificity. 'We're accepting [X] new clients this month. See if you qualify in 2 minutes.'
-- CTA button: Same as hero CTA or slightly more urgent variation
-- CTA subtext: Reiterate the no-risk message
-
-FOOTER COPY:
-- Company name
-- Brief disclaimer: 'Results may vary. Funding amounts and timelines depend on individual business qualifications.'
-- Copyright year
+══════════════════ END OF LANDING PAGE COPY GUIDE ══════════════════
 `);
 
   // ═══════════════════════════════════════════════════════════════
-  // SECTION 24: v2.2 AD COPY ADDENDUM
+  // SECTION 24: v2.2 AD COPY ADDENDUM (VERBATIM)
   // ═══════════════════════════════════════════════════════════════
-  parts.push(`=== v2.2 AD COPY ADDENDUM ===
-When generating ads (not landing pages), apply these additional Copy DNA rules:
+  parts.push(`══════════════════ START OF AD COPY ADDENDUM ══════════════════
 
-AD HEADLINE RULES:
-- Max 40 characters for primary headline
-- Use numbers: '$50K-$500K' not 'significant funding'
-- Lead with benefit or pain: 'Denied by Banks?' or 'Get $100K in 48hrs'
-- Include the mechanism name when possible
+=== AD-SPECIFIC COPY RULES ===
+Ads must hook in 3 seconds or less. The opening line is EVERYTHING.
+
+AD HOOK PATTERNS (use these, rotate them, never repeat the same one in a set):
+
+PATTERN 1 — The Belief Breaker:
+'You can't get funded because of your revenue? Wrong. Your revenue has almost nothing to do with it.'
+'Everyone thinks you need perfect credit to get business funding. Here's what actually matters...'
+
+PATTERN 2 — The Insider Leak:
+'I spent 5 years building relationships with bank VPs and underwriters. Here's what they told me they ACTUALLY look at...'
+'There's a reason 87% of business funding applications get denied. And it's not the reason you think.'
+
+PATTERN 3 — The Specific Result:
+'Marcus had two MCAs draining $800/week from his account. 22 days later, he had $150K in 0% capital. Here's how.'
+'She went from denied 4 times to approved for $200K in 14 days. Same business. Same revenue. Different approach.'
+
+PATTERN 4 — The Direct Question:
+'Making $10K+ a month but can't get approved for business funding? Watch this.'
+'How many times have you been told "your business doesn't qualify"?'
+
+PATTERN 5 — The Pattern Redirect (tie to current events):
+'While everyone's panicking about interest rates, smart business owners are accessing 0% capital using a method banks don't want you to know about.'
 
 AD BODY RULES:
-- Max 125 characters for primary text
-- One clear CTA per ad
-- Social proof number in every ad: '500+ businesses funded'
-- Urgency element: 'Limited spots' or 'This month only'
+- Lead with the hook. No warm-up. No 'Hey guys' or 'In today's video'
+- One core idea per ad — Rule of One. Pick ONE angle and hammer it.
+- Use specific numbers always: '$150K', '14 days', '87%', '$800/week' — NEVER vague
+- Include ONE mini-story or case study (3-4 sentences max)
+- End with a clear CTA that tells them exactly what happens next: 'Click the link, answer 5 quick questions, and we'll show you exactly how much you qualify for. Takes 60 seconds.'
+- Ad tone should be: confident insider sharing a secret, NOT salesperson making a pitch
 
-AD VARIATIONS:
-Generate 5 distinct ad variations per client:
-1. Pain-focused: Lead with the problem
-2. Benefit-focused: Lead with the outcome
-3. Social proof-focused: Lead with numbers/testimonials
-4. Mechanism-focused: Lead with the unique approach
-5. Urgency-focused: Lead with scarcity/timeline
+AD FORMAT — Generate 3-5 ad variations per set:
+- 2 short-form (under 100 words) for Facebook/Instagram feed
+- 1 medium-form (150-250 words) for Facebook longer format
+- 1 video script hook (15-30 seconds) for Reels/TikTok/YouTube Shorts
+- 1 long-form (300-500 words) for YouTube pre-roll or VSL-style ad
+
+══════════════════ END OF AD COPY ADDENDUM ══════════════════
 `);
 
   // ═══════════════════════════════════════════════════════════════
-  // SECTION 25: v2.2 VSL COPY ADDENDUM
+  // SECTION 25: v2.2 VSL COPY ADDENDUM (VERBATIM)
   // ═══════════════════════════════════════════════════════════════
-  parts.push(`=== v2.2 VSL COPY ADDENDUM ===
-When generating VSL scripts (not landing pages), apply these additional Copy DNA rules:
+  parts.push(`══════════════════ START OF VSL COPY ADDENDUM ══════════════════
 
-VSL STRUCTURE:
-1. Hook (0-30 seconds): Shocking stat or bold claim that stops the scroll
-2. Problem Agitation (30-90 seconds): Paint the pain vividly. Make them feel it.
-3. Failed Solutions (90-120 seconds): Why banks, online lenders, and DIY approaches fail
-4. Mechanism Reveal (120-180 seconds): Introduce your unique approach
-5. How It Works (180-240 seconds): Simple 3-step explanation
-6. Social Proof (240-300 seconds): 2-3 client success stories with specific numbers
-7. Offer + CTA (300-360 seconds): What they get, the guarantee, and exactly what to do next
+=== VSL-SPECIFIC COPY RULES ===
+The VSL is a long-form sales letter delivered as video narration. It should read like someone TALKING to you — not like someone reading a script. Use the conversational direct response style throughout.
 
-VSL TONE:
-- Conversational, like talking to a friend over coffee
-- Use 'you' and 'your' constantly
-- Short sentences. Punchy. Direct.
-- Pause indicators: '...' for dramatic pauses
-- Emphasis indicators: [CAPS] for words to stress
+VSL STRUCTURE (follow this exact sequence):
+
+--- SECTION 1: THE HOOK (0:00-0:30) ---
+Open with a Pattern Interrupt + Belief Breaker. The first 10 seconds must make the viewer think 'wait, what?'
+
+Example opening:
+'If you're a business owner making $10K or more a month... and you've been denied for funding... I need you to hear this: the reason you got denied has almost nothing to do with your revenue, your time in business, or your credit score.'
+
+Then the follow-up: 'In fact, those things only account for about 15% of what lenders actually look at. The other 85%? That's what I'm going to show you right now.'
+
+--- SECTION 2: THE PROBLEM REFRAME (0:30-2:00) ---
+Challenge what they THINK the problem is. Use the cascading reveal structure:
+- What they think matters (revenue, credit, collateral) vs. what actually matters (secondary bureau data, documentation formatting, application sequencing)
+- Drop specific numbers and insider terminology
+- Make them feel like they've been in the dark about how the system actually works
+- Use phrases like: 'Here's what nobody tells you...', 'The real reason is...', 'And this is where it gets interesting...'
+
+--- SECTION 3: THE CREDIBILITY BRIDGE (2:00-3:00) ---
+Establish WHY you know this. Not bragging — just facts:
+- 'Over the past [X] years, we've built a private network of executive underwriters, funding managers, and bank VPs at JP Morgan Chase, US Bank, Citizens...'
+- 'And about a dozen of the most sought-after off-market capital originators in the US.'
+- 'Including sources that usually have a 12-month waitlist to even speak with them.'
+- Use the analogy: 'It's like being the bank president's golf buddy when everyone else is filling out applications online.'
+
+--- SECTION 4: THE MECHANISM REVEAL (3:00-5:00) ---
+This is the COPY HINGE — the part the entire rest of the script revolves around.
+- Introduce the mechanism by name: 'We call it the {Mechanism Name}'
+- Explain it using the 2-step or 3-step framework with vivid analogies
+- Each step gets: an analogy FIRST, then the explanation
+- Step 1: 'Skipping the line' — audit red flags, create optimization game plan
+- Step 2: 'Optimization' — remove red flags, reformat documentation, position as 'safe bet'
+- Step 3: 'Capital deployment' — strategic application sequencing, multiple offers
+- Use the line: 'We've found a way to essentially trick the lenders into seeing you as the ideal borrower. By simply removing the red flags.'
+
+--- SECTION 5: SOCIAL PROOF CASCADE (5:00-6:30) ---
+Stack 2-3 mini case studies back to back. Each should be 30-45 seconds:
+- Name, business type, city
+- Their specific BEFORE state (denied, stuck in MCAs, credit destroyed)
+- What happened (timeline, amount funded)
+- Their emotional reaction (one specific quote)
+- Vary the industries: landscaping, e-commerce, restaurant, construction, medical, trucking
+
+--- SECTION 6: THE 'DON'T NEED' REVERSAL (6:30-7:00) ---
+List everything they DON'T need to qualify:
+- 'You don't need years of spotless financial records...'
+- 'You don't need millions in revenue...'
+- 'You don't need the best credit score known to man...'
+- 'You don't need to put up every asset you've ever owned as collateral.'
+- Then: 'All you need is a business making $7K+ per month and the willingness to let us show you what's possible.'
+
+--- SECTION 7: THE GUARANTEE + CTA (7:00-8:00) ---
+- State the guarantee conversationally (see Guarantee section above)
+- Explain EXACTLY what happens when they click: 'Click the button below. You'll answer a few quick questions about your business. No credit pull. Takes about 60 seconds. Then one of our funding specialists will reach out within 24 hours with your custom game plan.'
+- Add urgency: 'We only take on [X] new clients per month to make sure everyone gets personal attention. Right now we have [X] spots left.'
+- Final line: 'Stop applying. Start getting approved. Click below.'
+
+VSL TONE RULES:
+- Read it OUT LOUD. If it doesn't sound like someone confidently talking to a friend, rewrite it.
+- Use sentence fragments. For pacing. Like this.
+- Use '...' to create pauses and pull-forward momentum
+- Bold key phrases that would be EMPHASIZED if spoken aloud
+- Never use passive voice. Always active: 'We remove the red flags' not 'The red flags are addressed'
+- The VSL should feel like a knowledgeable friend pulling you aside at a party and saying 'let me tell you how this actually works'
+
+══════════════════ END OF VSL COPY ADDENDUM ══════════════════
 `);
 
-  // ═══════════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════════
   // SECTION 26: REFERENCE TEMPLATES
   // ═══════════════════════════════════════════════════════════════
   parts.push(`=== REFERENCE TEMPLATES ===
@@ -1599,12 +1795,33 @@ BACKGROUND_TREATMENT: [1-7, name of treatment chosen]
 </html>
 [THANKYOU_END]
 
-THANK YOU PAGE RULES:
-- The thank you page MUST use the SAME accent colors (primary + secondary) as the landing page
-- The thank you page should be simple: headline thanking them, brief next steps, and company branding
-- Use the same font (Inter), same dark background, same accent color scheme
-- Include a brief 'What happens next' section with 2-3 steps
-- Keep it clean and reassuring — they just took action, reward that decision
+THANK YOU PAGE — MANDATORY FORMAT:
+The thank you page MUST follow this EXACT simple layout. Do NOT deviate. Do NOT add extra sections, animations, or complexity.
+
+LAYOUT (top to bottom, centered on page):
+1. A large green circle with a white checkmark icon (SVG) — centered at top
+2. Headline: "You're Confirmed" — large, bold, white text, centered
+3. Subtitle: "Check your email for the calendar invite and call details." — smaller gray text, centered
+4. A card/box with dark background and subtle border containing:
+   - Header: "BEFORE YOUR CALL" — small uppercase text, left-aligned
+   - 3 bullet points, each with a small green checkmark icon:
+     * "Check your email for the calendar invite"
+     * "Be ready to discuss your current revenue and funding goals"
+     * "Check your texts for messages from our team"
+5. Footer at bottom: "© {current_year} {businessName}™. All rights reserved." — small gray text, centered
+
+STYLING RULES:
+- Background: solid black (#000000) or very dark (#0a0a0a) — NO gradients, NO patterns, NO noise
+- Font: Inter (same as landing page)
+- The green checkmark circle should use the landing page's accent color (or green #22c55e if accent is not green)
+- The card should have a subtle border (rgba(255,255,255,0.1)) and slightly lighter dark background
+- NO animations, NO glow effects, NO glassmorphism — just clean, simple, minimal
+- The page should be vertically centered
+- Max-width of content: 500px, centered
+- MUST be mobile responsive
+
+THAT'S IT. Nothing else on the page. No navigation, no extra sections, no social proof, no additional CTAs.
+The thank you page MUST use the SAME accent colors (primary + secondary) as the landing page.
 
 NOW GENERATE THE COMPLETE LANDING PAGE AND THANK YOU PAGE FOR THIS CLIENT.
 `);

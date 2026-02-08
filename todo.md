@@ -90,3 +90,10 @@
 - [x] Include output format with metadata lines
 - [x] Fix parseFunnelResponse to handle both old and new TY delimiters
 - [x] All 31 tests passing (funnels: 21, clients: 9, auth: 1)
+
+## Copy DNA Fix + Thank You Page Redesign
+- [x] Verify v2.2 Copy DNA is fully embedded in landing page prompt (replaced generic with verbatim v2.2)
+- [x] Add any missing Copy DNA sections (voice/tone, headline patterns, section copy guides)
+- [x] Rewrite thank you page prompt to match simple format: green checkmark, "You're Confirmed", subtitle, 3 bullet points with green checks, footer
+- [x] Update Ad and VSL prompts with verbatim Copy DNA addendums
+- [x] All 31 tests passing

@@ -296,7 +296,7 @@ describe('Funnel Generation Features', () => {
       expect(prompt).toContain('TONE');
       expect(prompt).toContain('HEADLINE');
       // Copy DNA section-by-section guide
-      expect(prompt).toContain('SECTION-BY-SECTION');
+      expect(prompt).toContain('SECTION BY SECTION');
     });
   });
 
