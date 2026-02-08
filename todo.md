@@ -165,3 +165,9 @@
 - [x] Restore original prompt content from initial checkpoint (7f43eb2)
 - [x] Unique mechanism properly included via ${uniqueMechanism} interpolation throughout
 - [x] Run tests and verify all pass (31/31)
+
+## Make VSL & Ads Copy Adapt to Unique Mechanism
+- [x] Rewrite VSL prompt to infer niche/industry from mechanism name instead of hardcoding funding copy
+- [x] Rewrite Ads prompt to infer niche/industry from mechanism name instead of hardcoding funding copy
+- [x] Keep the same structure quality (hook, body, mechanism reveal, proof, offer, close for VSL; 5 awareness-level ads)
+- [x] Update tests and verify all pass (31/31)

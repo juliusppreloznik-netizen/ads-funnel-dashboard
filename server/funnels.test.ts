@@ -424,28 +424,39 @@ BACKGROUND_TREATMENT:radial_glow
   });
 
   describe('VSL and Ad Prompts include Copy DNA', () => {
-    it('should include unique mechanism in VSL prompt', async () => {
+    it('should include unique mechanism in VSL prompt and be mechanism-adaptive', async () => {
       const { getVSLPrompt } = await import('./generationPrompts');
       
-      const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
+      const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Mortgage Ready Blueprint');
       
-      expect(prompt).toContain('Test Mechanism');
+      expect(prompt).toContain('Mortgage Ready Blueprint');
       expect(prompt).toContain('Test Biz');
       expect(prompt).toContain('HOOK');
       expect(prompt).toContain('MECHANISM REVEAL');
       expect(prompt).toContain('3,000-4,000 words');
+      // Must contain mechanism-adaptive instructions
+      expect(prompt).toContain('MECHANISM-ADAPTIVE COPY');
+      expect(prompt).toContain('DO NOT default to business funding copy');
+      // Must contain niche inference examples
+      expect(prompt).toContain('Mortgage Ready Blueprint');
+      expect(prompt).toContain('mortgage/home buying niche');
     });
 
-    it('should include unique mechanism in Ad prompt', async () => {
+    it('should include unique mechanism in Ad prompt and be mechanism-adaptive', async () => {
       const { getAdsPrompt } = await import('./generationPrompts');
       
-      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Test Mechanism');
+      const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'Patient Pipeline Method');
       
-      expect(prompt).toContain('Test Mechanism');
+      expect(prompt).toContain('Patient Pipeline Method');
       expect(prompt).toContain('Test Biz');
       expect(prompt).toContain('Ad 1');
       expect(prompt).toContain('Ad 5');
       expect(prompt).toContain('5 distinct video ad scripts');
+      // Must contain mechanism-adaptive instructions
+      expect(prompt).toContain('MECHANISM-ADAPTIVE COPY');
+      expect(prompt).toContain('DO NOT default to business funding copy');
+      // Ad descriptions must be niche-generic, not funding-specific
+      expect(prompt).toContain('core problem in this niche');
     });
   });
 });
