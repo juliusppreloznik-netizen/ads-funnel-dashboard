@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -82,15 +82,41 @@ export default function ClientManagement() {
     },
   });
 
+  // Local notes state so typing doesn't trigger API calls on every keystroke
+  const [localNotes, setLocalNotes] = useState<Record<number, string>>({});
+  const debounceTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  // Sync local notes when tasks load or change
+  useEffect(() => {
+    if (tasks) {
+      setLocalNotes((prev) => {
+        const next: Record<number, string> = {};
+        for (const task of tasks as Task[]) {
+          // Only set from server if we don't have a local edit in progress
+          next[task.id] = prev[task.id] !== undefined ? prev[task.id] : (task.internalNotes || "");
+        }
+        return next;
+      });
+    }
+  }, [tasks]);
+
   const updateTaskNotesMutation = trpc.tasks.updateNotes.useMutation({
     onSuccess: () => {
       toast.success("Notes saved!");
-      refetchTasks();
     },
     onError: (error) => {
       toast.error("Failed to save notes: " + error.message);
     },
   });
+
+  const debouncedSaveNotes = useCallback((taskId: number, notes: string) => {
+    if (debounceTimers.current[taskId]) {
+      clearTimeout(debounceTimers.current[taskId]);
+    }
+    debounceTimers.current[taskId] = setTimeout(() => {
+      updateTaskNotesMutation.mutate({ taskId, notes });
+    }, 800);
+  }, [updateTaskNotesMutation]);
 
   const resetPasswordMutation = trpc.clients.resetPassword.useMutation({
     onSuccess: () => {
@@ -392,15 +418,14 @@ export default function ClientManagement() {
                   <div>
                     <Label className="text-white text-sm">Internal Notes</Label>
                     <Textarea
-                      value={task.internalNotes || ""}
+                      value={localNotes[task.id] ?? task.internalNotes ?? ""}
                       onChange={(e) => {
-                        updateTaskNotesMutation.mutate({
-                          taskId: task.id,
-                          notes: e.target.value,
-                        });
+                        const newValue = e.target.value;
+                        setLocalNotes((prev) => ({ ...prev, [task.id]: newValue }));
+                        debouncedSaveNotes(task.id, newValue);
                       }}
                       placeholder="Add internal notes (not visible to client)"
-                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-slate-500 resize-y min-h-[80px]"
                       rows={3}
                     />
                   </div>

@@ -178,3 +178,10 @@
 - [x] Add explicit FORBIDDEN topics list (no investment, wealth management, stocks, portfolio, etc.)
 - [x] Make the prompt detect which of the two niches based on mechanism name (detectNiche function with mortgage keyword matching)
 - [x] Run tests and verify all pass (33/33)
+
+## Fix Notes Section Under Client Tasks
+- [x] Find the notes input component under client tasks (ClientManagement.tsx)
+- [x] Fix truncation/input issue — was firing API mutation on every keystroke, causing refetch + re-render + cursor reset
+- [x] Added local state (localNotes) with debounced save (800ms delay) so typing is smooth
+- [x] Textarea is now resizable (resize-y, min-h-[80px]) and saves properly
+- [x] Run tests and verify all pass (33/33)
