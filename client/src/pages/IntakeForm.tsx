@@ -21,9 +21,13 @@ export default function IntakeForm() {
   });
 
   const createClient = trpc.clients.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Submission successful!");
-      setLocation("/thank-you");
+      if (data.clientId) {
+        setLocation(`/onboarding/${data.clientId}`);
+      } else {
+        setLocation("/thank-you");
+      }
     },
     onError: (error: any) => {
       toast.error("Submission failed: " + error.message);

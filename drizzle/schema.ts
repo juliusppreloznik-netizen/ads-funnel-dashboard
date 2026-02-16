@@ -103,3 +103,19 @@ export const funnels = mysqlTable("funnels", {
 
 export type Funnel = typeof funnels.$inferSelect;
 export type InsertFunnel = typeof funnels.$inferInsert;
+
+/**
+ * Onboarding Progress table - tracks which onboarding steps each client has completed
+ */
+export const onboardingProgress = mysqlTable("onboardingProgress", {
+  id: int("id").autoincrement().primaryKey(),
+  clientId: int("clientId").notNull(),
+  stepKey: varchar("stepKey", { length: 100 }).notNull(), // e.g. 'ghl_setup', 'agency_admin', 'domain', 'phone', 'facebook'
+  completed: int("completed").default(0).notNull(), // 0 = not done, 1 = done
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
+export type InsertOnboardingProgress = typeof onboardingProgress.$inferInsert;

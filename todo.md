@@ -192,3 +192,17 @@
 - [x] Build a notepad panel on the right side of the client list view (collapsible, sticky)
 - [x] Debounced auto-save (800ms) with "Saving..." indicator
 - [x] Run tests and verify all pass (37/37 — 4 new admin notes tests)
+
+## Guided Video Onboarding Flow
+- [x] Search YouTube for tutorial videos: GHL setup, domain setup, phone number, FB admin access, agency admin
+- [x] Design onboardingProgress table for tracking client completion (migration 0008)
+- [x] Build backend tRPC procedures for onboarding progress (getProgress, markComplete, markIncomplete, getStepDefinitions)
+- [x] Build frontend onboarding page with step-by-step video flow (Onboarding.tsx)
+- [x] After intake form → redirect to /onboarding/:clientId with clientId from create response
+- [x] Step 1: GHL Account Setup + "Already have GHL Agency?" toggle showing agency admin video
+- [x] Step 2: Domain setup in GHL (buy/transfer/connect)
+- [x] Step 3: Phone number purchase in GHL
+- [x] Step 4: Facebook Business Access (adding admin)
+- [x] Each step: embedded YouTube video, written instructions, "Mark as Done" button with toggle
+- [x] Track completion per client with progress bar in header
+- [x] Run tests and verify all pass (45/45 — 8 new onboarding tests)

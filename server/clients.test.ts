@@ -58,7 +58,8 @@ describe("Client Intake Flow", () => {
       password: "testPassword123",
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result.success).toBe(true);
+    expect(result.clientId).toBeDefined();
   });
 
   it("should require authentication to list clients", async () => {

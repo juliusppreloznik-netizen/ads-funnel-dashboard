@@ -63,7 +63,7 @@ export const appRouter = router({
           title: "New Client Submission",
           content: `${input.name} from ${input.businessName} has submitted the intake form.`,
         });
-        return { success: true };
+        return { success: true, clientId };
       }),
     
     list: protectedProcedure.query(async () => {
@@ -677,6 +677,40 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
       .mutation(async ({ input }) => {
         await db.deleteFunnel(input.id);
         return { success: true };
+      }),
+  }),
+
+  // Onboarding progress tracking
+  onboarding: router({
+    getProgress: publicProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getOnboardingProgress(input.clientId);
+      }),
+
+    markComplete: publicProcedure
+      .input(z.object({
+        clientId: z.number(),
+        stepKey: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.markOnboardingStepComplete(input.clientId, input.stepKey);
+        return { success: true };
+      }),
+
+    markIncomplete: publicProcedure
+      .input(z.object({
+        clientId: z.number(),
+        stepKey: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.markOnboardingStepIncomplete(input.clientId, input.stepKey);
+        return { success: true };
+      }),
+
+    getStepDefinitions: publicProcedure
+      .query(() => {
+        return db.getOnboardingStepDefinitions();
       }),
   }),
 });

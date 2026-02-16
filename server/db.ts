@@ -1,6 +1,6 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
+import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import * as bcrypt from 'bcryptjs';
 
@@ -418,4 +418,84 @@ export async function getAdminNotes(clientId: number): Promise<string | null> {
     .limit(1);
   
   return result.length > 0 ? result[0].adminNotes : null;
+}
+
+// ============================================================================
+// ONBOARDING PROGRESS HELPERS
+// ============================================================================
+
+const ONBOARDING_STEPS = [
+  { key: 'ghl_setup', label: 'GoHighLevel Account Setup', order: 1 },
+  { key: 'agency_admin', label: 'Add Agency Admin Access', order: 2 },
+  { key: 'domain_setup', label: 'Domain Setup in GHL', order: 3 },
+  { key: 'phone_number', label: 'Phone Number Purchase', order: 4 },
+  { key: 'facebook_admin', label: 'Facebook Business Admin Access', order: 5 },
+];
+
+export function getOnboardingStepDefinitions() {
+  return ONBOARDING_STEPS;
+}
+
+export async function getOnboardingProgress(clientId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const progress = await db.select().from(onboardingProgress)
+    .where(eq(onboardingProgress.clientId, clientId));
+  
+  // Map step definitions with completion status
+  return ONBOARDING_STEPS.map(step => {
+    const record = progress.find(p => p.stepKey === step.key);
+    return {
+      stepKey: step.key,
+      label: step.label,
+      order: step.order,
+      completed: record ? record.completed === 1 : false,
+      completedAt: record?.completedAt || null,
+    };
+  });
+}
+
+export async function markOnboardingStepComplete(clientId: number, stepKey: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Check if record exists
+  const existing = await db.select().from(onboardingProgress)
+    .where(and(
+      eq(onboardingProgress.clientId, clientId),
+      eq(onboardingProgress.stepKey, stepKey)
+    ))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(onboardingProgress)
+      .set({ completed: 1, completedAt: new Date(), updatedAt: new Date() })
+      .where(eq(onboardingProgress.id, existing[0].id));
+  } else {
+    await db.insert(onboardingProgress).values({
+      clientId,
+      stepKey,
+      completed: 1,
+      completedAt: new Date(),
+    });
+  }
+}
+
+export async function markOnboardingStepIncomplete(clientId: number, stepKey: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await db.select().from(onboardingProgress)
+    .where(and(
+      eq(onboardingProgress.clientId, clientId),
+      eq(onboardingProgress.stepKey, stepKey)
+    ))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(onboardingProgress)
+      .set({ completed: 0, completedAt: null, updatedAt: new Date() })
+      .where(eq(onboardingProgress.id, existing[0].id));
+  }
 }

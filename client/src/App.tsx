@@ -13,6 +13,7 @@ import HTMLEditor from "./pages/HTMLEditor";
 import ClientLogin from "./pages/ClientLogin";
 import ClientPortal from "./pages/ClientPortal";
 import ClientManagement from "./pages/ClientManagement";
+import Onboarding from "./pages/Onboarding";
 
 
 
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/admin/editor/:assetId" component={HTMLEditor} />
       <Route path="/admin/clients" component={ClientManagement} />
 
+      <Route path="/onboarding/:clientId" component={Onboarding} />
       <Route path="/client-login" component={ClientLogin} />
       <Route path="/client-portal" component={ClientPortal} />
       <Route path={"/404"} component={NotFound} />
