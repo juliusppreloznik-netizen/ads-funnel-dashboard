@@ -397,3 +397,25 @@ export async function deleteFunnel(id: number): Promise<void> {
   
   await db.delete(funnels).where(eq(funnels.id, id));
 }
+
+// Admin notepad functions
+export async function updateAdminNotes(clientId: number, notes: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(clients)
+    .set({ adminNotes: notes, updatedAt: new Date() })
+    .where(eq(clients.id, clientId));
+}
+
+export async function getAdminNotes(clientId: number): Promise<string | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select({ adminNotes: clients.adminNotes })
+    .from(clients)
+    .where(eq(clients.id, clientId))
+    .limit(1);
+  
+  return result.length > 0 ? result[0].adminNotes : null;
+}

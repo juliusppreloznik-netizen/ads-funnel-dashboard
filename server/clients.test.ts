@@ -145,3 +145,43 @@ describe("Asset Management", () => {
     expect(Array.isArray(assets)).toBe(true);
   });
 });
+
+describe("Admin Notes", () => {
+  it("should require authentication to get admin notes", async () => {
+    const publicCtx = createPublicContext();
+    const publicCaller = appRouter.createCaller(publicCtx);
+
+    await expect(
+      publicCaller.clients.getAdminNotes({ clientId: 1 })
+    ).rejects.toThrow();
+  });
+
+  it("should require authentication to update admin notes", async () => {
+    const publicCtx = createPublicContext();
+    const publicCaller = appRouter.createCaller(publicCtx);
+
+    await expect(
+      publicCaller.clients.updateAdminNotes({ clientId: 1, notes: "test note" })
+    ).rejects.toThrow();
+  });
+
+  it("should allow authenticated users to get admin notes", async () => {
+    const authCtx = createAuthContext();
+    const authCaller = appRouter.createCaller(authCtx);
+
+    const result = await authCaller.clients.getAdminNotes({ clientId: 1 });
+    expect(result).toHaveProperty("notes");
+    expect(typeof result.notes).toBe("string");
+  });
+
+  it("should allow authenticated users to update admin notes", async () => {
+    const authCtx = createAuthContext();
+    const authCaller = appRouter.createCaller(authCtx);
+
+    const result = await authCaller.clients.updateAdminNotes({
+      clientId: 1,
+      notes: "Test admin note for client",
+    });
+    expect(result).toEqual({ success: true });
+  });
+});

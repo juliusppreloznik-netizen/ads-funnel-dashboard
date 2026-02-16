@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore } from "lucide-react";
+import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore, StickyNote, X, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface Task {
@@ -28,6 +28,10 @@ export default function ClientManagement() {
   const [newPassword, setNewPassword] = useState("");
   const [newTaskName, setNewTaskName] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "in_progress" | "completed" | "archived">("all");
+  const [notepadOpen, setNotepadOpen] = useState(true);
+  const [notepadClientId, setNotepadClientId] = useState<number | null>(null);
+  const [notepadText, setNotepadText] = useState("");
+  const notepadDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [createFormData, setCreateFormData] = useState({
     name: "",
     email: "",
@@ -561,73 +565,235 @@ export default function ClientManagement() {
           </div>
         </div>
 
-        {/* Clients Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clients?.filter((client) => {
-            if (filterStatus === "all") return client.archived === 0;
-            if (filterStatus === "in_progress") return client.archived === 0 && client.progress?.percentage !== 100;
-            if (filterStatus === "completed") return client.archived === 0 && client.progress?.percentage === 100;
-            if (filterStatus === "archived") return client.archived === 1;
-            return true;
-          }).map((client) => {
-            const isComplete = client.progress?.percentage === 100;
-            const isArchived = client.archived === 1;
-            return (
-              <Card
-                key={client.id}
-                className={`p-6 cursor-pointer transition-all ${
-                  isArchived
-                    ? 'bg-gradient-to-br from-slate-800/40 to-slate-700/30 border-slate-500/20 hover:border-slate-500/40 opacity-75'
-                    : isComplete
-                    ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
-                    : 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 hover:border-violet-500/50'
-                }`}
-                onClick={() => setSelectedClientId(client.id)}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
-                    <p className="text-slate-400 text-sm">{client.businessName}</p>
-                  </div>
-                  {isArchived && (
-                    <Archive className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                  )}
-                  {!isArchived && isComplete && (
-                    <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0" />
-                  )}
-                </div>
-                <p className="text-slate-500 text-xs mb-3">{client.email}</p>
-                {client.progress && (
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={isComplete ? 'text-green-400' : 'text-slate-400'}>
-                        Progress
-                      </span>
-                      <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-violet-400'}`}>
-                        {client.progress.percentage}%
-                      </span>
+        {/* Main content area with notepad sidebar */}
+        <div className="flex gap-4">
+          {/* Clients Grid */}
+          <div className={`transition-all duration-300 ${notepadOpen ? 'flex-1' : 'w-full'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients?.filter((client) => {
+                if (filterStatus === "all") return client.archived === 0;
+                if (filterStatus === "in_progress") return client.archived === 0 && client.progress?.percentage !== 100;
+                if (filterStatus === "completed") return client.archived === 0 && client.progress?.percentage === 100;
+                if (filterStatus === "archived") return client.archived === 1;
+                return true;
+              }).map((client) => {
+                const isComplete = client.progress?.percentage === 100;
+                const isArchived = client.archived === 1;
+                return (
+                  <Card
+                    key={client.id}
+                    className={`p-6 cursor-pointer transition-all ${
+                      isArchived
+                        ? 'bg-gradient-to-br from-slate-800/40 to-slate-700/30 border-slate-500/20 hover:border-slate-500/40 opacity-75'
+                        : isComplete
+                        ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
+                        : 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 hover:border-violet-500/50'
+                    }`}
+                    onClick={() => setSelectedClientId(client.id)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
+                        <p className="text-slate-400 text-sm">{client.businessName}</p>
+                      </div>
+                      {isArchived && (
+                        <Archive className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                      )}
+                      {!isArchived && isComplete && (
+                        <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0" />
+                      )}
                     </div>
-                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-violet-600 to-indigo-600'
-                        }`}
-                        style={{ width: `${client.progress.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </Card>
-            );
-          })}
-        </div>
+                    <p className="text-slate-500 text-xs mb-3">{client.email}</p>
+                    {client.progress && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={isComplete ? 'text-green-400' : 'text-slate-400'}>
+                            Progress
+                          </span>
+                          <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-violet-400'}`}>
+                            {client.progress.percentage}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-violet-600 to-indigo-600'
+                            }`}
+                            style={{ width: `${client.progress.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
 
-        {clients?.length === 0 && (
-          <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
-            <p className="text-slate-400">No clients yet. Create your first client to get started.</p>
-          </Card>
-        )}
+            {clients?.length === 0 && (
+              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+                <p className="text-slate-400">No clients yet. Create your first client to get started.</p>
+              </Card>
+            )}
+          </div>
+
+          {/* Internal Notepad Sidebar */}
+          {notepadOpen ? (
+            <div className="w-80 flex-shrink-0">
+              <NotepadPanel
+                clients={clients || []}
+                notepadClientId={notepadClientId}
+                setNotepadClientId={setNotepadClientId}
+                notepadText={notepadText}
+                setNotepadText={setNotepadText}
+                notepadDebounceRef={notepadDebounceRef}
+                onClose={() => setNotepadOpen(false)}
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => setNotepadOpen(true)}
+              className="fixed right-4 top-1/2 -translate-y-1/2 bg-gradient-to-b from-violet-600 to-indigo-600 text-white p-2 rounded-l-lg shadow-lg hover:from-violet-500 hover:to-indigo-500 transition-all z-10"
+              title="Open Notepad"
+            >
+              <StickyNote className="h-5 w-5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+// Notepad Panel Component
+function NotepadPanel({
+  clients,
+  notepadClientId,
+  setNotepadClientId,
+  notepadText,
+  setNotepadText,
+  notepadDebounceRef,
+  onClose,
+}: {
+  clients: any[];
+  notepadClientId: number | null;
+  setNotepadClientId: (id: number | null) => void;
+  notepadText: string;
+  setNotepadText: (text: string) => void;
+  notepadDebounceRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+  onClose: () => void;
+}) {
+  // Fetch notes for selected client
+  const { data: notesData } = trpc.clients.getAdminNotes.useQuery(
+    { clientId: notepadClientId! },
+    { enabled: !!notepadClientId }
+  );
+
+  const updateNotesMutation = trpc.clients.updateAdminNotes.useMutation({
+    onSuccess: () => {
+      // silent save
+    },
+    onError: (error) => {
+      toast.error("Failed to save notes: " + error.message);
+    },
+  });
+
+  // Sync notes when client changes or data loads
+  const prevClientIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (notepadClientId !== prevClientIdRef.current) {
+      prevClientIdRef.current = notepadClientId;
+      setNotepadText(notesData?.notes || "");
+    }
+  }, [notepadClientId, notesData, setNotepadText]);
+
+  // Also sync when notesData first loads for the current client
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => {
+    if (notesData && !initialized) {
+      setNotepadText(notesData.notes || "");
+      setInitialized(true);
+    }
+  }, [notesData, initialized, setNotepadText]);
+
+  // Reset initialized when client changes
+  useEffect(() => {
+    setInitialized(false);
+  }, [notepadClientId]);
+
+  const handleNoteChange = useCallback((value: string) => {
+    setNotepadText(value);
+    if (notepadClientId) {
+      if (notepadDebounceRef.current) {
+        clearTimeout(notepadDebounceRef.current);
+      }
+      notepadDebounceRef.current = setTimeout(() => {
+        updateNotesMutation.mutate({ clientId: notepadClientId, notes: value });
+      }, 800);
+    }
+  }, [notepadClientId, setNotepadText, notepadDebounceRef, updateNotesMutation]);
+
+  const activeClients = clients.filter(c => c.archived === 0);
+
+  return (
+    <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <StickyNote className="h-4 w-4 text-violet-400" />
+          <h3 className="text-sm font-semibold text-white">Internal Notes</h3>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-white transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Client Selector */}
+      <div className="p-3 border-b border-white/10">
+        <Select
+          value={notepadClientId?.toString() || ""}
+          onValueChange={(val) => setNotepadClientId(val ? parseInt(val) : null)}
+        >
+          <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm h-9">
+            <SelectValue placeholder="Select a client..." />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-900 border-white/10 max-h-60">
+            {activeClients.map((client) => (
+              <SelectItem key={client.id} value={client.id.toString()} className="text-white text-sm">
+                {client.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Notes Area */}
+      <div className="flex-1 p-3 overflow-hidden">
+        {notepadClientId ? (
+          <textarea
+            value={notepadText}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            placeholder="Type your notes here..."
+            className="w-full h-full bg-transparent text-white text-sm placeholder:text-slate-500 resize-none outline-none leading-relaxed"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <StickyNote className="h-8 w-8 text-slate-600 mb-3" />
+            <p className="text-slate-500 text-sm">Select a client to view or add notes</p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {notepadClientId && (
+        <div className="px-4 py-2 border-t border-white/10">
+          <p className="text-xs text-slate-500">
+            {updateNotesMutation.isPending ? "Saving..." : "Auto-saves as you type"}
+          </p>
+        </div>
+      )}
+    </Card>
   );
 }

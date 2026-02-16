@@ -161,6 +161,23 @@ export const appRouter = router({
         });
         return { success: true };
       }),
+
+    getAdminNotes: protectedProcedure
+      .input(z.object({ clientId: z.number() }))
+      .query(async ({ input }) => {
+        const notes = await db.getAdminNotes(input.clientId);
+        return { notes: notes || "" };
+      }),
+
+    updateAdminNotes: protectedProcedure
+      .input(z.object({
+        clientId: z.number(),
+        notes: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateAdminNotes(input.clientId, input.notes);
+        return { success: true };
+      }),
   }),
 
   // Task management

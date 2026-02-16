@@ -185,3 +185,10 @@
 - [x] Added local state (localNotes) with debounced save (800ms delay) so typing is smooth
 - [x] Textarea is now resizable (resize-y, min-h-[80px]) and saves properly
 - [x] Run tests and verify all pass (33/33)
+
+## Internal Notepad on Manage Clients Page
+- [x] Add adminNotes column to clients table (migration 0007)
+- [x] Add backend tRPC procedures (getAdminNotes, updateAdminNotes)
+- [x] Build a notepad panel on the right side of the client list view (collapsible, sticky)
+- [x] Debounced auto-save (800ms) with "Saving..." indicator
+- [x] Run tests and verify all pass (37/37 — 4 new admin notes tests)
