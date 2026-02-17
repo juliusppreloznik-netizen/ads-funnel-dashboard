@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
@@ -31,6 +31,7 @@ const STATUS_CONFIG = {
 };
 
 export default function ChangeRequestButton() {
+  // ALL hooks must be called before any conditional returns
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -38,13 +39,10 @@ export default function ChangeRequestButton() {
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Only show for authenticated admin users
-  if (!user || user.role !== "admin") return null;
-
-  const currentPage = window.location.pathname;
+  const isAdmin = user?.role === "admin";
 
   const { data: requests, refetch } = trpc.changeRequests.list.useQuery(undefined, {
-    enabled: isOpen,
+    enabled: isOpen && isAdmin,
   });
 
   const createMutation = trpc.changeRequests.create.useMutation({
@@ -53,7 +51,7 @@ export default function ChangeRequestButton() {
       setDescription("");
       refetch();
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err: any) => toast.error(err.message),
   });
 
   const updateStatusMutation = trpc.changeRequests.updateStatus.useMutation({
@@ -66,6 +64,16 @@ export default function ChangeRequestButton() {
       refetch();
     },
   });
+
+  const pendingCount = useMemo(
+    () => requests?.filter((r) => r.status === "pending").length || 0,
+    [requests]
+  );
+
+  // Only show for authenticated admin users — AFTER all hooks
+  if (!isAdmin) return null;
+
+  const currentPage = window.location.pathname;
 
   const handleSubmit = () => {
     if (!description.trim()) return;
@@ -82,8 +90,6 @@ export default function ChangeRequestButton() {
       handleSubmit();
     }
   };
-
-  const pendingCount = requests?.filter((r) => r.status === "pending").length || 0;
 
   return (
     <>

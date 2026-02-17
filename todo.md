@@ -214,3 +214,8 @@
 - [x] Wire component into App.tsx so it appears on every page
 - [x] Only visible to authenticated admin users (checks user.role === 'admin')
 - [x] Run tests and verify all pass (53/53 — 8 new change request tests)
+
+## Bug Fix: Site Crash "Rendered more hooks"
+- [x] Root cause: ChangeRequestButton had early return (`if (!user || user.role !== 'admin') return null`) BEFORE tRPC hooks, violating React's rules of hooks
+- [x] Fix: Moved all hooks (useQuery, useMutation, useMemo) above the conditional return
+- [x] Site loads correctly, 53/53 tests passing
