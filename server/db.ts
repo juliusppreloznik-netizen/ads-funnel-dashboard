@@ -1,6 +1,6 @@
 import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
+import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import * as bcrypt from 'bcryptjs';
 
@@ -480,6 +480,49 @@ export async function markOnboardingStepComplete(clientId: number, stepKey: stri
       completedAt: new Date(),
     });
   }
+}
+
+// ============================================================================
+// CHANGE REQUEST HELPERS
+// ============================================================================
+
+export async function createChangeRequest(description: string, page?: string, priority?: "low" | "medium" | "high") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(changeRequests).values({
+    description,
+    page: page || null,
+    priority: priority || "medium",
+  });
+}
+
+export async function getAllChangeRequests() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(changeRequests).orderBy(desc(changeRequests.createdAt));
+}
+
+export async function updateChangeRequestStatus(id: number, status: "pending" | "in_progress" | "done") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const updateData: any = { status, updatedAt: new Date() };
+  if (status === "done") {
+    updateData.resolvedAt = new Date();
+  }
+  
+  await db.update(changeRequests)
+    .set(updateData)
+    .where(eq(changeRequests.id, id));
+}
+
+export async function deleteChangeRequest(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(changeRequests).where(eq(changeRequests.id, id));
 }
 
 export async function markOnboardingStepIncomplete(clientId: number, stepKey: string) {

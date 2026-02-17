@@ -206,3 +206,11 @@
 - [x] Each step: embedded YouTube video, written instructions, "Mark as Done" button with toggle
 - [x] Track completion per client with progress bar in header
 - [x] Run tests and verify all pass (45/45 — 8 new onboarding tests)
+
+## Floating Change Request Button (Every Page)
+- [x] Add change_requests table to database (migration 0009)
+- [x] Add db helpers and tRPC procedures (create, list, updateStatus, delete)
+- [x] Build floating button component with popup panel (submit request + view history)
+- [x] Wire component into App.tsx so it appears on every page
+- [x] Only visible to authenticated admin users (checks user.role === 'admin')
+- [x] Run tests and verify all pass (53/53 — 8 new change request tests)

@@ -119,3 +119,20 @@ export const onboardingProgress = mysqlTable("onboardingProgress", {
 
 export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
 export type InsertOnboardingProgress = typeof onboardingProgress.$inferInsert;
+
+/**
+ * Change Requests table - admin logs change/feature requests from any page
+ */
+export const changeRequests = mysqlTable("changeRequests", {
+  id: int("id").autoincrement().primaryKey(),
+  description: text("description").notNull(),
+  page: varchar("page", { length: 255 }), // Which page the request was submitted from
+  priority: mysqlEnum("priority", ["low", "medium", "high"]).default("medium").notNull(),
+  status: mysqlEnum("status", ["pending", "in_progress", "done"]).default("pending").notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChangeRequest = typeof changeRequests.$inferSelect;
+export type InsertChangeRequest = typeof changeRequests.$inferInsert;

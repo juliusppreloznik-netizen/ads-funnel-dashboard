@@ -713,6 +713,42 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
         return db.getOnboardingStepDefinitions();
       }),
   }),
+
+  // Change requests - admin logs feature/change requests from any page
+  changeRequests: router({
+    create: protectedProcedure
+      .input(z.object({
+        description: z.string().min(1),
+        page: z.string().optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.createChangeRequest(input.description, input.page, input.priority);
+        return { success: true };
+      }),
+
+    list: protectedProcedure
+      .query(async () => {
+        return await db.getAllChangeRequests();
+      }),
+
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["pending", "in_progress", "done"]),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateChangeRequestStatus(input.id, input.status);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteChangeRequest(input.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

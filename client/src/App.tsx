@@ -14,6 +14,7 @@ import ClientLogin from "./pages/ClientLogin";
 import ClientPortal from "./pages/ClientPortal";
 import ClientManagement from "./pages/ClientManagement";
 import Onboarding from "./pages/Onboarding";
+import ChangeRequestButton from "./components/ChangeRequestButton";
 
 
 
@@ -53,6 +54,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <ChangeRequestButton />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
