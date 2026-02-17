@@ -275,3 +275,10 @@
 - [x] CR#9: On the Facebook onboarding step, add the agency admin email (employee@catalystmarketingco.net) with "give full access" instruction
 - [x] Mark both change requests as done in database
 - [x] Run tests and verify all pass (74/74)
+
+## Help Videos in Client Portal
+- [x] Create client-facing Help Videos page (ClientHelpVideos.tsx) — read-only, no edit/delete
+- [x] Add route /portal/help-videos to App.tsx
+- [x] Add Help Videos navigation link to client portal
+- [x] Use public tRPC endpoint (helpVideos.list) so clients can view without admin role
+- [x] Run tests and verify all pass (74/74)

@@ -721,11 +721,11 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
 
   // Help Videos - admin-managed tutorial video library
   helpVideos: router({
-    list: protectedProcedure.query(async () => {
+    list: publicProcedure.query(async () => {
       return await db.getAllHelpVideos();
     }),
 
-    categories: protectedProcedure.query(async () => {
+    categories: publicProcedure.query(async () => {
       return await db.getHelpVideoCategories();
     }),
 

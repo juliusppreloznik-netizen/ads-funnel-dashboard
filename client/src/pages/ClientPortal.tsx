@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Clock, LogOut } from "lucide-react";
+import { CheckCircle2, Circle, Clock, LogOut, Video } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface Task {
@@ -133,6 +133,18 @@ export default function ClientPortal() {
             {client?.businessName}
           </p>
         </Card>
+
+        {/* Quick Links */}
+        <div className="flex gap-3">
+          <Button
+            onClick={() => setLocation("/portal/help-videos")}
+            variant="outline"
+            className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Help Videos
+          </Button>
+        </div>
 
         {/* Continue Onboarding Banner */}
         {client && onboarding.completedSteps < 5 && (

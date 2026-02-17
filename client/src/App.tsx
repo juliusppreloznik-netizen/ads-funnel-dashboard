@@ -15,6 +15,7 @@ import ClientPortal from "./pages/ClientPortal";
 import ClientManagement from "./pages/ClientManagement";
 import Onboarding from "./pages/Onboarding";
 import HelpVideos from "./pages/HelpVideos";
+import ClientHelpVideos from "./pages/ClientHelpVideos";
 import ChangeRequestButton from "./components/ChangeRequestButton";
 
 
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/onboarding/:clientId" component={Onboarding} />
       <Route path="/client-login" component={ClientLogin} />
       <Route path="/client-portal" component={ClientPortal} />
+      <Route path="/portal/help-videos" component={ClientHelpVideos} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
