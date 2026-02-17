@@ -14,7 +14,6 @@ export default function IntakeForm() {
     name: "",
     email: "",
     businessName: "",
-    driveLink: "",
     password: "",
   });
 
@@ -124,22 +123,6 @@ export default function IntakeForm() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="driveLink" className="text-white text-sm font-medium">
-                Google Drive Link
-              </Label>
-              <Input
-                id="driveLink"
-                name="driveLink"
-                value={formData.driveLink}
-                onChange={handleChange}
-                placeholder="https://drive.google.com/..."
-                className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500/50 focus:ring-violet-500/20"
-              />
-              <p className="text-xs text-slate-500">
-                Share your funding results or relevant documents
-              </p>
-            </div>
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white text-sm font-medium">

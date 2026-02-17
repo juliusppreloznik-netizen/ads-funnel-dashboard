@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, LEFT(description, 200) as desc_text, priority, page FROM changeRequests WHERE status = 'pending' ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, LEFT(description, 200) as desc_text, priority, page FROM changeRequests WHERE status = 'pending' ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "9",
+      "desc_text": "On the Facebook business access page, add the same email for the ghl admin, but put in give full access",
+      "priority": "high",
+      "page": "/onboarding/600007"
+    },
+    {
+      "id": "8",
+      "desc_text": "remove google druve link field",
+      "priority": "medium",
+      "page": "/"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdesc_text\tpriority\tpage\n9\tOn the Facebook business access page, add the same email for the ghl admin, but put in give full access\thigh\t/onboarding/600007\n8\tremove google druve link field\tmedium\t/\n",
+  "stderr": "",
+  "execution_time_ms": 358
+}

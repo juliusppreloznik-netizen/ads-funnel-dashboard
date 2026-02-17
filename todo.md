@@ -158,7 +158,7 @@
 - [ ] Trace uniqueMechanism flow from frontend to backend
 - [ ] Ensure uniqueMechanism is passed to VSL generation prompt
 - [ ] Ensure uniqueMechanism is passed to Ads generation prompt
-- [ ] Run tests and verify all pass
+- [x] Run tests and verify all pass (74/74)
 
 ## Revert VSL & Ads Prompts to Original
 - [x] Identify where VSL and Ads prompts are defined (getVSLPrompt, getAdsPrompt)
@@ -269,3 +269,9 @@
 - [x] YouTube URL parser supports standard, short, embed, and bare ID formats
 - [x] Categories dynamically derived from actual video data
 - [x] Write 20 tests (12 CRUD + 8 YouTube URL extraction) — all 74 tests passing
+
+## Change Request Batch #2 — Feb 17
+- [x] CR#8: Remove Google Drive link field from the intake form
+- [x] CR#9: On the Facebook onboarding step, add the agency admin email (employee@catalystmarketingco.net) with "give full access" instruction
+- [x] Mark both change requests as done in database
+- [x] Run tests and verify all pass (74/74)

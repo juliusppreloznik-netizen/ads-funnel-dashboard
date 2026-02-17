@@ -92,10 +92,16 @@ const ONBOARDING_STEPS = [
       "Click the gear icon (Settings) in the bottom left",
       "In the left menu, click 'People' under Users",
       "Click 'Invite People' (or 'Add People') in the top right",
-      "Enter our email address and toggle on Admin access",
-      "Click 'Next', then assign the relevant assets (Ad Account, Pages, etc.)",
+      "Enter our email: employee@catalystmarketingco.net",
+      "Toggle on Full Access (give full access to all assets)",
+      "Click 'Next', then assign all relevant assets (Ad Account, Pages, etc.)",
       "Click 'Send Invite' — we'll accept and get started",
     ],
+    extraInfo: {
+      email: "employee@catalystmarketingco.net",
+      name: "Catalyst Marketing",
+      note: "Give full access",
+    },
     hasAlternate: false,
   },
 ];
@@ -249,8 +255,8 @@ export default function Onboarding() {
           {/* Description */}
           <p className="text-slate-300 leading-relaxed">{step.description}</p>
 
-          {/* Agency Admin Extra Info Card */}
-          {step.key === "agency_admin" && "extraInfo" in step && (step as any).extraInfo && (
+          {/* Extra Info Card (Agency Admin + Facebook) */}
+          {"extraInfo" in step && (step as any).extraInfo && (
             <Card className="bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border-violet-500/20 p-5">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-600/20 flex items-center justify-center">
@@ -271,6 +277,14 @@ export default function Onboarding() {
                         {(step as any).extraInfo.name}
                       </span>
                     </p>
+                    {(step as any).extraInfo.note && (
+                      <p className="text-slate-300">
+                        <span className="text-slate-400">Access Level:</span>{" "}
+                        <span className="text-green-400 font-semibold">
+                          {(step as any).extraInfo.note}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
