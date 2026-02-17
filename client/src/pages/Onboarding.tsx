@@ -111,11 +111,12 @@ type OnboardingStep = typeof ONBOARDING_STEPS[number];
 export default function Onboarding() {
   const params = useParams<{ clientId: string }>();
   const clientId = parseInt(params.clientId || "0");
+  const isGuideMode = clientId === 0; // No client ID = view-only guide mode
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
 
-  // Fetch onboarding progress
+  // Fetch onboarding progress (only when linked to a client)
   const { data: progress, refetch: refetchProgress } = trpc.onboarding.getProgress.useQuery(
     { clientId },
     { enabled: clientId > 0 }
@@ -145,6 +146,7 @@ export default function Onboarding() {
   });
 
   const handleToggleComplete = (stepKey: string) => {
+    if (isGuideMode) return; // No tracking in guide mode
     if (completedSteps[stepKey]) {
       setCompletedSteps((prev) => ({ ...prev, [stepKey]: false }));
       markIncompleteMutation.mutate({ clientId, stepKey });
@@ -180,10 +182,17 @@ export default function Onboarding() {
       <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-lg font-semibold text-white">Getting Started</h1>
-            <span className="text-sm text-slate-400">
-              {completedCount} of {ONBOARDING_STEPS.length} steps complete
-            </span>
+            <h1 className="text-lg font-semibold text-white">{isGuideMode ? "Setup Guide" : "Getting Started"}</h1>
+            {!isGuideMode && (
+              <span className="text-sm text-slate-400">
+                {completedCount} of {ONBOARDING_STEPS.length} steps complete
+              </span>
+            )}
+            {isGuideMode && (
+              <span className="text-sm text-slate-400">
+                {ONBOARDING_STEPS.length} steps
+              </span>
+            )}
           </div>
 
           {/* Step indicators */}
@@ -334,29 +343,31 @@ export default function Onboarding() {
               Previous
             </Button>
 
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => handleToggleComplete(step.key)}
-                variant={isCurrentStepComplete ? "outline" : "default"}
-                className={
-                  isCurrentStepComplete
-                    ? "bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
-                    : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
-                }
-              >
-                {isCurrentStepComplete ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Completed
-                  </>
-                ) : (
-                  <>
-                    <Circle className="h-4 w-4 mr-2" />
-                    Mark as Done
-                  </>
-                )}
-              </Button>
-            </div>
+            {!isGuideMode && (
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={() => handleToggleComplete(step.key)}
+                  variant={isCurrentStepComplete ? "outline" : "default"}
+                  className={
+                    isCurrentStepComplete
+                      ? "bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
+                      : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
+                  }
+                >
+                  {isCurrentStepComplete ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Completed
+                    </>
+                  ) : (
+                    <>
+                      <Circle className="h-4 w-4 mr-2" />
+                      Mark as Done
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
 
             {currentStep < ONBOARDING_STEPS.length - 1 ? (
               <Button
@@ -378,7 +389,7 @@ export default function Onboarding() {
           </div>
 
           {/* All Complete Banner */}
-          {allComplete && (
+          {allComplete && !isGuideMode && (
             <Card className="bg-gradient-to-r from-green-900/40 to-emerald-900/40 border-green-500/30 p-6 text-center">
               <CheckCircle2 className="h-12 w-12 text-green-400 mx-auto mb-3" />
               <h3 className="text-xl font-bold text-white mb-2">You're All Set!</h3>

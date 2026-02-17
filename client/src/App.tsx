@@ -32,6 +32,7 @@ function Router() {
       <Route path="/admin/clients" component={ClientManagement} />
       <Route path="/admin/help-videos" component={HelpVideos} />
 
+      <Route path="/setup" component={Onboarding} />
       <Route path="/onboarding/:clientId" component={Onboarding} />
       <Route path="/client-login" component={ClientLogin} />
       <Route path="/client-portal" component={ClientPortal} />

@@ -287,3 +287,7 @@
 - [x] Add "Quick Links" section to admin dashboard with copyable onboarding link
 - [x] Create public /help-videos route (no login required) for direct sharing
 - [x] Add copyable help videos link to admin dashboard Quick Links section
+
+## Direct Onboarding Link (No Client ID Required)
+- [x] Create /setup route that shows the onboarding flow without requiring a client ID
+- [x] Add "Setup Guide" copyable link to admin Quick Links bar

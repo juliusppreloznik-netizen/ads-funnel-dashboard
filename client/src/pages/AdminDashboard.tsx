@@ -240,6 +240,26 @@ export default function AdminDashboard() {
                 </Button>
               </div>
               <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+                <span className="text-xs text-slate-400">Setup Guide:</span>
+                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/setup</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => handleCopyToClipboard(window.location.origin + "/setup")}
+                >
+                  <ClipboardCopy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => window.open("/setup", "_blank")}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
                 <span className="text-xs text-slate-400">Help Videos:</span>
                 <code className="text-xs text-violet-300 font-mono">{window.location.origin}/help-videos</code>
                 <Button
