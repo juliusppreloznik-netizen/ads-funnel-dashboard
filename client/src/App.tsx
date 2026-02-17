@@ -36,6 +36,7 @@ function Router() {
       <Route path="/client-login" component={ClientLogin} />
       <Route path="/client-portal" component={ClientPortal} />
       <Route path="/portal/help-videos" component={ClientHelpVideos} />
+      <Route path="/help-videos" component={ClientHelpVideos} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

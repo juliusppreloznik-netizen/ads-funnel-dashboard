@@ -1,0 +1,395 @@
+{
+  "query": "SELECT id, name, email, businessName, createdAt FROM clients ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, name, email, businessName, createdAt FROM clients ORDER BY id;",
+  "rows": [
+    {
+      "id": "90001",
+      "name": "Christian ",
+      "email": "support@advancerevival.com",
+      "businessName": "Advance Revival",
+      "createdAt": "2026-01-29 12:37:26"
+    },
+    {
+      "id": "90002",
+      "name": "Ashton",
+      "email": "onboardingalcagency@gmail.com",
+      "businessName": "Alc Consulting Agency",
+      "createdAt": "2026-01-29 12:39:23"
+    },
+    {
+      "id": "120001",
+      "name": "Alante",
+      "email": "alantepierce@yahoo.com",
+      "businessName": "Boundless Financial Group",
+      "createdAt": "2026-01-31 06:24:13"
+    },
+    {
+      "id": "150001",
+      "name": "Trent Kus",
+      "email": "tkus769@gmail.com",
+      "businessName": "Tk Capital Solutions",
+      "createdAt": "2026-02-01 23:43:13"
+    },
+    {
+      "id": "180001",
+      "name": "Christopher Cotton",
+      "email": "Staxfix19@gmail.com",
+      "businessName": "Fix Bros Consulting Group LLC",
+      "createdAt": "2026-02-05 06:26:56"
+    },
+    {
+      "id": "210002",
+      "name": "Apoleen",
+      "email": "apoleen@placeholder.com",
+      "businessName": "Apoleen Business",
+      "createdAt": "2026-02-05 17:57:33"
+    },
+    {
+      "id": "210004",
+      "name": "Christian",
+      "email": "christian@placeholder.com",
+      "businessName": "Christian Business",
+      "createdAt": "2026-02-05 17:57:33"
+    },
+    {
+      "id": "210005",
+      "name": "Josh",
+      "email": "josh@placeholder.com",
+      "businessName": "Josh Business",
+      "createdAt": "2026-02-05 17:57:33"
+    },
+    {
+      "id": "210006",
+      "name": "Lee",
+      "email": "lee@placeholder.com",
+      "businessName": "Lee Business",
+      "createdAt": "2026-02-05 17:57:33"
+    },
+    {
+      "id": "210007",
+      "name": "Tae",
+      "email": "tae@placeholder.com",
+      "businessName": "Tae Business",
+      "createdAt": "2026-02-05 17:57:33"
+    },
+    {
+      "id": "270001",
+      "name": "Marcus ",
+      "email": "MARCUS@THECASHENDO.COM",
+      "businessName": "The Cashendo ",
+      "createdAt": "2026-02-06 20:10:46"
+    },
+    {
+      "id": "330001",
+      "name": "Phillip Nelson",
+      "email": "phillip@eazyfunds.net",
+      "businessName": "Eazyfunds LLC",
+      "createdAt": "2026-02-07 20:40:25"
+    },
+    {
+      "id": "450002",
+      "name": "lorenzo wrightt",
+      "email": "INFO@CREDITFORMULA.LLC",
+      "businessName": "CREDIT FORMULA LLC",
+      "createdAt": "2026-02-10 20:52:22"
+    },
+    {
+      "id": "480001",
+      "name": "Robert Holmes",
+      "email": "robertholmes910@yahoo.com",
+      "businessName": "NC Credit Solution",
+      "createdAt": "2026-02-10 23:05:44"
+    },
+    {
+      "id": "510001",
+      "name": "Christine McMillon",
+      "email": "cdmcmillon11@gmail.com",
+      "businessName": "The Credit Strategists",
+      "createdAt": "2026-02-11 23:47:08"
+    },
+    {
+      "id": "600001",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-16 07:25:55"
+    },
+    {
+      "id": "600002",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-16 07:25:55"
+    },
+    {
+      "id": "600003",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-16 07:25:56"
+    },
+    {
+      "id": "600004",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-16 07:26:38"
+    },
+    {
+      "id": "600005",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-16 07:26:39"
+    },
+    {
+      "id": "600006",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-16 07:26:39"
+    },
+    {
+      "id": "600007",
+      "name": "test",
+      "email": "sdfggh@gmail.com",
+      "businessName": "sdfgvhr",
+      "createdAt": "2026-02-16 07:36:12"
+    },
+    {
+      "id": "630001",
+      "name": "test ",
+      "email": "test@gmail.com",
+      "businessName": "test",
+      "createdAt": "2026-02-16 18:45:41"
+    },
+    {
+      "id": "660001",
+      "name": "FUNMILAYO ODION",
+      "email": "info@mytechbuddyhub.com",
+      "businessName": "MYTECHBUDDYHUB ",
+      "createdAt": "2026-02-16 19:23:43"
+    },
+    {
+      "id": "690001",
+      "name": "rftgyh",
+      "email": "wsedrftg@gmail.com",
+      "businessName": "qasdfg",
+      "createdAt": "2026-02-16 20:44:12"
+    },
+    {
+      "id": "720001",
+      "name": "fdghj",
+      "email": "esdrftghjk@gmail.com",
+      "businessName": "sdfghnj",
+      "createdAt": "2026-02-17 05:41:41"
+    },
+    {
+      "id": "720002",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 05:57:47"
+    },
+    {
+      "id": "720003",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 05:57:47"
+    },
+    {
+      "id": "720004",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 05:57:48"
+    },
+    {
+      "id": "720005",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:09:23"
+    },
+    {
+      "id": "720006",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:09:23"
+    },
+    {
+      "id": "720007",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 06:09:24"
+    },
+    {
+      "id": "720008",
+      "name": "wsedrft",
+      "email": "sdfggh@gmail.com",
+      "businessName": "swdesfghb",
+      "createdAt": "2026-02-17 06:27:00"
+    },
+    {
+      "id": "720009",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:41:20"
+    },
+    {
+      "id": "720010",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:41:20"
+    },
+    {
+      "id": "720011",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 06:41:21"
+    },
+    {
+      "id": "720012",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:52:55"
+    },
+    {
+      "id": "720013",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:52:56"
+    },
+    {
+      "id": "720014",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 06:52:57"
+    },
+    {
+      "id": "720015",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:58:58"
+    },
+    {
+      "id": "720016",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 06:58:58"
+    },
+    {
+      "id": "720017",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 06:58:59"
+    },
+    {
+      "id": "720018",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:05:42"
+    },
+    {
+      "id": "720019",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:05:43"
+    },
+    {
+      "id": "720020",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 07:05:44"
+    },
+    {
+      "id": "720021",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:13:28"
+    },
+    {
+      "id": "720022",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:13:28"
+    },
+    {
+      "id": "720023",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 07:13:29"
+    },
+    {
+      "id": "720024",
+      "name": "werftgh",
+      "email": "sdfggh@gmail.com",
+      "businessName": "sedrftgherftg",
+      "createdAt": "2026-02-17 07:21:21"
+    },
+    {
+      "id": "720025",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:31:34"
+    },
+    {
+      "id": "720026",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:31:34"
+    },
+    {
+      "id": "720027",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 07:31:35"
+    },
+    {
+      "id": "720028",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:41:35"
+    },
+    {
+      "id": "720029",
+      "name": "Test Client",
+      "email": "test@example.com",
+      "businessName": "Test Business LLC",
+      "createdAt": "2026-02-17 07:41:35"
+    },
+    {
+      "id": "720030",
+      "name": "Generation Test Client",
+      "email": "gentest@example.com",
+      "businessName": "Gen Test Business",
+      "createdAt": "2026-02-17 07:41:36"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tbusinessName\tcreatedAt\n90001\tChristian \tsupport@advancerevival.com\tAdvance Revival\t2026-01-29 12:37:26\n90002\tAshton\tonboardingalcagency@gmail.com\tAlc Consulting Agency\t2026-01-29 12:39:23\n120001\tAlante\talantepierce@yahoo.com\tBoundless Financial Group\t2026-01-31 06:24:13\n150001\tTrent Kus\ttkus769@gmail.com\tTk Capital Solutions\t2026-02-01 23:43:13\n180001\tChristopher Cotton\tStaxfix19@gmail.com\tFix Bros Consulting Group LLC\t2026-02-05 06:26:56\n210002\tApoleen\tapoleen@placeholder.com\tApoleen Business\t2026-02-05 17:57:33\n210004\tChristian\tchristian@placeholder.com\tChristian Business\t2026-02-05 17:57:33\n210005\tJosh\tjosh@placeholder.com\tJosh Business\t2026-02-05 17:57:33\n210006\tLee\tlee@placeholder.com\tLee Business\t2026-02-05 17:57:33\n210007\tTae\ttae@placeholder.com\tTae Business\t2026-02-05 17:57:33\n270001\tMarcus \tMARCUS@THECASHENDO.COM\tThe Cashendo \t2026-02-06 20:10:46\n330001\tPhillip Nelson\tphillip@eazyfunds.net\tEazyfunds LLC\t2026-02-07 20:40:25\n450002\tlorenzo wrightt\tINFO@CREDITFORMULA.LLC\tCREDIT FORMULA LLC\t2026-02-10 20:52:22\n480001\tRobert Holmes\trobertholmes910@yahoo.com\tNC Credit Solution\t2026-02-10 23:05:44\n510001\tChristine McMillon\tcdmcmillon11@gmail.com\tThe Credit Strategists\t2026-02-11 23:47:08\n600001\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-16 07:25:55\n600002\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-16 07:25:55\n600003\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-16 07:25:56\n600004\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-16 07:26:38\n600005\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-16 07:26:39\n600006\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-16 07:26:39\n600007\ttest\tsdfggh@gmail.com\tsdfgvhr\t2026-02-16 07:36:12\n630001\ttest \ttest@gmail.com\ttest\t2026-02-16 18:45:41\n660001\tFUNMILAYO ODION\tinfo@mytechbuddyhub.com\tMYTECHBUDDYHUB \t2026-02-16 19:23:43\n690001\trftgyh\twsedrftg@gmail.com\tqasdfg\t2026-02-16 20:44:12\n720001\tfdghj\tesdrftghjk@gmail.com\tsdfghnj\t2026-02-17 05:41:41\n720002\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 05:57:47\n720003\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 05:57:47\n720004\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 05:57:48\n720005\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:09:23\n720006\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:09:23\n720007\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 06:09:24\n720008\twsedrft\tsdfggh@gmail.com\tswdesfghb\t2026-02-17 06:27:00\n720009\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:41:20\n720010\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:41:20\n720011\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 06:41:21\n720012\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:52:55\n720013\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:52:56\n720014\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 06:52:57\n720015\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:58:58\n720016\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 06:58:58\n720017\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 06:58:59\n720018\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:05:42\n720019\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:05:43\n720020\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 07:05:44\n720021\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:13:28\n720022\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:13:28\n720023\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 07:13:29\n720024\twerftgh\tsdfggh@gmail.com\tsedrftgherftg\t2026-02-17 07:21:21\n720025\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:31:34\n720026\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:31:34\n720027\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 07:31:35\n720028\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:41:35\n720029\tTest Client\ttest@example.com\tTest Business LLC\t2026-02-17 07:41:35\n720030\tGeneration Test Client\tgentest@example.com\tGen Test Business\t2026-02-17 07:41:36\n",
+  "stderr": "",
+  "execution_time_ms": 376
+}

@@ -218,6 +218,73 @@ export default function AdminDashboard() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Quick Links Bar */}
+        <Card className="mb-6 bg-gradient-to-r from-violet-900/20 to-indigo-900/20 border-violet-500/20 backdrop-blur-xl">
+          <div className="p-4 flex flex-wrap items-center gap-4">
+            <span className="text-sm font-semibold text-violet-300 flex items-center gap-2">
+              <Link2 className="h-4 w-4" />
+              Quick Links
+            </span>
+            <div className="h-6 w-px bg-white/10" />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+                <span className="text-xs text-slate-400">Intake Form:</span>
+                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => handleCopyToClipboard(window.location.origin + "/")}
+                >
+                  <ClipboardCopy className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+                <span className="text-xs text-slate-400">Help Videos:</span>
+                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/help-videos</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => handleCopyToClipboard(window.location.origin + "/help-videos")}
+                >
+                  <ClipboardCopy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                  onClick={() => window.open("/help-videos", "_blank")}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </div>
+              {selectedClient && (
+                <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+                  <span className="text-xs text-slate-400">Onboarding:</span>
+                  <code className="text-xs text-violet-300 font-mono">{window.location.origin}/onboarding/{selectedClient.id}</code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                    onClick={() => handleCopyToClipboard(window.location.origin + "/onboarding/" + selectedClient.id)}
+                  >
+                    <ClipboardCopy className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-slate-400 hover:text-white hover:bg-white/10"
+                    onClick={() => window.open("/onboarding/" + selectedClient.id, "_blank")}
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
         {/* Generation Panel */}
         {selectedClient && (
           <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">

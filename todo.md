@@ -282,3 +282,8 @@
 - [x] Add Help Videos navigation link to client portal
 - [x] Use public tRPC endpoint (helpVideos.list) so clients can view without admin role
 - [x] Run tests and verify all pass (74/74)
+
+## Shareable Links in Admin Command Center
+- [x] Add "Quick Links" section to admin dashboard with copyable onboarding link
+- [x] Create public /help-videos route (no login required) for direct sharing
+- [x] Add copyable help videos link to admin dashboard Quick Links section
