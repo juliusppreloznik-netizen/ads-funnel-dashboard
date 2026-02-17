@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, ChevronRight, ChevronLeft, Play, ExternalLink, ArrowRight } from "lucide-react";
+import { CheckCircle2, Circle, ChevronRight, ChevronLeft, Play, ExternalLink, ArrowRight, Mail } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 
 // Onboarding step definitions with YouTube video embeds
@@ -18,23 +18,34 @@ const ONBOARDING_STEPS = [
     videoStart: 0,
     instructions: [
       "Go to GoHighLevel.com and sign up for an account",
-      "Choose the plan that fits your needs (we recommend the $297/mo plan)",
+      "Choose the $97/mo plan",
       "Complete the account setup wizard",
-      "Once done, share your login details with us via the intake form or email",
+      "Once your account is created, mark this step as done and move to the next step",
     ],
-    hasAlternate: true,
-    alternateTitle: "Already have your own GHL Agency account?",
-    alternateKey: "agency_admin",
-    alternateDescription:
-      "If you already have a GHL Agency account, you just need to add us as an agency admin so we can access your account and set everything up for you.",
-    alternateVideoId: "aW9JSF80-os",
-    alternateVideoStart: 0,
-    alternateInstructions: [
-      "Log into your GoHighLevel Agency account",
-      "Go to Settings → Team → Add Employee",
-      "Enter our email address and set the role to Agency Admin",
-      "Click Save — we'll get an invite and can start working immediately",
+    hasAlternate: false,
+  },
+  {
+    key: "agency_admin",
+    title: "Add Us as Agency Admin",
+    subtitle: "Give our team access to your GHL account so we can set everything up",
+    description:
+      "Now that your GHL account is ready, you need to add us as an agency admin. This lets our team access your account to build your funnels, automations, and workflows. Watch the video below and follow the quick steps.",
+    videoId: "njgC28VeUEc",
+    videoStart: 0,
+    instructions: [
+      "Log into your GoHighLevel account",
+      "Go to Settings → My Staff (or Team)",
+      "Click 'Add Employee'",
+      "Enter the email: employee@catalystmarketingco.net",
+      "First Name: Catalyst, Last Name: Marketing",
+      "Set the role to Admin and click Save",
+      "We'll receive the invite and start working on your account right away",
     ],
+    extraInfo: {
+      email: "employee@catalystmarketingco.net",
+      name: "Catalyst Marketing",
+    },
+    hasAlternate: false,
   },
   {
     key: "domain_setup",
@@ -71,27 +82,31 @@ const ONBOARDING_STEPS = [
   {
     key: "facebook_admin",
     title: "Give Us Facebook Business Access",
-    subtitle: "Add us as an admin to your Facebook Business Manager",
+    subtitle: "Add us as a user in your Meta Business Manager",
     description:
-      "We need admin access to your Facebook Business Manager to set up your ad campaigns, tracking pixels, and CAPI integration. Watch this quick tutorial to add us.",
-    videoId: "KDEKN5DcA30",
+      "We need access to your Meta Business Manager to set up your ad campaigns, tracking pixels, and CAPI integration. Watch this quick tutorial to learn how to add users to your account.",
+    videoId: "r9bwiFVUezE",
     videoStart: 0,
     instructions: [
-      "Go to business.facebook.com → Settings",
-      "Click 'People' in the left sidebar",
-      "Click 'Add People' and enter our email address",
-      "Set the role to 'Admin' and click 'Send Invite'",
+      "Go to business.facebook.com and log in",
+      "Click the gear icon (Settings) in the bottom left",
+      "In the left menu, click 'People' under Users",
+      "Click 'Invite People' (or 'Add People') in the top right",
+      "Enter our email address and toggle on Admin access",
+      "Click 'Next', then assign the relevant assets (Ad Account, Pages, etc.)",
+      "Click 'Send Invite' — we'll accept and get started",
     ],
     hasAlternate: false,
   },
 ];
+
+type OnboardingStep = typeof ONBOARDING_STEPS[number];
 
 export default function Onboarding() {
   const params = useParams<{ clientId: string }>();
   const clientId = parseInt(params.clientId || "0");
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
-  const [showAlternate, setShowAlternate] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
 
   // Fetch onboarding progress
@@ -137,7 +152,6 @@ export default function Onboarding() {
   const handleNext = () => {
     if (currentStep < ONBOARDING_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
-      setShowAlternate(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -145,21 +159,14 @@ export default function Onboarding() {
   const handlePrev = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      setShowAlternate(false);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const step = ONBOARDING_STEPS[currentStep];
-  const allComplete = ONBOARDING_STEPS.every(
-    (s) => completedSteps[s.key] || (s.key === "ghl_setup" && completedSteps["agency_admin"])
-  );
-  const completedCount = ONBOARDING_STEPS.filter(
-    (s) => completedSteps[s.key] || (s.key === "ghl_setup" && completedSteps["agency_admin"])
-  ).length;
-
-  const isCurrentStepComplete =
-    completedSteps[step.key] || (step.hasAlternate && completedSteps[step.alternateKey!]);
+  const allComplete = ONBOARDING_STEPS.every((s) => completedSteps[s.key]);
+  const completedCount = ONBOARDING_STEPS.filter((s) => completedSteps[s.key]).length;
+  const isCurrentStepComplete = completedSteps[step.key];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -176,14 +183,11 @@ export default function Onboarding() {
           {/* Step indicators */}
           <div className="flex gap-2">
             {ONBOARDING_STEPS.map((s, i) => {
-              const done = completedSteps[s.key] || (s.hasAlternate && completedSteps[s.alternateKey!]);
+              const done = completedSteps[s.key];
               return (
                 <button
                   key={s.key}
-                  onClick={() => {
-                    setCurrentStep(i);
-                    setShowAlternate(false);
-                  }}
+                  onClick={() => setCurrentStep(i)}
                   className={`flex-1 h-2 rounded-full transition-all ${
                     done
                       ? "bg-green-500"
@@ -203,14 +207,11 @@ export default function Onboarding() {
         {/* Step Navigation Pills */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {ONBOARDING_STEPS.map((s, i) => {
-            const done = completedSteps[s.key] || (s.hasAlternate && completedSteps[s.alternateKey!]);
+            const done = completedSteps[s.key];
             return (
               <button
                 key={s.key}
-                onClick={() => {
-                  setCurrentStep(i);
-                  setShowAlternate(false);
-                }}
+                onClick={() => setCurrentStep(i)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   i === currentStep
                     ? "bg-violet-600 text-white"
@@ -245,48 +246,44 @@ export default function Onboarding() {
             <p className="text-slate-400 text-lg">{step.subtitle}</p>
           </div>
 
-          {/* Alternate toggle (for GHL step) */}
-          {step.hasAlternate && (
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAlternate(false)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  !showAlternate
-                    ? "bg-violet-600 text-white"
-                    : "bg-white/5 text-slate-400 border border-white/10 hover:border-white/20"
-                }`}
-              >
-                I need to set up GHL
-              </button>
-              <button
-                onClick={() => setShowAlternate(true)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  showAlternate
-                    ? "bg-violet-600 text-white"
-                    : "bg-white/5 text-slate-400 border border-white/10 hover:border-white/20"
-                }`}
-              >
-                I already have a GHL Agency account
-              </button>
-            </div>
-          )}
-
           {/* Description */}
-          <p className="text-slate-300 leading-relaxed">
-            {showAlternate && step.hasAlternate ? step.alternateDescription : step.description}
-          </p>
+          <p className="text-slate-300 leading-relaxed">{step.description}</p>
+
+          {/* Agency Admin Extra Info Card */}
+          {step.key === "agency_admin" && "extraInfo" in step && (step as any).extraInfo && (
+            <Card className="bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border-violet-500/20 p-5">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-600/20 flex items-center justify-center">
+                  <Mail className="h-5 w-5 text-violet-400" />
+                </div>
+                <div>
+                  <h4 className="text-white font-semibold mb-1">Details to Enter</h4>
+                  <div className="space-y-1 text-sm">
+                    <p className="text-slate-300">
+                      <span className="text-slate-400">Email:</span>{" "}
+                      <span className="text-violet-300 font-mono select-all">
+                        {(step as any).extraInfo.email}
+                      </span>
+                    </p>
+                    <p className="text-slate-300">
+                      <span className="text-slate-400">Name:</span>{" "}
+                      <span className="text-violet-300 font-mono select-all">
+                        {(step as any).extraInfo.name}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Video Embed */}
           <Card className="bg-black border-white/10 overflow-hidden">
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${
-                  showAlternate && step.hasAlternate ? step.alternateVideoId : step.videoId
-                }?start=${
-                  showAlternate && step.hasAlternate ? step.alternateVideoStart : step.videoStart
-                }&rel=0&modestbranding=1`}
-                title={showAlternate && step.hasAlternate ? step.alternateTitle : step.title}
+                src={`https://www.youtube.com/embed/${step.videoId}?start=${step.videoStart}&rel=0&modestbranding=1`}
+                title={step.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
@@ -300,10 +297,7 @@ export default function Onboarding() {
               Quick Steps
             </h3>
             <ol className="space-y-3">
-              {(showAlternate && step.hasAlternate
-                ? step.alternateInstructions!
-                : step.instructions
-              ).map((instruction, i) => (
+              {step.instructions.map((instruction, i) => (
                 <li key={i} className="flex gap-3 text-slate-300">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-violet-600/20 text-violet-400 flex items-center justify-center text-xs font-semibold">
                     {i + 1}
@@ -328,11 +322,7 @@ export default function Onboarding() {
 
             <div className="flex items-center gap-3">
               <Button
-                onClick={() =>
-                  handleToggleComplete(
-                    showAlternate && step.hasAlternate ? step.alternateKey! : step.key
-                  )
-                }
+                onClick={() => handleToggleComplete(step.key)}
                 variant={isCurrentStepComplete ? "outline" : "default"}
                 className={
                   isCurrentStepComplete

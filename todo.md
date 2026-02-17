@@ -231,3 +231,13 @@
 - [x] Add tone/voice rules (investigative, conspiratorial, short punchy paragraphs, REMOVAL not ADDITION)
 - [x] Lock approved case studies (Restaurant Owner $150K, Clark $75K, Tom $110K, Aggregate $2.3M) — no fabrication
 - [x] Update tests to verify banned/required language rules (54/54 tests passing)
+
+## Change Request Batch - Feb 17 (ALL DONE)
+- [x] CR1: Remove GHL login and password fields from the intake form
+- [x] CR2: Allow clients to resume onboarding if they leave and come back (Continue Onboarding banner in Client Portal)
+- [x] CR3: Change GHL plan text to "choose $97/mo plan"
+- [x] CR4: Changed to "add our email as a agency admin" — now a separate mandatory step
+- [x] CR5: Added mandatory Step 2 "Add Us as Agency Admin" with video njgC28VeUEc
+- [x] CR6: Agency admin step shows email employee@catalystmarketingco.net, name Catalyst Marketing in a highlighted card
+- [x] CR7: FB step video changed to r9bwiFVUezE, quick steps updated to match Meta Business Manager flow
+- [x] All 7 requests marked as resolved in database (54/54 tests passing)

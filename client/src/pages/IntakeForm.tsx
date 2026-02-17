@@ -14,8 +14,6 @@ export default function IntakeForm() {
     name: "",
     email: "",
     businessName: "",
-    ghlEmail: "",
-    ghlPassword: "",
     driveLink: "",
     password: "",
   });
@@ -124,37 +122,6 @@ export default function IntakeForm() {
                 className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500/50 focus:ring-violet-500/20"
                 required
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ghlEmail" className="text-white text-sm font-medium">
-                  GoHighLevel Email
-                </Label>
-                <Input
-                  id="ghlEmail"
-                  name="ghlEmail"
-                  value={formData.ghlEmail}
-                  onChange={handleChange}
-                  placeholder="ghl@example.com"
-                  className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500/50 focus:ring-violet-500/20"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ghlPassword" className="text-white text-sm font-medium">
-                  GoHighLevel Password
-                </Label>
-                <Input
-                  id="ghlPassword"
-                  name="ghlPassword"
-                  type="password"
-                  value={formData.ghlPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className="h-12 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500/50 focus:ring-violet-500/20"
-                />
-              </div>
             </div>
 
             <div className="space-y-2">

@@ -60,9 +60,12 @@ router.get("/me", async (req, res) => {
     }
 
     const progress = await db.getClientProgress(decoded.clientId);
+    const onboardingProgress = await db.getOnboardingProgress(decoded.clientId);
+    const completedOnboarding = onboardingProgress.filter((s: any) => s.completed).length;
 
     res.json({
       client: {
+        id: decoded.clientId,
         name: client.name,
         email: client.email,
         businessName: client.businessName,
@@ -72,6 +75,9 @@ router.get("/me", async (req, res) => {
         completedTasks: progress.completedTasks,
         totalTasks: progress.totalTasks,
         percentage: progress.percentage,
+      },
+      onboarding: {
+        completedSteps: completedOnboarding,
       },
     });
   } catch (error) {

@@ -14,6 +14,7 @@ interface Task {
 }
 
 interface ClientData {
+  id: number;
   name: string;
   businessName: string;
   email: string;
@@ -24,6 +25,7 @@ export default function ClientPortal() {
   const [client, setClient] = useState<ClientData | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [progress, setProgress] = useState({ completedTasks: 0, totalTasks: 0, percentage: 0 });
+  const [onboarding, setOnboarding] = useState({ completedSteps: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function ClientPortal() {
       setClient(data.client);
       setTasks(data.tasks);
       setProgress(data.progress);
+      if (data.onboarding) setOnboarding(data.onboarding);
     } catch (error) {
       toast.error("Failed to load data");
     } finally {
@@ -130,6 +133,26 @@ export default function ClientPortal() {
             {client?.businessName}
           </p>
         </Card>
+
+        {/* Continue Onboarding Banner */}
+        {client && onboarding.completedSteps < 5 && (
+          <Card className="bg-gradient-to-r from-violet-900/40 to-indigo-900/40 border-violet-500/30 backdrop-blur-xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Finish Your Onboarding</h2>
+                <p className="text-slate-300 text-sm">
+                  Complete the remaining setup steps so we can start building your assets.
+                </p>
+              </div>
+              <Button
+                onClick={() => setLocation(`/onboarding/${client.id}`)}
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 whitespace-nowrap"
+              >
+                Continue Onboarding
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Progress Card */}
         <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl p-8">
