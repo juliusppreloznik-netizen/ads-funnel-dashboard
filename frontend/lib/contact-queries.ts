@@ -1194,6 +1194,8 @@ export async function getSourceKPIs(
     const supabase = getSupabase();
 
     // Determine which fields to use based on breakdown level
+    // IMPORTANT: For "ad" level, we group by ad_id (not ad_name) to match Facebook Ads Manager
+    // This is because multiple Facebook ads can share the same name but have different ad_ids
     const nameField =
       breakdownLevel === "campaign"
         ? "campaign_name"
@@ -1208,7 +1210,10 @@ export async function getSourceKPIs(
         ? "adset_id"
         : "ad_id";
 
-    // Build contacts query
+    // For aggregation, use ad_id when breakdown is "ad" to match Facebook Ads Manager
+    const groupByField = breakdownLevel === "ad" ? "ad_id" : nameField;
+
+    // Build contacts query - always fetch both name and id fields
     let contactsQuery = supabase
       .from("contacts")
       .select(`
@@ -1221,7 +1226,7 @@ export async function getSourceKPIs(
         disqualified_at,
         final_deal_value
       `)
-      .not(nameField, "is", null);
+      .not(groupByField, "is", null);
 
     // Apply date filter
     if (dateRange?.from) {
@@ -1231,7 +1236,7 @@ export async function getSourceKPIs(
       contactsQuery = contactsQuery.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
     }
 
-    // Build ads query for spend data
+    // Build ads query for spend data - always fetch both name and id fields
     let adsQuery = supabase
       .from("ads")
       .select(`
@@ -1239,7 +1244,7 @@ export async function getSourceKPIs(
         ${idField},
         spend
       `)
-      .not(nameField, "is", null);
+      .not(groupByField, "is", null);
 
     if (dateRange?.from) {
       adsQuery = adsQuery.gte("date", formatDateOnly(dateRange.from));
@@ -1264,18 +1269,20 @@ export async function getSourceKPIs(
     const contacts = contactsResult.data || [];
     const ads = adsResult.data || [];
 
-    // Aggregate spend by source
+    // Aggregate spend by groupByField (ad_id for ads, name for campaigns/adsets)
     const spendMap = new Map<string, number>();
     for (const ad of ads) {
-      const source = (ad as Record<string, unknown>)[nameField] as string || "Unknown";
-      const currentSpend = spendMap.get(source) || 0;
-      spendMap.set(source, currentSpend + (Number(ad.spend) || 0));
+      const groupKey = (ad as Record<string, unknown>)[groupByField] as string || "Unknown";
+      const currentSpend = spendMap.get(groupKey) || 0;
+      spendMap.set(groupKey, currentSpend + (Number(ad.spend) || 0));
     }
 
-    // Group and aggregate contacts by source
+    // Group and aggregate contacts by groupByField
+    // For "ad" breakdown, this groups by ad_id (not ad_name) to match Facebook Ads Manager
     const sourceMap = new Map<string, {
-      source: string;
-      sourceId: string;
+      source: string;        // Display name (ad_name, campaign_name, etc.)
+      sourceId: string;      // ID (ad_id, campaign_id, etc.)
+      groupKey: string;      // The actual grouping key (ad_id for ads, name for others)
       applications: number;
       qualified: number;
       dq: number;
@@ -1285,13 +1292,15 @@ export async function getSourceKPIs(
     }>();
 
     for (const contact of contacts) {
-      const source = (contact as Record<string, unknown>)[nameField] as string || "Unknown";
+      const groupKey = (contact as Record<string, unknown>)[groupByField] as string || "Unknown";
+      const sourceName = (contact as Record<string, unknown>)[nameField] as string || "Unknown";
       const sourceId = (contact as Record<string, unknown>)[idField] as string || "";
 
-      if (!sourceMap.has(source)) {
-        sourceMap.set(source, {
-          source,
+      if (!sourceMap.has(groupKey)) {
+        sourceMap.set(groupKey, {
+          source: sourceName,
           sourceId,
+          groupKey,
           applications: 0,
           qualified: 0,
           dq: 0,
@@ -1301,7 +1310,7 @@ export async function getSourceKPIs(
         });
       }
 
-      const kpis = sourceMap.get(source)!;
+      const kpis = sourceMap.get(groupKey)!;
 
       // Count applications (form submissions)
       if (contact.form_submitted_at) {
@@ -1330,9 +1339,32 @@ export async function getSourceKPIs(
       }
     }
 
+    // Also add ads that have spend but no contacts
+    // This ensures we see all ads in the table, even those without any form submissions
+    for (const ad of ads) {
+      const groupKey = (ad as Record<string, unknown>)[groupByField] as string || "Unknown";
+      const sourceName = (ad as Record<string, unknown>)[nameField] as string || "Unknown";
+      const sourceId = (ad as Record<string, unknown>)[idField] as string || "";
+
+      if (!sourceMap.has(groupKey)) {
+        sourceMap.set(groupKey, {
+          source: sourceName,
+          sourceId,
+          groupKey,
+          applications: 0,
+          qualified: 0,
+          dq: 0,
+          shown: 0,
+          closes: 0,
+          revenue: 0,
+        });
+      }
+    }
+
     // Calculate final metrics and convert to array
+    // Use groupKey to look up spend (ensures ad_id matching for "ad" breakdown)
     const result: SourceKPIs[] = Array.from(sourceMap.values()).map((kpi) => {
-      const spend = spendMap.get(kpi.source) || 0;
+      const spend = spendMap.get(kpi.groupKey) || 0;
       const booked = kpi.qualified + kpi.dq; // Total booked = qualified + DQ
 
       return {
