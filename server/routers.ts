@@ -712,6 +712,11 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
       .query(() => {
         return db.getOnboardingStepDefinitions();
       }),
+
+    getAllProgress: protectedProcedure
+      .query(async () => {
+        return await db.getAllClientsOnboardingProgress();
+      }),
   }),
 
   // Change requests - admin logs feature/change requests from any page

@@ -241,3 +241,10 @@
 - [x] CR6: Agency admin step shows email employee@catalystmarketingco.net, name Catalyst Marketing in a highlighted card
 - [x] CR7: FB step video changed to r9bwiFVUezE, quick steps updated to match Meta Business Manager flow
 - [x] All 7 requests marked as resolved in database (54/54 tests passing)
+
+## Onboarding Progress Badges on Client Cards
+- [x] Add backend procedure getAllClientsOnboardingProgress (single query, grouped by clientId)
+- [x] Add protectedProcedure onboarding.getAllProgress in router
+- [x] Update client cards in Manage Clients page to show "Onboarding: X/5" badge
+- [x] Color-coded: green (complete), amber (in-progress), gray (not started) with matching icons
+- [x] Run tests and verify all pass (54/54)

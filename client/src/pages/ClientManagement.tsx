@@ -56,6 +56,8 @@ export default function ClientManagement() {
     { enabled: !!selectedClientId }
   );
 
+  const { data: onboardingProgressMap } = trpc.onboarding.getAllProgress.useQuery();
+
   const createClientMutation = trpc.clients.createManual.useMutation({
     onSuccess: () => {
       toast.success("Client created successfully!");
@@ -604,6 +606,34 @@ export default function ClientManagement() {
                       )}
                     </div>
                     <p className="text-slate-500 text-xs mb-3">{client.email}</p>
+                    {/* Onboarding Progress Badge */}
+                    {(() => {
+                      const ob = onboardingProgressMap?.[client.id];
+                      const completed = ob?.completed ?? 0;
+                      const total = ob?.total ?? 5;
+                      const isOnboardingDone = completed === total;
+                      const hasStarted = completed > 0;
+                      return (
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            isOnboardingDone
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : hasStarted
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              : 'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                          }`}>
+                            {isOnboardingDone ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : hasStarted ? (
+                              <Clock className="h-3 w-3" />
+                            ) : (
+                              <Circle className="h-3 w-3" />
+                            )}
+                            Onboarding: {completed}/{total}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {client.progress && (
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-xs">

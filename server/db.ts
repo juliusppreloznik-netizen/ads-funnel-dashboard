@@ -436,6 +436,38 @@ export function getOnboardingStepDefinitions() {
   return ONBOARDING_STEPS;
 }
 
+export async function getAllClientsOnboardingProgress() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const allProgress = await db.select().from(onboardingProgress);
+  const totalSteps = ONBOARDING_STEPS.length;
+  
+  // Group by clientId
+  const progressMap: Record<number, { completed: number; total: number }> = {};
+  
+  // Build a set of completed steps per client
+  const clientSteps: Record<number, Set<string>> = {};
+  for (const row of allProgress) {
+    if (!clientSteps[row.clientId]) {
+      clientSteps[row.clientId] = new Set();
+    }
+    if (row.completed === 1) {
+      clientSteps[row.clientId].add(row.stepKey);
+    }
+  }
+  
+  for (const [clientIdStr, steps] of Object.entries(clientSteps)) {
+    const clientId = parseInt(clientIdStr);
+    progressMap[clientId] = {
+      completed: steps.size,
+      total: totalSteps,
+    };
+  }
+  
+  return progressMap;
+}
+
 export async function getOnboardingProgress(clientId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
