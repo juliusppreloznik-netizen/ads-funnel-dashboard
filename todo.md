@@ -219,3 +219,15 @@
 - [x] Root cause: ChangeRequestButton had early return (`if (!user || user.role !== 'admin') return null`) BEFORE tRPC hooks, violating React's rules of hooks
 - [x] Fix: Moved all hooks (useQuery, useMutation, useMemo) above the conditional return
 - [x] Site loads correctly, 53/53 tests passing
+
+## Implement Manus Copy Directive (Full Rewrite)
+- [x] Rewrite VSL prompt: ban all credit repair language, enforce 4-step mechanism, lock 3 approved case studies only
+- [x] Rewrite VSL prompt: enforce exact narrative arc (Hook → Credibility → Problem → Alternatives Fail → Mechanism → Process → Proof → Cost of Inaction → Offer → Risk Reversal → Close)
+- [x] Rewrite Ads prompt: 5 locked ad angles (Problem Awareness, Enemy, Case Study, Contrarian, Urgency)
+- [x] Rewrite Ads prompt: every ad must include 27 bureaus, legal mechanism, domino effect, done-for-you, no results no fee
+- [x] Add complete BANNED LANGUAGE blacklist to both prompts (ABSOLUTE BLACKLIST section)
+- [x] Add REQUIRED LANGUAGE checklist to both prompts
+- [x] Add OUTPUT VALIDATION CHECKLIST to both prompts (SELF-CHECK section)
+- [x] Add tone/voice rules (investigative, conspiratorial, short punchy paragraphs, REMOVAL not ADDITION)
+- [x] Lock approved case studies (Restaurant Owner $150K, Clark $75K, Tom $110K, Aggregate $2.3M) — no fabrication
+- [x] Update tests to verify banned/required language rules (54/54 tests passing)

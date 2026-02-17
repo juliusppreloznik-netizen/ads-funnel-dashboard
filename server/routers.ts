@@ -7,7 +7,7 @@ import * as db from "./db";
 import { notifyOwner } from "./_core/notification";
 import { sendClientWelcomeEmail } from "./_core/clientEmail";
 import { invokeLLM } from "./_core/llm";
-import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, loadLandingPageTemplate, applyLandingPageReplacements } from "./generationPrompts";
+import { getVSLPrompt, getAdsPrompt, getLandingPageCopyPrompt, applyLandingPageReplacements } from "./generationPrompts";
 import { buildFunnelPrompt, FG_COLORS, ColorScheme } from "./funnelPrompts";
 import { buildFunnelGenerationPrompt, parseFunnelResponse } from "./funnelGenerationPrompt";
 import { buildSurveyCssPrompt, parseSurveyCssResponse } from "./surveyCssPrompt";

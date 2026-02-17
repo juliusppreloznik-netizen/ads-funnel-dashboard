@@ -423,7 +423,7 @@ BACKGROUND_TREATMENT:radial_glow
     });
   });
 
-  describe('VSL and Ad Prompts are niche-locked', () => {
+  describe('VSL and Ad Prompts — Manus Copy Directive', () => {
     it('should detect mortgage niche from mechanism name and lock VSL to mortgage copy', async () => {
       const { getVSLPrompt } = await import('./generationPrompts');
       
@@ -432,32 +432,64 @@ BACKGROUND_TREATMENT:radial_glow
       expect(prompt).toContain('Mortgage Ready Blueprint');
       expect(prompt).toContain('Test Biz');
       expect(prompt).toContain('HOOK');
-      expect(prompt).toContain('MECHANISM REVEAL');
-      expect(prompt).toContain('3,000-4,000 words');
-      // Must be locked to mortgage niche
-      expect(prompt).toContain('NICHE LOCK');
-      expect(prompt).toContain('mortgage readiness and home buying');
-      expect(prompt).toContain('aspiring homeowners');
-      // Must contain forbidden topics
-      expect(prompt).toContain('FORBIDDEN TOPICS');
-      expect(prompt).toContain('Investment returns');
-      expect(prompt).toContain('wealth management');
-      // Must NOT contain funding-specific content
-      expect(prompt).not.toContain('business credit and funding');
+      expect(prompt).toContain('3,500-4,500 words');
+      // Must be mortgage niche
+      expect(prompt).toContain('Mortgage readiness and home buying');
+      // Must ban credit repair
+      expect(prompt).toContain('BLACKLIST');
+      // Must NOT contain funding case studies
+      expect(prompt).not.toContain('Restaurant Owner');
     });
 
-    it('should default to funding niche for non-mortgage mechanisms', async () => {
+    it('should default to funding niche for non-mortgage mechanisms with Copy Directive compliance', async () => {
       const { getVSLPrompt } = await import('./generationPrompts');
       
       const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'Secondary Bureau Attack Method');
       
       expect(prompt).toContain('Secondary Bureau Attack Method');
-      expect(prompt).toContain('NICHE LOCK');
-      expect(prompt).toContain('business credit and funding');
-      expect(prompt).toContain('business owners who need capital');
-      expect(prompt).toContain('FORBIDDEN TOPICS');
+      expect(prompt).toContain('Test Biz');
+      // Must contain Copy Directive required elements
+      expect(prompt).toContain('ABSOLUTE BLACKLIST');
+      expect(prompt).toContain('Credit repair');
+      expect(prompt).toContain('27 hidden secondary data furnishers');
+      expect(prompt).toContain('Innovis, LexisNexis, SageStream');
+      expect(prompt).toContain('FCRA');
+      expect(prompt).toContain('cease and desist');
+      expect(prompt).toContain('domino effect');
+      // Must contain the 4-step process
+      expect(prompt).toContain('30-Bureau Deep Audit');
+      expect(prompt).toContain('Secondary Bureau Attack');
+      expect(prompt).toContain('Funding Profile Optimization');
+      expect(prompt).toContain('Insider Lender Submission');
+      // Must contain approved case studies
+      expect(prompt).toContain('Restaurant Owner');
+      expect(prompt).toContain('Clark');
+      expect(prompt).toContain('Tom');
+      expect(prompt).toContain('$150,000');
+      expect(prompt).toContain('$75,000');
+      expect(prompt).toContain('$110,000');
+      // Must contain offer elements
+      expect(prompt).toContain('done-for-you');
+      expect(prompt).toContain('don\'t pay me a penny');
+      // Must ban building business credit
+      expect(prompt).toContain('Net-30 accounts');
+      expect(prompt).toContain('Credit stacking');
+      expect(prompt).toContain('Strategic Data Furnishing');
       // Must NOT contain mortgage content
-      expect(prompt).not.toContain('mortgage readiness and home buying');
+      expect(prompt).not.toContain('Mortgage readiness');
+    });
+
+    it('should ban credit repair language in funding VSL with specific alternatives', async () => {
+      const { getVSLPrompt } = await import('./generationPrompts');
+      
+      const prompt = getVSLPrompt({ businessName: 'Test Biz' }, 'The Bureau Method');
+      
+      // Must contain the HOW TO REFERENCE section with safe alternatives
+      expect(prompt).toContain('HOW TO REFERENCE FAILED ALTERNATIVES');
+      expect(prompt).toContain('whack-a-mole');
+      // Must contain self-check validation
+      expect(prompt).toContain('OUTPUT VALIDATION');
+      expect(prompt).toContain('SELF-CHECK');
     });
 
     it('should detect mortgage niche in Ads prompt', async () => {
@@ -469,22 +501,35 @@ BACKGROUND_TREATMENT:radial_glow
       expect(prompt).toContain('Test Biz');
       expect(prompt).toContain('Ad 1');
       expect(prompt).toContain('Ad 5');
-      expect(prompt).toContain('5 distinct video ad scripts');
-      expect(prompt).toContain('NICHE LOCK');
-      expect(prompt).toContain('mortgage readiness and home buying');
-      expect(prompt).toContain('FORBIDDEN TOPICS');
+      expect(prompt).toContain('Mortgage readiness');
+      expect(prompt).toContain('BLACKLIST');
     });
 
-    it('should default to funding niche in Ads prompt for non-mortgage mechanisms', async () => {
+    it('should produce funding Ads with Copy Directive compliance', async () => {
       const { getAdsPrompt } = await import('./generationPrompts');
       
       const prompt = getAdsPrompt({ businessName: 'Test Biz' }, 'The Banker Shortcut');
       
       expect(prompt).toContain('The Banker Shortcut');
-      expect(prompt).toContain('NICHE LOCK');
-      expect(prompt).toContain('business credit and funding');
-      expect(prompt).toContain('FORBIDDEN TOPICS');
-      expect(prompt).not.toContain('mortgage readiness and home buying');
+      // Must contain Copy Directive required elements
+      expect(prompt).toContain('ABSOLUTE BLACKLIST');
+      expect(prompt).toContain('Credit repair');
+      expect(prompt).toContain('27');
+      expect(prompt).toContain('Innovis, LexisNexis, SageStream');
+      // Must contain 5 required ad angles
+      expect(prompt).toContain('PROBLEM AWARENESS');
+      expect(prompt).toContain('ENEMY');
+      expect(prompt).toContain('CASE STUDY');
+      expect(prompt).toContain('CONTRARIAN');
+      expect(prompt).toContain('URGENCY');
+      // Must contain approved case studies
+      expect(prompt).toContain('Restaurant Owner');
+      expect(prompt).toContain('Clark');
+      expect(prompt).toContain('Tom');
+      // Must contain self-check
+      expect(prompt).toContain('SELF-CHECK');
+      // Must NOT contain mortgage content
+      expect(prompt).not.toContain('Mortgage readiness');
     });
   });
 });
