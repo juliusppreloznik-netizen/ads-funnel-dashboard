@@ -18,7 +18,8 @@
       "Bash(ls:*)",
       "Bash(supabase functions deploy:*)",
       "Bash(curl:*)",
-      "mcp__supabase__execute_sql"
+      "mcp__supabase__execute_sql",
+      "Bash(git add:*)"
     ]
   },
   "enabledMcpjsonServers": [
