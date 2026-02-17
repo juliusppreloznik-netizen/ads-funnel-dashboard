@@ -199,6 +199,14 @@ export default function AdminDashboard() {
                 <Users className="h-4 w-4 mr-2" />
                 Manage Clients
               </Button>
+              <Button
+                onClick={() => setLocation("/admin/help-videos")}
+                variant="outline"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Help Videos
+              </Button>
 
               <div className="text-right">
                 <p className="text-sm font-medium text-white">{user.name}</p>

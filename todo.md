@@ -248,3 +248,11 @@
 - [x] Update client cards in Manage Clients page to show "Onboarding: X/5" badge
 - [x] Color-coded: green (complete), amber (in-progress), gray (not started) with matching icons
 - [x] Run tests and verify all pass (54/54)
+
+## Admin Help Videos Library
+- [x] Extract all 5 embedded YouTube video IDs from onboarding page
+- [x] Build Help Videos page with categories (GHL Setup, Domain & Hosting, Phone & SMS, Facebook & Ads)
+- [x] Add video thumbnails, titles, descriptions, and "Copy Link to Send" button for each
+- [x] Add search/filter by keyword and category tabs
+- [x] Add route /admin/help-videos and "Help Videos" button in admin dashboard header
+- [x] Run tests and verify all pass (54/54)

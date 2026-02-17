@@ -14,6 +14,7 @@ import ClientLogin from "./pages/ClientLogin";
 import ClientPortal from "./pages/ClientPortal";
 import ClientManagement from "./pages/ClientManagement";
 import Onboarding from "./pages/Onboarding";
+import HelpVideos from "./pages/HelpVideos";
 import ChangeRequestButton from "./components/ChangeRequestButton";
 
 
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/admin/assets/:clientId" component={AssetManagement} />
       <Route path="/admin/editor/:assetId" component={HTMLEditor} />
       <Route path="/admin/clients" component={ClientManagement} />
+      <Route path="/admin/help-videos" component={HelpVideos} />
 
       <Route path="/onboarding/:clientId" component={Onboarding} />
       <Route path="/client-login" component={ClientLogin} />
