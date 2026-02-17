@@ -248,10 +248,20 @@ export interface DailyTrendData {
 /** Source breakdown KPIs (campaign/adset/ad level) */
 export interface SourceKPIs {
   source: string;
+  sourceId: string;
+  applications: number;
   qualified: number;
   dq: number;
   shown: number;
   closes: number;
+  // Financial metrics
+  spend: number;
+  revenue: number;
+  // Calculated rates
+  showRate: number;
+  closeRate: number;
+  costPerLead: number;
+  roas: number;
 }
 
 /** Breakdown level for source table */
@@ -1174,7 +1184,7 @@ export async function getDailyContactTrends(
 
 /**
  * Get KPIs broken down by source (campaign, ad set, or ad)
- * Returns qualified calls, DQ calls, shown calls, and closes per source
+ * Returns qualified calls, DQ calls, shown calls, closes, spend, revenue, rates per source
  */
 export async function getSourceKPIs(
   dateRange?: DateRangeFilter,
@@ -1183,62 +1193,120 @@ export async function getSourceKPIs(
   try {
     const supabase = getSupabase();
 
-    // Determine which field to group by
-    const groupByField =
+    // Determine which fields to use based on breakdown level
+    const nameField =
       breakdownLevel === "campaign"
         ? "campaign_name"
         : breakdownLevel === "adset"
         ? "adset_name"
         : "ad_name";
 
-    // Build query
-    let query = supabase
+    const idField =
+      breakdownLevel === "campaign"
+        ? "campaign_id"
+        : breakdownLevel === "adset"
+        ? "adset_id"
+        : "ad_id";
+
+    // Build contacts query
+    let contactsQuery = supabase
       .from("contacts")
       .select(`
-        ${groupByField},
+        ${nameField},
+        ${idField},
+        form_submitted_at,
         is_qualified,
         showed_up_at,
         deal_closed_at,
-        disqualified_at
+        disqualified_at,
+        final_deal_value
       `)
-      .not(groupByField, "is", null);
+      .not(nameField, "is", null);
 
     // Apply date filter
     if (dateRange?.from) {
-      query = query.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
+      contactsQuery = contactsQuery.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
     }
     if (dateRange?.to) {
-      query = query.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
+      contactsQuery = contactsQuery.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
     }
 
-    const { data, error } = await query;
+    // Build ads query for spend data
+    let adsQuery = supabase
+      .from("ads")
+      .select(`
+        ${nameField},
+        ${idField},
+        spend
+      `)
+      .not(nameField, "is", null);
 
-    if (error) {
-      console.error("Error fetching source KPIs:", error);
-      return { data: null, error: new Error(error.message) };
+    if (dateRange?.from) {
+      adsQuery = adsQuery.gte("date", formatDateOnly(dateRange.from));
+    }
+    if (dateRange?.to) {
+      adsQuery = adsQuery.lte("date", formatDateOnly(dateRange.to));
     }
 
-    if (!data || data.length === 0) {
-      return { data: [], error: null };
+    // Execute both queries in parallel
+    const [contactsResult, adsResult] = await Promise.all([contactsQuery, adsQuery]);
+
+    if (contactsResult.error) {
+      console.error("Error fetching contacts for source KPIs:", contactsResult.error);
+      return { data: null, error: new Error(contactsResult.error.message) };
     }
 
-    // Group and aggregate by source
-    const sourceMap = new Map<string, SourceKPIs>();
+    if (adsResult.error) {
+      console.error("Error fetching ads for source KPIs:", adsResult.error);
+      return { data: null, error: new Error(adsResult.error.message) };
+    }
 
-    for (const contact of data) {
-      const source = (contact as Record<string, unknown>)[groupByField] as string || "Unknown";
+    const contacts = contactsResult.data || [];
+    const ads = adsResult.data || [];
+
+    // Aggregate spend by source
+    const spendMap = new Map<string, number>();
+    for (const ad of ads) {
+      const source = (ad as Record<string, unknown>)[nameField] as string || "Unknown";
+      const currentSpend = spendMap.get(source) || 0;
+      spendMap.set(source, currentSpend + (Number(ad.spend) || 0));
+    }
+
+    // Group and aggregate contacts by source
+    const sourceMap = new Map<string, {
+      source: string;
+      sourceId: string;
+      applications: number;
+      qualified: number;
+      dq: number;
+      shown: number;
+      closes: number;
+      revenue: number;
+    }>();
+
+    for (const contact of contacts) {
+      const source = (contact as Record<string, unknown>)[nameField] as string || "Unknown";
+      const sourceId = (contact as Record<string, unknown>)[idField] as string || "";
 
       if (!sourceMap.has(source)) {
         sourceMap.set(source, {
           source,
+          sourceId,
+          applications: 0,
           qualified: 0,
           dq: 0,
           shown: 0,
           closes: 0,
+          revenue: 0,
         });
       }
 
       const kpis = sourceMap.get(source)!;
+
+      // Count applications (form submissions)
+      if (contact.form_submitted_at) {
+        kpis.applications++;
+      }
 
       // Count qualified calls
       if (contact.is_qualified === true) {
@@ -1255,14 +1323,37 @@ export async function getSourceKPIs(
         kpis.shown++;
       }
 
-      // Count closes
+      // Count closes and revenue
       if (contact.deal_closed_at) {
         kpis.closes++;
+        kpis.revenue += Number(contact.final_deal_value) || 0;
       }
     }
 
-    // Convert to array and sort by qualified (descending) by default
-    const result = Array.from(sourceMap.values()).sort((a, b) => b.qualified - a.qualified);
+    // Calculate final metrics and convert to array
+    const result: SourceKPIs[] = Array.from(sourceMap.values()).map((kpi) => {
+      const spend = spendMap.get(kpi.source) || 0;
+      const booked = kpi.qualified + kpi.dq; // Total booked = qualified + DQ
+
+      return {
+        source: kpi.source,
+        sourceId: kpi.sourceId,
+        applications: kpi.applications,
+        qualified: kpi.qualified,
+        dq: kpi.dq,
+        shown: kpi.shown,
+        closes: kpi.closes,
+        spend,
+        revenue: kpi.revenue,
+        showRate: booked > 0 ? (kpi.shown / booked) * 100 : 0,
+        closeRate: kpi.shown > 0 ? (kpi.closes / kpi.shown) * 100 : 0,
+        costPerLead: kpi.applications > 0 ? spend / kpi.applications : 0,
+        roas: spend > 0 ? kpi.revenue / spend : 0,
+      };
+    });
+
+    // Sort by spend (descending) by default
+    result.sort((a, b) => b.spend - a.spend);
 
     return { data: result, error: null };
   } catch (err) {

@@ -49,6 +49,25 @@ import {
 // Import Debug Panel
 import { DebugPanel } from "./DebugPanel";
 
+// Import dnd-kit for drag-and-drop
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -744,7 +763,292 @@ function MetricCard({
 // KPI PER SOURCE TABLE COMPONENT
 // ============================================================================
 
-type SortField = "source" | "qualified" | "dq" | "shown" | "closes";
+// ============================================================================
+// KPI PER SOURCE TABLE - ENHANCED VERSION WITH DRAG-AND-DROP
+// ============================================================================
+
+// Column definition for the KPI table
+interface ColumnDef {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  align: "left" | "center" | "right";
+  width?: string;
+  render: (row: SourceKPIs, totals: SourceKPITotals) => React.ReactNode;
+  getValue: (row: SourceKPIs) => number | string;
+  renderTotal?: (totals: SourceKPITotals) => React.ReactNode;
+}
+
+interface SourceKPITotals {
+  applications: number;
+  qualified: number;
+  dq: number;
+  shown: number;
+  closes: number;
+  spend: number;
+  revenue: number;
+  showRate: number;
+  closeRate: number;
+  costPerLead: number;
+  roas: number;
+}
+
+// Badge components for styled numbers
+const PurpleBadge = ({ value }: { value: number }) => (
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 min-w-[32px]">
+    {value}
+  </span>
+);
+
+const GreenBadge = ({ value }: { value: number }) => (
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 min-w-[32px]">
+    {value}
+  </span>
+);
+
+const RedBadge = ({ value }: { value: number }) => (
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 min-w-[32px]">
+    {value}
+  </span>
+);
+
+const PercentageText = ({ value }: { value: number }) => (
+  <span className={`text-sm font-medium ${value === 0 ? "text-red-500" : "text-gray-700"}`}>
+    {value.toFixed(1)}%
+  </span>
+);
+
+const RoasText = ({ value }: { value: number }) => (
+  <span className={`text-sm font-semibold ${value === 0 ? "text-red-500" : "text-gray-700"}`}>
+    {value.toFixed(2)}x
+  </span>
+);
+
+const RevenueText = ({ value }: { value: number }) => (
+  <span className="text-sm font-semibold text-emerald-600">
+    ${formatNumber(Math.round(value))}
+  </span>
+);
+
+// Default column order
+const DEFAULT_COLUMN_ORDER = [
+  "source",
+  "spend",
+  "applications",
+  "qualified",
+  "dq",
+  "shown",
+  "showRate",
+  "closes",
+  "closeRate",
+  "revenue",
+  "costPerLead",
+  "roas",
+];
+
+// Column definitions
+const createColumnDefs = (): Record<string, ColumnDef> => ({
+  source: {
+    id: "source",
+    label: "AD NAME",
+    align: "left",
+    width: "200px",
+    render: (row) => (
+      <div className="min-w-[180px]">
+        <div className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={row.source}>
+          {row.source}
+        </div>
+        {row.sourceId && (
+          <div className="text-xs text-gray-400 truncate max-w-[200px]" title={row.sourceId}>
+            {row.sourceId}
+          </div>
+        )}
+      </div>
+    ),
+    getValue: (row) => row.source,
+    renderTotal: () => (
+      <div className="text-sm font-semibold text-gray-900">All Sources</div>
+    ),
+  },
+  spend: {
+    id: "spend",
+    label: "SPEND",
+    align: "right",
+    render: (row) => (
+      <span className="text-sm text-gray-700">${formatNumber(Math.round(row.spend))}</span>
+    ),
+    getValue: (row) => row.spend,
+    renderTotal: (totals) => (
+      <span className="text-sm font-semibold text-gray-900">${formatNumber(Math.round(totals.spend))}</span>
+    ),
+  },
+  applications: {
+    id: "applications",
+    label: "APPLICATIONS",
+    shortLabel: "APPS",
+    align: "center",
+    render: (row) => <PurpleBadge value={row.applications} />,
+    getValue: (row) => row.applications,
+    renderTotal: (totals) => <PurpleBadge value={totals.applications} />,
+  },
+  qualified: {
+    id: "qualified",
+    label: "QUALIFIED",
+    shortLabel: "QUAL",
+    align: "center",
+    render: (row) => <GreenBadge value={row.qualified} />,
+    getValue: (row) => row.qualified,
+    renderTotal: (totals) => <GreenBadge value={totals.qualified} />,
+  },
+  dq: {
+    id: "dq",
+    label: "DQ",
+    align: "center",
+    render: (row) => <RedBadge value={row.dq} />,
+    getValue: (row) => row.dq,
+    renderTotal: (totals) => <RedBadge value={totals.dq} />,
+  },
+  shown: {
+    id: "shown",
+    label: "SHOWS",
+    align: "center",
+    render: (row) => <span className="text-sm text-gray-700">{row.shown}</span>,
+    getValue: (row) => row.shown,
+    renderTotal: (totals) => <span className="text-sm font-semibold text-gray-900">{totals.shown}</span>,
+  },
+  showRate: {
+    id: "showRate",
+    label: "SHOW RATE",
+    align: "center",
+    render: (row) => <PercentageText value={row.showRate} />,
+    getValue: (row) => row.showRate,
+    renderTotal: (totals) => <PercentageText value={totals.showRate} />,
+  },
+  closes: {
+    id: "closes",
+    label: "SALES",
+    align: "center",
+    render: (row) => <GreenBadge value={row.closes} />,
+    getValue: (row) => row.closes,
+    renderTotal: (totals) => <GreenBadge value={totals.closes} />,
+  },
+  closeRate: {
+    id: "closeRate",
+    label: "CLOSE RATE",
+    align: "center",
+    render: (row) => <PercentageText value={row.closeRate} />,
+    getValue: (row) => row.closeRate,
+    renderTotal: (totals) => <PercentageText value={totals.closeRate} />,
+  },
+  revenue: {
+    id: "revenue",
+    label: "REVENUE",
+    align: "right",
+    render: (row) => <RevenueText value={row.revenue} />,
+    getValue: (row) => row.revenue,
+    renderTotal: (totals) => <RevenueText value={totals.revenue} />,
+  },
+  costPerLead: {
+    id: "costPerLead",
+    label: "COST/LEAD",
+    align: "right",
+    render: (row) => (
+      <span className="text-sm text-gray-700">${row.costPerLead.toFixed(2)}</span>
+    ),
+    getValue: (row) => row.costPerLead,
+    renderTotal: (totals) => (
+      <span className="text-sm font-semibold text-gray-900">${totals.costPerLead.toFixed(2)}</span>
+    ),
+  },
+  roas: {
+    id: "roas",
+    label: "ROAS",
+    align: "center",
+    render: (row) => <RoasText value={row.roas} />,
+    getValue: (row) => row.roas,
+    renderTotal: (totals) => <RoasText value={totals.roas} />,
+  },
+});
+
+// Sortable header cell component
+function SortableHeaderCell({
+  column,
+  sortField,
+  sortDirection,
+  onSort,
+}: {
+  column: ColumnDef;
+  sortField: string;
+  sortDirection: "asc" | "desc";
+  onSort: (field: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: column.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isActive = sortField === column.id;
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      className={`px-3 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap select-none
+        ${column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"}
+        ${isDragging ? "bg-orange-100 z-20" : "bg-gray-50"}
+      `}
+    >
+      <div className={`flex items-center gap-1.5 ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : "justify-start"}`}>
+        {/* Drag handle */}
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
+          title="Drag to reorder"
+        >
+          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z" />
+          </svg>
+        </button>
+
+        {/* Sort button */}
+        <button
+          onClick={() => onSort(column.id)}
+          className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+        >
+          <span>{column.shortLabel || column.label}</span>
+          {isActive ? (
+            sortDirection === "asc" ? (
+              <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            )
+          ) : (
+            <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+          )}
+        </button>
+      </div>
+    </th>
+  );
+}
+
+type SortField = string;
 type SortDirection = "asc" | "desc";
 
 interface KpiPerSourceTableProps {
@@ -754,10 +1058,54 @@ interface KpiPerSourceTableProps {
 }
 
 function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSourceTableProps) {
-  const [sortField, setSortField] = useState<SortField>("qualified");
+  const [sortField, setSortField] = useState<SortField>("spend");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [columnOrder, setColumnOrder] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kpiTableColumnOrder");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return DEFAULT_COLUMN_ORDER;
+        }
+      }
+    }
+    return DEFAULT_COLUMN_ORDER;
+  });
 
-  const handleSort = (field: SortField) => {
+  const columnDefs = createColumnDefs();
+
+  // Save column order to localStorage
+  useEffect(() => {
+    localStorage.setItem("kpiTableColumnOrder", JSON.stringify(columnOrder));
+  }, [columnOrder]);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -766,9 +1114,13 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
     }
   };
 
+  // Sort data
   const sortedData = [...(data || [])].sort((a, b) => {
-    const aVal = sortField === "source" ? a.source : a[sortField];
-    const bVal = sortField === "source" ? b.source : b[sortField];
+    const col = columnDefs[sortField];
+    if (!col) return 0;
+
+    const aVal = col.getValue(a);
+    const bVal = col.getValue(b);
 
     if (typeof aVal === "string" && typeof bVal === "string") {
       return sortDirection === "asc"
@@ -781,35 +1133,30 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
     return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
   });
 
-  // Calculate totals for summary row
-  const totals = (data || []).reduce(
+  // Calculate totals
+  const totals: SourceKPITotals = (data || []).reduce(
     (acc, row) => ({
+      applications: acc.applications + row.applications,
       qualified: acc.qualified + row.qualified,
       dq: acc.dq + row.dq,
       shown: acc.shown + row.shown,
       closes: acc.closes + row.closes,
+      spend: acc.spend + row.spend,
+      revenue: acc.revenue + row.revenue,
+      showRate: 0,
+      closeRate: 0,
+      costPerLead: 0,
+      roas: 0,
     }),
-    { qualified: 0, dq: 0, shown: 0, closes: 0 }
+    { applications: 0, qualified: 0, dq: 0, shown: 0, closes: 0, spend: 0, revenue: 0, showRate: 0, closeRate: 0, costPerLead: 0, roas: 0 }
   );
 
-  const renderSortIcon = (field: SortField) => {
-    if (sortField !== field) {
-      return (
-        <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      );
-    }
-    return sortDirection === "asc" ? (
-      <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-      </svg>
-    ) : (
-      <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    );
-  };
+  // Calculate derived totals
+  const totalBooked = totals.qualified + totals.dq;
+  totals.showRate = totalBooked > 0 ? (totals.shown / totalBooked) * 100 : 0;
+  totals.closeRate = totals.shown > 0 ? (totals.closes / totals.shown) * 100 : 0;
+  totals.costPerLead = totals.applications > 0 ? totals.spend / totals.applications : 0;
+  totals.roas = totals.spend > 0 ? totals.revenue / totals.spend : 0;
 
   const breakdownOptions: { value: BreakdownLevel; label: string }[] = [
     { value: "campaign", label: "Campaign" },
@@ -817,111 +1164,115 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
     { value: "ad", label: "Ad" },
   ];
 
+  // Get ordered columns
+  const orderedColumns = columnOrder
+    .map((id) => columnDefs[id])
+    .filter(Boolean);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-800">KPI per Source</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">Breakdown by:</span>
-          <select
-            value={breakdownLevel}
-            onChange={(e) => onBreakdownChange(e.target.value as BreakdownLevel)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-          >
-            {breakdownOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center gap-4">
+          <h3 className="text-base font-semibold text-gray-900">KPI per Source</h3>
+
+          {/* Redesigned Breakdown Dropdown */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span className="text-sm text-gray-600 font-medium">Breakdown by:</span>
+            <select
+              value={breakdownLevel}
+              onChange={(e) => onBreakdownChange(e.target.value as BreakdownLevel)}
+              className="text-sm font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-6 -mr-2"
+            >
+              {breakdownOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="text-xs text-gray-500">
+          Drag column headers to reorder
         </div>
       </div>
 
-      {/* Table Container with max height and scroll */}
-      <div className="max-h-[320px] overflow-y-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50 sticky top-0 z-10">
-            <tr>
-              <th
-                onClick={() => handleSort("source")}
-                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+      {/* Table Container */}
+      <div className="overflow-x-auto">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="w-full min-w-[1000px]">
+            <thead>
+              <SortableContext
+                items={columnOrder}
+                strategy={horizontalListSortingStrategy}
               >
-                <div className="flex items-center gap-1">
-                  Source
-                  {renderSortIcon("source")}
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort("qualified")}
-                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-end gap-1">
-                  Qualified Calls
-                  {renderSortIcon("qualified")}
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort("dq")}
-                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-end gap-1">
-                  DQ Calls
-                  {renderSortIcon("dq")}
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort("shown")}
-                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-end gap-1">
-                  Shown Calls
-                  {renderSortIcon("shown")}
-                </div>
-              </th>
-              <th
-                onClick={() => handleSort("closes")}
-                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center justify-end gap-1">
-                  Closes
-                  {renderSortIcon("closes")}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {/* Summary Row */}
-            <tr className="bg-orange-50 font-semibold">
-              <td className="px-4 py-3 text-sm text-gray-900">All Sources</td>
-              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.qualified)}</td>
-              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.dq)}</td>
-              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.shown)}</td>
-              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.closes)}</td>
-            </tr>
-
-            {/* Data Rows */}
-            {sortedData.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400">
-                  No data available for the selected date range.
-                </td>
-              </tr>
-            ) : (
-              sortedData.map((row, index) => (
-                <tr key={`${row.source}-${index}`} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-sm text-gray-900 max-w-[240px] truncate" title={row.source}>
-                    {row.source}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.qualified)}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.dq)}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.shown)}</td>
-                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.closes)}</td>
+                <tr className="border-b border-gray-200">
+                  {orderedColumns.map((column) => (
+                    <SortableHeaderCell
+                      key={column.id}
+                      column={column}
+                      sortField={sortField}
+                      sortDirection={sortDirection}
+                      onSort={handleSort}
+                    />
+                  ))}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </SortableContext>
+            </thead>
+            <tbody>
+              {/* Summary Row */}
+              <tr className="bg-orange-50/70 border-b border-orange-100">
+                {orderedColumns.map((column) => (
+                  <td
+                    key={column.id}
+                    className={`px-3 py-3 ${
+                      column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"
+                    }`}
+                  >
+                    {column.renderTotal ? column.renderTotal(totals) : null}
+                  </td>
+                ))}
+              </tr>
+
+              {/* Data Rows */}
+              {sortedData.length === 0 ? (
+                <tr>
+                  <td colSpan={orderedColumns.length} className="px-4 py-12 text-center text-sm text-gray-400">
+                    No data available for the selected date range.
+                  </td>
+                </tr>
+              ) : (
+                sortedData.map((row, index) => (
+                  <tr
+                    key={`${row.source}-${index}`}
+                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                      index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                    }`}
+                  >
+                    {orderedColumns.map((column) => (
+                      <td
+                        key={column.id}
+                        className={`px-3 py-3 ${
+                          column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"
+                        }`}
+                      >
+                        {column.render(row, totals)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </DndContext>
       </div>
     </div>
   );
