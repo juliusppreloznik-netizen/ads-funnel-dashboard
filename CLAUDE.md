@@ -1,3 +1,8 @@
+---
+description: 
+alwaysApply: true
+---
+
 CLAUDE.md - Ads Funnel Dashboard (Full Stack)
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -945,3 +950,64 @@ Unit Economics Section
 Historical data import from GHL
 
 
+## Autonomous Development Mode
+
+When given a task, Claude should:
+
+1. **Understand the requirement** - Read the prompt carefully
+2. **Check current state** - Query database/files to understand current implementation
+3. **Plan the changes** - Identify which files/tables need modification
+4. **Make changes** - Edit code, run SQL, update schema
+5. **Test locally** - Run dev server, check for errors
+6. **Deploy if needed** - Deploy Edge Functions, run migrations
+7. **Verify** - Test the feature works end-to-end
+8. **Report** - Summarize what was done and show results
+
+### Debugging Protocol
+
+When encountering errors:
+1. **Read the full error message** (don't skip stack traces)
+2. **Query database** if data-related (use Supabase MCP)
+3. **Check relevant files** mentioned in error
+4. **Identify root cause** (not just symptoms)
+5. **Fix the code**
+6. **Test the fix** (don't assume it works)
+7. **Verify** (check logs, query database, test UI)
+8. **Only report success after verification**
+
+### Common Error Patterns
+
+**"Dashboard showing 0 data"**
+- Action: `SELECT COUNT(*) FROM [table] WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'`
+- Check: Timezone conversion in queries (use `.toISOString()`)
+- Check: Date range filters are correct
+
+**"Edge Function not syncing"**
+- Action: Check logs via Supabase MCP
+- Action: Test manual invocation with curl
+- Check: Environment variables are set
+- Check: Cron job is running: `SELECT * FROM cron.job`
+
+**"Build fails"**
+- Action: Run `npm run build` to see full error
+- Check: `.env.local` exists with required variables
+- Check: TypeScript types match database schema
+- Fix: Update types if schema changed
+
+### Permissions
+
+Claude has permission to:
+- ✅ Edit any file in the project
+- ✅ Run terminal commands (npm, supabase CLI, curl)
+- ✅ Query and modify database via Supabase MCP
+- ✅ Deploy Edge Functions
+- ✅ Make git commits
+- ✅ Test changes locally
+
+### What NOT to do
+
+- ❌ Don't make assumptions - always verify by querying/testing
+- ❌ Don't skip testing - always run the code after changes
+- ❌ Don't report success without verification
+- ❌ Don't ask for permission for standard operations (editing files, running commands)
+- ❌ Don't stop at first error - debug and fix autonomously

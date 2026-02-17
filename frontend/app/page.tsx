@@ -1,554 +1,1750 @@
 // app/page.tsx
+// Cometly-style Ad Performance Dashboard with Contact-Level Data
 
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
-import { createClient, RealtimeChannel } from "@supabase/supabase-js";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
-import { DayPicker, DateRange } from "react-day-picker";
-import "react-day-picker/dist/style.css";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { subDays, startOfDay, endOfDay } from "date-fns";
+
+// Import ChartJS with all components pre-registered (for Dashboard view)
+import { ChartJS } from "@/lib/chart-setup";
+
+// Import Tremor components
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+  Card,
+  BarChart,
+  DonutChart as TremorDonutChart,
+  AreaChart,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableHeaderCell,
+} from "@tremor/react";
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Import custom DateRangePicker
+import { CustomDateRangePicker, DateRangeValue } from "./DateRangePicker";
 
-// Types
-interface Event {
-  id?: string;
-  contact_id: string;
-  event_type: string;
-  ad_id: string;
-  calendar_type: string | null;
-  revenue: string | null;
-  investment_ability: string | null;
-  cash_collected: number | null;
-  created_at: string;
+// Import contact-level query functions
+import {
+  getMarketingKPIsFromContacts,
+  getDailyContactTrends,
+  getSourceKPIs,
+  getLeadsBreakdownData,
+  diagnoseDatabaseState,
+  type MarketingKPIs,
+  type DailyTrendData,
+  type DateRangeFilter,
+  type SourceKPIs,
+  type BreakdownLevel,
+  type LeadsBreakdownData,
+  type SourceQuality,
+  type RevenueTrendPoint,
+  type InvestmentHeatmapRow,
+  type RevenueFunnelStage,
+  type InvestmentBreakdown,
+} from "../lib/contact-queries";
+
+// Import Debug Panel
+import { DebugPanel } from "./DebugPanel";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+type ViewType = "Dashboard" | "Leads Breakdown" | "Ads Manager" | "Report Builder" | "Contacts" | "Events Manager" | "Integrations";
+
+interface NavItem {
+  name: ViewType;
+  icon: React.ReactNode;
 }
 
-interface Ad {
-  ad_id: string;
-  ad_name: string;
-  spend: number;
-  impressions: number;
-  clicks: number;
-  date: string;
+interface DashboardData {
+  kpis: MarketingKPIs | null;
+  previousKpis: MarketingKPIs | null;
+  trends: DailyTrendData[] | null;
+  sourceKPIs: SourceKPIs[] | null;
 }
 
-interface AdMetrics {
-  ad_id: string;
-  ad_name: string;
-  total_spend: number;
-  total_impressions: number;
-  total_clicks: number;
-  booked_calls: number;
-  qualified_calls: number;
-  dq_calls: number;
-  shows: number;
-  show_rate: number;
-  deals_won: number;
-  close_rate: number;
-  total_revenue: number;
-  cost_per_call: number;
-  roas: number;
+// ============================================================================
+// ICONS
+// ============================================================================
+
+const Icons = {
+  Dashboard: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+    </svg>
+  ),
+  AdsManager: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+    </svg>
+  ),
+  ReportBuilder: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  Contacts: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
+  EventsManager: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  Integrations: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+    </svg>
+  ),
+  ChevronLeft: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    </svg>
+  ),
+  ChevronRight: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  ),
+  Calendar: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  TrendUp: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+    </svg>
+  ),
+  TrendDown: (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+    </svg>
+  ),
+  LeadsBreakdown: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+};
+
+// Navigation items configuration
+const navItems: NavItem[] = [
+  { name: "Dashboard", icon: Icons.Dashboard },
+  { name: "Leads Breakdown", icon: Icons.LeadsBreakdown },
+  { name: "Ads Manager", icon: Icons.AdsManager },
+  { name: "Report Builder", icon: Icons.ReportBuilder },
+  { name: "Contacts", icon: Icons.Contacts },
+  { name: "Events Manager", icon: Icons.EventsManager },
+  { name: "Integrations", icon: Icons.Integrations },
+];
+
+// ============================================================================
+// FORMAT HELPERS
+// ============================================================================
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
+const formatCurrencyCompact = (value: number) => {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `$${(value / 1000).toFixed(1)}K`;
+  }
+  return `$${value.toFixed(0)}`;
+};
+
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat("en-US").format(value);
+
+const formatNumberCompact = (value: number) => {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K`;
+  }
+  return value.toFixed(0);
+};
+
+const formatDateLabel = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+const formatPercentageChange = (current: number, previous: number): string => {
+  if (previous === 0) return current > 0 ? "+100.00%" : "0.00%";
+  const change = ((current - previous) / previous) * 100;
+  return `${change > 0 ? "+" : ""}${change.toFixed(2)}%`;
+};
+
+// ============================================================================
+// CUSTOM HOOK: useDashboardData
+// ============================================================================
+
+/**
+ * Calculate previous period date range based on current range
+ */
+function getPreviousPeriod(dateRange: DateRangeValue): DateRangeFilter | undefined {
+  if (!dateRange?.from || !dateRange?.to) return undefined;
+
+  const periodLength = Math.ceil(
+    (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  const previousTo = new Date(dateRange.from);
+  previousTo.setDate(previousTo.getDate() - 1);
+
+  const previousFrom = new Date(previousTo);
+  previousFrom.setDate(previousFrom.getDate() - periodLength + 1);
+
+  return { from: previousFrom, to: previousTo };
 }
 
-interface DailyMetric {
-  date: string;
-  spend: number;
-  leads: number;
-  sales: number;
-  revenue: number;
-  costPerLead: number;
-  costPerSale: number;
-}
-
-interface Totals {
-  total_spend: number;
-  booked_calls: number;
-  qualified_calls: number;
-  dq_calls: number;
-  shows: number;
-  deals_won: number;
-  total_revenue: number;
-}
-
-interface DailyAggregation {
-  spend: number;
-  leads: number;
-  sales: number;
-  revenue: number;
-}
-
-interface AggregatedAdData {
-  ad_name: string;
-  total_spend: number;
-  total_impressions: number;
-  total_clicks: number;
-}
-
-interface AggregatedEventData {
-  booked_calls: number;
-  qualified_calls: number;
-  dq_calls: number;
-  shows: number;
-  deals_won: number;
-  total_revenue: number;
-}
-
-// Marketing-specific types
-interface MarketingMetrics {
-  costPerBooked: number;
-  qualifiedPercentage: number;
-  abr: number;
-  totalSpend: number;
-  totalBookedCalls: number;
-  totalQualifiedCalls: number;
-  totalClicks: number;
-}
-
-interface AdMarketingMetrics {
-  ad_id: string;
-  ad_name: string;
-  total_spend: number;
-  total_clicks: number;
-  booked_calls: number;
-  qualified_calls: number;
-  cost_per_booked: number;
-  cost_per_qualified: number;
-  abr: number;
-}
-
-export default function Dashboard() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [ads, setAds] = useState<Ad[]>([]);
+function useDashboardData(dateRange: DateRangeValue, breakdownLevel: BreakdownLevel = "campaign") {
+  const [data, setData] = useState<DashboardData>({
+    kpis: null,
+    previousKpis: null,
+    trends: null,
+    sourceKPIs: null,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const [isMarketingExpanded, setIsMarketingExpanded] = useState(false);
 
-  // Date range state - default to last 7 days
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 7),
-    to: new Date(),
-  });
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  // Fetch data with date range filter
   const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    console.log("🚀 [useDashboardData] Starting data fetch...");
+    console.log("📅 [useDashboardData] Date range:", {
+      from: dateRange?.from?.toISOString(),
+      to: dateRange?.to?.toISOString(),
+      selectValue: dateRange?.selectValue,
+    });
+
+    // Validation: Ensure we have a valid date range
+    if (!dateRange?.from || !dateRange?.to) {
+      console.error("❌ [useDashboardData] Invalid date range - from or to is undefined:", dateRange);
+      setError("Invalid date range selected. Please select a valid date range.");
+      setLoading(false);
+      return;
+    }
+
+    // Run diagnostic on first load to check raw data state
+    await diagnoseDatabaseState();
+
     try {
-      setError(null);
-      setLoading(true);
+      // Now we know both from and to are valid Date objects
+      const filter: DateRangeFilter = {
+        from: dateRange.from,
+        to: dateRange.to,
+      };
 
-      const fromDate = dateRange?.from
-        ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss")
-        : undefined;
-      const toDate = dateRange?.to
-        ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss")
-        : undefined;
+      console.log("🔍 [useDashboardData] Filter being passed to queries:", {
+        from: filter.from?.toISOString(),
+        to: filter.to?.toISOString(),
+      });
 
-      // Fetch events with date filter
-      let eventsQuery = supabase.from("events").select("*");
-      if (fromDate) eventsQuery = eventsQuery.gte("created_at", fromDate);
-      if (toDate) eventsQuery = eventsQuery.lte("created_at", toDate);
+      const previousFilter = getPreviousPeriod(dateRange);
+      console.log("🔍 [useDashboardData] Previous period filter:", previousFilter);
 
-      const { data: eventsData, error: eventsError } = await eventsQuery;
-      if (eventsError) throw eventsError;
+      const [kpiResult, previousKpiResult, trendResult, sourceResult] = await Promise.all([
+        getMarketingKPIsFromContacts(filter),
+        previousFilter ? getMarketingKPIsFromContacts(previousFilter) : Promise.resolve({ data: null, error: null }),
+        getDailyContactTrends(filter),
+        getSourceKPIs(filter, breakdownLevel),
+      ]);
 
-      // Fetch ads with date filter
-      let adsQuery = supabase.from("ads").select("*");
-      if (dateRange?.from)
-        adsQuery = adsQuery.gte("date", format(dateRange.from, "yyyy-MM-dd"));
-      if (dateRange?.to)
-        adsQuery = adsQuery.lte("date", format(dateRange.to, "yyyy-MM-dd"));
+      console.log("✅ [useDashboardData] KPI Result:", kpiResult.data);
+      console.log("✅ [useDashboardData] Previous KPI Result:", previousKpiResult.data);
+      console.log("✅ [useDashboardData] Trends Result:", trendResult.data?.length, "records");
+      console.log("✅ [useDashboardData] Source KPIs Result:", sourceResult.data?.length, "sources");
 
-      const { data: adsData, error: adsError } = await adsQuery;
-      if (adsError) throw adsError;
+      if (kpiResult.error) {
+        console.error("❌ KPI Error:", kpiResult.error);
+      }
+      if (previousKpiResult.error) {
+        console.error("❌ Previous KPI Error:", previousKpiResult.error);
+      }
+      if (trendResult.error) {
+        console.error("❌ Trend Error:", trendResult.error);
+      }
+      if (sourceResult.error) {
+        console.error("❌ Source KPI Error:", sourceResult.error);
+      }
 
-      setEvents(eventsData || []);
-      setAds(adsData || []);
-      setLastUpdated(new Date());
+      setData({
+        kpis: kpiResult.data,
+        previousKpis: previousKpiResult.data,
+        trends: trendResult.data,
+        sourceKPIs: sourceResult.data,
+      });
+
+      console.log("🏁 [useDashboardData] Data fetch complete");
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error("❌ [useDashboardData] Error fetching dashboard data:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setLoading(false);
     }
-  }, [dateRange]);
+  }, [dateRange, breakdownLevel]);
 
-  // Fetch data when date range changes
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    const eventsChannel: RealtimeChannel = supabase
-      .channel("events-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "events" },
-        (payload) => {
-          console.log("Events change received:", payload);
-          setLastUpdated(new Date());
-          fetchData();
-        }
-      )
-      .subscribe();
+  return { data, loading, error, refetch: fetchData };
+}
 
-    const adsChannel: RealtimeChannel = supabase
-      .channel("ads-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "ads" },
-        (payload) => {
-          console.log("Ads change received:", payload);
-          setLastUpdated(new Date());
-          fetchData();
-        }
-      )
-      .subscribe();
+// ============================================================================
+// SIDEBAR COMPONENT
+// ============================================================================
+
+function Sidebar({
+  currentView,
+  setView,
+  isCollapsed,
+  setIsCollapsed,
+}: {
+  currentView: ViewType;
+  setView: (view: ViewType) => void;
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}) {
+  return (
+    <aside
+      className={`${
+        isCollapsed ? "w-16" : "w-64"
+      } bg-gray-900 text-white flex flex-col transition-all duration-300 ease-in-out`}
+    >
+      {/* Logo */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="font-bold text-lg">Catalyst</span>
+          </div>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          {isCollapsed ? Icons.ChevronRight : Icons.ChevronLeft}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 py-4 px-2 space-y-1">
+        {navItems.map((item) => {
+          const isActive = currentView === item.name;
+          return (
+            <button
+              key={item.name}
+              onClick={() => setView(item.name)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                isActive
+                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
+                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
+              }`}
+            >
+              <span className={isActive ? "text-white" : ""}>{item.icon}</span>
+              {!isCollapsed && (
+                <span className="font-medium text-sm">{item.name}</span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      {!isCollapsed && (
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-medium">
+              CM
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">Catalyst Marketing</p>
+              <p className="text-xs text-gray-500 truncate">Pro Plan</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+}
+
+// ============================================================================
+// HEADER COMPONENT
+// ============================================================================
+
+function Header({
+  title,
+  dateRange,
+  setDateRange,
+}: {
+  title: string;
+  dateRange: DateRangeValue;
+  setDateRange: (range: DateRangeValue) => void;
+}) {
+  return (
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 relative z-50">
+      <div>
+        <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+        <p className="text-sm text-gray-500">Contact-level attribution analytics</p>
+      </div>
+
+      <div className="flex items-center gap-4 relative z-50">
+        {/* Live Indicator */}
+        <div className="flex items-center gap-2 text-green-600 text-sm">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+          <span className="text-gray-600 font-medium">Live</span>
+        </div>
+
+        {/* Custom Date Range Picker */}
+        <CustomDateRangePicker
+          value={dateRange}
+          onChange={setDateRange}
+        />
+      </div>
+    </header>
+  );
+}
+
+// ============================================================================
+// KPI CARD COMPONENT (Cometly Style with Chart.js)
+// ============================================================================
+
+interface TrendDataPoint {
+  date: string;
+  value: number;
+}
+
+interface MetricCardProps {
+  title: string;
+  mainValue: string;
+  previousValue: string;
+  subtitle: string;
+  percentageChange: string;
+  isPositiveChange: boolean;
+  trendData: TrendDataPoint[];
+  chartType: "line" | "bar";
+  chartColor: string;
+  headlineColor: string;
+  valueType: "currency" | "number";
+}
+
+/**
+ * Calculate percentage change between current and previous values
+ */
+function calculatePercentageChange(current: number, previous: number): number | null {
+  if (previous === 0) return current > 0 ? 100 : null;
+  return ((current - previous) / previous) * 100;
+}
+
+/**
+ * Cometly-style KPI Card with Chart.js implementation
+ */
+function MetricCard({
+  title,
+  mainValue,
+  previousValue,
+  subtitle,
+  percentageChange,
+  isPositiveChange,
+  trendData,
+  chartType,
+  chartColor,
+  headlineColor,
+  valueType,
+}: MetricCardProps) {
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstanceRef = useRef<ChartJS | null>(null);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+
+    // Destroy existing chart if it exists
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+    }
+
+    const ctx = chartRef.current.getContext("2d");
+    if (!ctx) return;
+
+    const labels = trendData.map((d) => formatDateLabel(d.date));
+    const data = trendData.map((d) => d.value);
+
+    const formatValueFn = (value: number) => {
+      if (valueType === "currency") {
+        return formatCurrencyCompact(value);
+      }
+      return formatNumberCompact(value);
+    };
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "rgba(0, 0, 0, 0.8)",
+          titleColor: "#fff",
+          bodyColor: "#fff",
+          padding: 12,
+          displayColors: false,
+          callbacks: {
+            title: (context: { label: string }[]) => context[0].label,
+            label: (context: { parsed: { y: number } }) => {
+              const val = context.parsed.y;
+              return `${subtitle}: ${valueType === "currency" ? formatCurrency(val) : formatNumber(val)}`;
+            },
+          },
+        },
+        datalabels: {
+          display: (context: { dataIndex: number; dataset: { data: number[] } }) => {
+            // Only show labels if there are few data points or for every nth point
+            const dataLength = context.dataset.data.length;
+            if (dataLength <= 7) return true;
+            // Show every 3rd label for larger datasets
+            return context.dataIndex % Math.ceil(dataLength / 7) === 0;
+          },
+          align: "top" as const,
+          anchor: "end" as const,
+          color: "#374151",
+          font: {
+            size: 9,
+            weight: "bold" as const,
+          },
+          formatter: (value: number) => (value > 0 ? formatValueFn(value) : ""),
+          offset: 4,
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          grid: {
+            display: chartType === "line",
+            color: "rgba(0, 0, 0, 0.04)",
+          },
+          ticks: {
+            color: "#9CA3AF",
+            font: {
+              size: 9,
+            },
+            maxRotation: 45,
+            minRotation: 45,
+            callback: function(value: string | number) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const self = this as any;
+              const label = self.getLabelForValue(value as number);
+              // Show fewer labels for larger datasets
+              const index = typeof value === "number" ? value : parseInt(value as string);
+              if (labels.length <= 7) return label;
+              if (index % Math.ceil(labels.length / 7) === 0) return label;
+              return "";
+            },
+          },
+        },
+        y: {
+          display: true,
+          grid: {
+            display: true,
+            color: "rgba(0, 0, 0, 0.04)",
+          },
+          ticks: {
+            color: "#9CA3AF",
+            font: {
+              size: 9,
+            },
+            callback: function(value: string | number) {
+              const numValue = typeof value === "string" ? parseFloat(value) : value;
+              return formatValueFn(numValue);
+            },
+            maxTicksLimit: 5,
+          },
+          beginAtZero: true,
+        },
+      },
+    };
+
+    if (chartType === "line") {
+      chartInstanceRef.current = new ChartJS(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              borderColor: chartColor,
+              backgroundColor: chartColor,
+              borderWidth: 2,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: chartColor,
+              pointBorderColor: "#fff",
+              pointBorderWidth: 1,
+              tension: 0.3,
+              fill: false,
+            },
+          ],
+        },
+        options: commonOptions as never,
+      });
+    } else {
+      chartInstanceRef.current = new ChartJS(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: chartColor,
+              borderRadius: 4,
+              barPercentage: 0.8,
+              categoryPercentage: 0.9,
+            },
+          ],
+        },
+        options: {
+          ...commonOptions,
+          plugins: {
+            ...commonOptions.plugins,
+            datalabels: {
+              ...commonOptions.plugins.datalabels,
+              align: "end" as const,
+              anchor: "end" as const,
+            },
+          },
+        } as never,
+      });
+    }
 
     return () => {
-      supabase.removeChannel(eventsChannel);
-      supabase.removeChannel(adsChannel);
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
+      }
     };
-  }, [fetchData]);
+  }, [trendData, chartType, chartColor, subtitle, valueType]);
 
-  // Calculate Marketing Metrics
-  const marketingMetrics: MarketingMetrics = useMemo(() => {
-    // Calculate total spend from ads
-    const totalSpend = ads.reduce((sum, ad) => sum + (Number(ad.spend) || 0), 0);
+  return (
+    <div className="bg-white px-4 pt-3 pb-5 border border-solid border-gray-200 rounded-lg shadow-sm w-full relative h-full min-h-[280px]">
+      {/* Header */}
+      <div className="flex flex-row items-center justify-between h-10">
+        <span className="text-sm font-semibold text-gray-800">{title}</span>
+      </div>
 
-    // Calculate total clicks from ads
-    const totalClicks = ads.reduce(
-      (sum, ad) => sum + (Number(ad.clicks) || 0),
-      0
-    );
+      {/* Values Section */}
+      <div className="flex flex-row gap-4 items-center justify-start my-3">
+        <div>
+          {/* Main Value and Previous Value */}
+          <div className="flex flex-row items-baseline gap-x-2">
+            <div
+              className="font-semibold cursor-pointer leading-tight text-2xl"
+              style={{ color: headlineColor }}
+            >
+              {mainValue}
+            </div>
+            <div className="font-normal cursor-default leading-tight text-gray-400 text-sm">
+              {previousValue}
+            </div>
+          </div>
 
-    // Count booked calls from events
-    const totalBookedCalls = events.filter(
-      (event) => event.event_type === "booked_call"
-    ).length;
+          {/* Subtitle and Percentage Change */}
+          <div className="font-medium text-gray-500 flex gap-x-2 items-center text-xs mt-1">
+            {subtitle}
+            <div
+              className={`border border-solid rounded-full py-0.5 px-1.5 flex flex-row items-center gap-x-0.5 ${
+                isPositiveChange
+                  ? "border-emerald-200 bg-emerald-50"
+                  : "border-red-200 bg-red-50"
+              }`}
+            >
+              <span
+                className={`font-medium text-xs ${
+                  isPositiveChange ? "text-emerald-700" : "text-red-700"
+                }`}
+              >
+                {percentageChange}
+              </span>
+              {isPositiveChange ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className="text-emerald-600"
+                >
+                  <path
+                    d="M6.35355 2.14645C6.15829 1.95118 5.84171 1.95118 5.64645 2.14645L2.14645 5.64645C1.95118 5.84171 1.95118 6.15829 2.14645 6.35355C2.34171 6.54882 2.65829 6.54882 2.85355 6.35355L5.5 3.70711L5.5 9.5C5.5 9.77614 5.72386 10 6 10C6.27614 10 6.5 9.77614 6.5 9.5L6.5 3.70711L9.14645 6.35355C9.34171 6.54882 9.65829 6.54882 9.85355 6.35355C10.0488 6.15829 10.0488 5.84171 9.85355 5.64645L6.35355 2.14645Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className="text-red-600"
+                >
+                  <path
+                    d="M6.35355 9.85355C6.15829 10.0488 5.84171 10.0488 5.64645 9.85355L2.14645 6.35355C1.95118 6.15829 1.95118 5.84171 2.14645 5.64645C2.34171 5.45118 2.65829 5.45118 2.85355 5.64645L5.5 8.29289L5.5 2.5C5.5 2.22386 5.72386 2 6 2C6.27614 2 6.5 2.22386 6.5 2.5L6.5 8.29289L9.14645 5.64645C9.34171 5.45118 9.65829 5.45118 9.85355 5.64645C10.0488 5.84171 10.0488 6.15829 9.85355 6.35355L6.35355 9.85355Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-    // Count qualified calls from events
-    const totalQualifiedCalls = events.filter(
-      (event) =>
-        event.event_type === "booked_call" &&
-        event.calendar_type === "Qualified"
-    ).length;
+      {/* Chart Section */}
+      <div className="relative w-full" style={{ height: "150px" }}>
+        {trendData.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-gray-300 text-xs">
+            No data available
+          </div>
+        ) : (
+          <canvas ref={chartRef} />
+        )}
+      </div>
+    </div>
+  );
+}
 
-    // Calculate metrics with division by zero protection
-    // Cost per Booked Appointment = total_spend / booked_calls
-    const costPerBooked =
-      totalBookedCalls > 0 ? totalSpend / totalBookedCalls : 0;
 
-    // % of Qualified Appointments = (qualified_calls / booked_calls) * 100
-    const qualifiedPercentage =
-      totalBookedCalls > 0 ? (totalQualifiedCalls / totalBookedCalls) * 100 : 0;
+// ============================================================================
+// KPI PER SOURCE TABLE COMPONENT
+// ============================================================================
 
-    // ABR (Appointment Booking Rate) = (booked_calls / total_clicks) * 100
-    const abr = totalClicks > 0 ? (totalBookedCalls / totalClicks) * 100 : 0;
+type SortField = "source" | "qualified" | "dq" | "shown" | "closes";
+type SortDirection = "asc" | "desc";
 
-    return {
-      costPerBooked,
-      qualifiedPercentage,
-      abr,
-      totalSpend,
-      totalBookedCalls,
-      totalQualifiedCalls,
-      totalClicks,
-    };
-  }, [ads, events]);
+interface KpiPerSourceTableProps {
+  data: SourceKPIs[] | null;
+  breakdownLevel: BreakdownLevel;
+  onBreakdownChange: (level: BreakdownLevel) => void;
+}
 
-  // Calculate per-ad marketing metrics for ranking tables
-  const adMarketingMetrics: AdMarketingMetrics[] = useMemo(() => {
-    // Group ads by ad_id
-    const adsMap = new Map<string, { ad_name: string; spend: number; clicks: number }>();
+function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSourceTableProps) {
+  const [sortField, setSortField] = useState<SortField>("qualified");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
-    ads.forEach((ad) => {
-      const existing = adsMap.get(ad.ad_id);
-      if (existing) {
-        existing.spend += Number(ad.spend) || 0;
-        existing.clicks += Number(ad.clicks) || 0;
-      } else {
-        adsMap.set(ad.ad_id, {
-          ad_name: ad.ad_name,
-          spend: Number(ad.spend) || 0,
-          clicks: Number(ad.clicks) || 0,
-        });
-      }
-    });
-
-    // Group events by ad_id
-    const eventsMap = new Map<string, { booked_calls: number; qualified_calls: number }>();
-
-    events.forEach((event) => {
-      if (!event.ad_id) return;
-
-      const existing = eventsMap.get(event.ad_id) || {
-        booked_calls: 0,
-        qualified_calls: 0,
-      };
-
-      if (event.event_type === "booked_call") {
-        existing.booked_calls += 1;
-        if (event.calendar_type === "Qualified") {
-          existing.qualified_calls += 1;
-        }
-      }
-
-      eventsMap.set(event.ad_id, existing);
-    });
-
-    // Combine and calculate metrics
-    const allAdIds = new Set([...adsMap.keys(), ...eventsMap.keys()]);
-
-    return Array.from(allAdIds).map((adId) => {
-      const adData = adsMap.get(adId) || { ad_name: "Unknown Ad", spend: 0, clicks: 0 };
-      const eventData = eventsMap.get(adId) || { booked_calls: 0, qualified_calls: 0 };
-
-      return {
-        ad_id: adId,
-        ad_name: adData.ad_name,
-        total_spend: adData.spend,
-        total_clicks: adData.clicks,
-        booked_calls: eventData.booked_calls,
-        qualified_calls: eventData.qualified_calls,
-        // Cost per Booked = spend / booked_calls
-        cost_per_booked:
-          eventData.booked_calls > 0 ? adData.spend / eventData.booked_calls : Infinity,
-        // Cost per Qualified = spend / qualified_calls
-        cost_per_qualified:
-          eventData.qualified_calls > 0
-            ? adData.spend / eventData.qualified_calls
-            : Infinity,
-        // ABR = (booked_calls / clicks) * 100
-        abr: adData.clicks > 0 ? (eventData.booked_calls / adData.clicks) * 100 : 0,
-      };
-    });
-  }, [ads, events]);
-
-  // Calculate daily metrics for charts
-  const dailyMetrics: DailyMetric[] = useMemo(() => {
-    const dailyMap = new Map<string, DailyAggregation>();
-
-    // Process ads data
-    ads.forEach((ad) => {
-      const date = ad.date;
-      const existing = dailyMap.get(date) || {
-        spend: 0,
-        leads: 0,
-        sales: 0,
-        revenue: 0,
-      };
-      existing.spend += Number(ad.spend) || 0;
-      dailyMap.set(date, existing);
-    });
-
-    // Process events data
-    events.forEach((event) => {
-      const date = format(new Date(event.created_at), "yyyy-MM-dd");
-      const existing = dailyMap.get(date) || {
-        spend: 0,
-        leads: 0,
-        sales: 0,
-        revenue: 0,
-      };
-
-      if (event.event_type === "booked_call") {
-        existing.leads += 1;
-      } else if (event.event_type === "deal_won") {
-        existing.sales += 1;
-        existing.revenue += Number(event.cash_collected) || 0;
-      }
-      dailyMap.set(date, existing);
-    });
-
-    // Convert to array and calculate derived metrics
-    return Array.from(dailyMap.entries())
-      .map(([date, data]) => ({
-        date: format(new Date(date), "MMM dd"),
-        spend: data.spend,
-        leads: data.leads,
-        sales: data.sales,
-        revenue: data.revenue,
-        costPerLead: data.leads > 0 ? data.spend / data.leads : 0,
-        costPerSale: data.sales > 0 ? data.spend / data.sales : 0,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [ads, events]);
-
-  // Calculate ad metrics
-  const adMetrics: AdMetrics[] = useMemo(() => {
-    const adsMap = new Map<string, AggregatedAdData>();
-
-    ads.forEach((ad) => {
-      const existing = adsMap.get(ad.ad_id);
-      if (existing) {
-        existing.total_spend += Number(ad.spend) || 0;
-        existing.total_impressions += Number(ad.impressions) || 0;
-        existing.total_clicks += Number(ad.clicks) || 0;
-      } else {
-        adsMap.set(ad.ad_id, {
-          ad_name: ad.ad_name,
-          total_spend: Number(ad.spend) || 0,
-          total_impressions: Number(ad.impressions) || 0,
-          total_clicks: Number(ad.clicks) || 0,
-        });
-      }
-    });
-
-    const eventsMap = new Map<string, AggregatedEventData>();
-
-    events.forEach((event) => {
-      if (!event.ad_id) return;
-
-      const existing = eventsMap.get(event.ad_id) || {
-        booked_calls: 0,
-        qualified_calls: 0,
-        dq_calls: 0,
-        shows: 0,
-        deals_won: 0,
-        total_revenue: 0,
-      };
-
-      if (event.event_type === "booked_call") {
-        existing.booked_calls += 1;
-        if (event.calendar_type === "Qualified") {
-          existing.qualified_calls += 1;
-        } else if (event.calendar_type === "DQ") {
-          existing.dq_calls += 1;
-        }
-      } else if (event.event_type === "showed_up") {
-        existing.shows += 1;
-      } else if (event.event_type === "deal_won") {
-        existing.deals_won += 1;
-        existing.total_revenue += Number(event.cash_collected) || 0;
-      }
-
-      eventsMap.set(event.ad_id, existing);
-    });
-
-    const allAdIds = new Set([...adsMap.keys(), ...eventsMap.keys()]);
-
-    const metrics: AdMetrics[] = Array.from(allAdIds).map((adId) => {
-      const adData = adsMap.get(adId) || {
-        ad_name: "Unknown Ad",
-        total_spend: 0,
-        total_impressions: 0,
-        total_clicks: 0,
-      };
-
-      const eventData = eventsMap.get(adId) || {
-        booked_calls: 0,
-        qualified_calls: 0,
-        dq_calls: 0,
-        shows: 0,
-        deals_won: 0,
-        total_revenue: 0,
-      };
-
-      const showRate =
-        eventData.booked_calls > 0
-          ? (eventData.shows / eventData.booked_calls) * 100
-          : 0;
-      const closeRate =
-        eventData.booked_calls > 0
-          ? (eventData.deals_won / eventData.booked_calls) * 100
-          : 0;
-      const costPerCall =
-        eventData.booked_calls > 0
-          ? adData.total_spend / eventData.booked_calls
-          : 0;
-      const roas =
-        adData.total_spend > 0
-          ? eventData.total_revenue / adData.total_spend
-          : 0;
-
-      return {
-        ad_id: adId,
-        ad_name: adData.ad_name,
-        total_spend: adData.total_spend,
-        total_impressions: adData.total_impressions,
-        total_clicks: adData.total_clicks,
-        booked_calls: eventData.booked_calls,
-        qualified_calls: eventData.qualified_calls,
-        dq_calls: eventData.dq_calls,
-        shows: eventData.shows,
-        show_rate: showRate,
-        deals_won: eventData.deals_won,
-        close_rate: closeRate,
-        total_revenue: eventData.total_revenue,
-        cost_per_call: costPerCall,
-        roas: roas,
-      };
-    });
-
-    return metrics.sort((a, b) => b.total_revenue - a.total_spend);
-  }, [ads, events]);
-
-  // Calculate totals
-  const totals: Totals = useMemo(() => {
-    return adMetrics.reduce(
-      (acc, metric) => ({
-        total_spend: acc.total_spend + metric.total_spend,
-        booked_calls: acc.booked_calls + metric.booked_calls,
-        qualified_calls: acc.qualified_calls + metric.qualified_calls,
-        dq_calls: acc.dq_calls + metric.dq_calls,
-        shows: acc.shows + metric.shows,
-        deals_won: acc.deals_won + metric.deals_won,
-        total_revenue: acc.total_revenue + metric.total_revenue,
-      }),
-      {
-        total_spend: 0,
-        booked_calls: 0,
-        qualified_calls: 0,
-        dq_calls: 0,
-        shows: 0,
-        deals_won: 0,
-        total_revenue: 0,
-      }
-    );
-  }, [adMetrics]);
-
-  // Format helpers
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-
-  const formatPercent = (value: number) => `${value.toFixed(1)}%`;
-  const formatRoas = (value: number) => `${value.toFixed(2)}x`;
-
-  // Quick date range presets
-  const setQuickRange = (days: number) => {
-    setDateRange({
-      from: subDays(new Date(), days),
-      to: new Date(),
-    });
-    setShowDatePicker(false);
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("desc");
+    }
   };
+
+  const sortedData = [...(data || [])].sort((a, b) => {
+    const aVal = sortField === "source" ? a.source : a[sortField];
+    const bVal = sortField === "source" ? b.source : b[sortField];
+
+    if (typeof aVal === "string" && typeof bVal === "string") {
+      return sortDirection === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    }
+
+    const aNum = Number(aVal) || 0;
+    const bNum = Number(bVal) || 0;
+    return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
+  });
+
+  // Calculate totals for summary row
+  const totals = (data || []).reduce(
+    (acc, row) => ({
+      qualified: acc.qualified + row.qualified,
+      dq: acc.dq + row.dq,
+      shown: acc.shown + row.shown,
+      closes: acc.closes + row.closes,
+    }),
+    { qualified: 0, dq: 0, shown: 0, closes: 0 }
+  );
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return (
+        <svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      );
+    }
+    return sortDirection === "asc" ? (
+      <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+
+  const breakdownOptions: { value: BreakdownLevel; label: string }[] = [
+    { value: "campaign", label: "Campaign" },
+    { value: "adset", label: "Ad Set" },
+    { value: "ad", label: "Ad" },
+  ];
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-800">KPI per Source</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Breakdown by:</span>
+          <select
+            value={breakdownLevel}
+            onChange={(e) => onBreakdownChange(e.target.value as BreakdownLevel)}
+            className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          >
+            {breakdownOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Table Container with max height and scroll */}
+      <div className="max-h-[320px] overflow-y-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 sticky top-0 z-10">
+            <tr>
+              <th
+                onClick={() => handleSort("source")}
+                className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-1">
+                  Source
+                  {renderSortIcon("source")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("qualified")}
+                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  Qualified Calls
+                  {renderSortIcon("qualified")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("dq")}
+                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  DQ Calls
+                  {renderSortIcon("dq")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("shown")}
+                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  Shown Calls
+                  {renderSortIcon("shown")}
+                </div>
+              </th>
+              <th
+                onClick={() => handleSort("closes")}
+                className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center justify-end gap-1">
+                  Closes
+                  {renderSortIcon("closes")}
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {/* Summary Row */}
+            <tr className="bg-orange-50 font-semibold">
+              <td className="px-4 py-3 text-sm text-gray-900">All Sources</td>
+              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.qualified)}</td>
+              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.dq)}</td>
+              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.shown)}</td>
+              <td className="px-4 py-3 text-sm text-right text-gray-900">{formatNumber(totals.closes)}</td>
+            </tr>
+
+            {/* Data Rows */}
+            {sortedData.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400">
+                  No data available for the selected date range.
+                </td>
+              </tr>
+            ) : (
+              sortedData.map((row, index) => (
+                <tr key={`${row.source}-${index}`} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-sm text-gray-900 max-w-[240px] truncate" title={row.source}>
+                    {row.source}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.qualified)}</td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.dq)}</td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.shown)}</td>
+                  <td className="px-4 py-3 text-sm text-right text-gray-700">{formatNumber(row.closes)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// CHART COLORS (Cometly Design Spec)
+// ============================================================================
+
+const CHART_COLORS = {
+  dailySpend: "rgb(222, 48, 22)",      // Red
+  dailyClicks: "rgb(59, 130, 246)",    // Blue
+  dailyImpressions: "rgb(249, 115, 22)", // Orange
+  applications: "rgb(139, 92, 246)",   // Purple
+  qualifiedCalls: "rgb(16, 185, 129)", // Green
+  totalCalls: "rgb(59, 130, 246)",      // Blue (for Total Calls)
+  closedClients: "rgb(20, 184, 166)",  // Teal
+  costPerQualified: "rgb(99, 102, 241)", // Indigo
+  costPerCall: "rgb(236, 72, 153)",    // Pink (for Cost per Call)
+  costPerShow: "rgb(234, 179, 8)",     // Yellow
+} as const;
+
+// ============================================================================
+// DASHBOARD VIEW COMPONENT (10 Cometly-Style Cards)
+// ============================================================================
+
+interface DashboardViewProps {
+  data: DashboardData;
+  loading: boolean;
+  breakdownLevel: BreakdownLevel;
+  onBreakdownChange: (level: BreakdownLevel) => void;
+}
+
+function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: DashboardViewProps) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-sm text-gray-500">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { kpis, previousKpis, trends, sourceKPIs } = data;
+
+  if (!kpis) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-500">No data available for the selected date range.</p>
+          <p className="text-sm text-gray-400 mt-2">Try selecting a different date range or check your data source.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Prepare trend data for charts
+  const trendData = trends || [];
+
+  // Helper to create trend data array for a specific metric
+  const createTrendData = (key: keyof DailyTrendData): TrendDataPoint[] =>
+    trendData.map((t) => ({ date: t.date, value: Number(t[key]) || 0 }));
+
+  // Helper to get percentage change info
+  const getChangeInfo = (current: number, previous: number | undefined) => {
+    const prev = previous ?? 0;
+    const change = calculatePercentageChange(current, prev);
+    // For cost metrics, lower is better (negative change is positive)
+    return {
+      percentageStr: formatPercentageChange(current, prev),
+      isPositive: change !== null ? change >= 0 : true,
+      previousStr: prev > 0 ? (current > 1000 ? formatCurrencyCompact(prev) : formatNumber(prev)) : "-",
+    };
+  };
+
+  // Calculate all change info
+  const spendInfo = getChangeInfo(kpis.total_spend, previousKpis?.total_spend);
+  const clicksInfo = getChangeInfo(kpis.total_clicks, previousKpis?.total_clicks);
+  const impressionsInfo = getChangeInfo(kpis.total_impressions, previousKpis?.total_impressions);
+  const leadsInfo = getChangeInfo(kpis.total_leads, previousKpis?.total_leads);
+  const qualifiedInfo = getChangeInfo(kpis.total_qualified, previousKpis?.total_qualified);
+  const bookedInfo = getChangeInfo(kpis.total_booked, previousKpis?.total_booked);
+  const closesInfo = getChangeInfo(kpis.total_closes, previousKpis?.total_closes);
+  const costPerQualifiedInfo = getChangeInfo(kpis.cost_per_qualified, previousKpis?.cost_per_qualified);
+  const costPerCallInfo = getChangeInfo(kpis.cost_per_booked, previousKpis?.cost_per_booked);
+  const costPerShowInfo = getChangeInfo(kpis.cost_per_show, previousKpis?.cost_per_show);
+
+  return (
+    <div className="space-y-6">
+      {/* Row 1: Ad Performance Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 1. Daily Spend Card */}
+        <MetricCard
+          title="Daily Spend"
+          mainValue={formatCurrency(kpis.total_spend)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.total_spend) : "-"}
+          subtitle="Amount Spent"
+          percentageChange={spendInfo.percentageStr}
+          isPositiveChange={spendInfo.isPositive}
+          trendData={createTrendData("spend")}
+          chartType="line"
+          chartColor={CHART_COLORS.dailySpend}
+          headlineColor={CHART_COLORS.dailySpend}
+          valueType="currency"
+        />
+
+        {/* 2. Daily Clicks Card */}
+        <MetricCard
+          title="Daily Clicks"
+          mainValue={formatNumber(kpis.total_clicks)}
+          previousValue={previousKpis ? formatNumberCompact(previousKpis.total_clicks) : "-"}
+          subtitle="Clicks (All)"
+          percentageChange={clicksInfo.percentageStr}
+          isPositiveChange={clicksInfo.isPositive}
+          trendData={createTrendData("clicks")}
+          chartType="bar"
+          chartColor={CHART_COLORS.dailyClicks}
+          headlineColor={CHART_COLORS.dailyClicks}
+          valueType="number"
+        />
+
+        {/* 3. Daily Impressions Card */}
+        <MetricCard
+          title="Daily Impressions"
+          mainValue={formatNumber(kpis.total_impressions)}
+          previousValue={previousKpis ? formatNumberCompact(previousKpis.total_impressions) : "-"}
+          subtitle="Impressions"
+          percentageChange={impressionsInfo.percentageStr}
+          isPositiveChange={impressionsInfo.isPositive}
+          trendData={createTrendData("impressions")}
+          chartType="line"
+          chartColor={CHART_COLORS.dailyImpressions}
+          headlineColor={CHART_COLORS.dailyImpressions}
+          valueType="number"
+        />
+      </div>
+
+      {/* KPI per Source Table */}
+      <KpiPerSourceTable
+        data={sourceKPIs}
+        breakdownLevel={breakdownLevel}
+        onBreakdownChange={onBreakdownChange}
+      />
+
+      {/* Row 2: Funnel Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* 4. Applications Card */}
+        <MetricCard
+          title="Applications"
+          mainValue={formatNumber(kpis.total_leads)}
+          previousValue={previousKpis ? formatNumber(previousKpis.total_leads) : "-"}
+          subtitle="Application"
+          percentageChange={leadsInfo.percentageStr}
+          isPositiveChange={leadsInfo.isPositive}
+          trendData={createTrendData("leads")}
+          chartType="bar"
+          chartColor={CHART_COLORS.applications}
+          headlineColor={CHART_COLORS.applications}
+          valueType="number"
+        />
+
+        {/* 5. Qualified Calls Card */}
+        <MetricCard
+          title="Qualified Calls"
+          mainValue={formatNumber(kpis.total_qualified)}
+          previousValue={previousKpis ? formatNumber(previousKpis.total_qualified) : "-"}
+          subtitle="Qualified Call"
+          percentageChange={qualifiedInfo.percentageStr}
+          isPositiveChange={qualifiedInfo.isPositive}
+          trendData={createTrendData("qualified")}
+          chartType="bar"
+          chartColor={CHART_COLORS.qualifiedCalls}
+          headlineColor={CHART_COLORS.qualifiedCalls}
+          valueType="number"
+        />
+
+        {/* 6. Total Calls Card */}
+        <MetricCard
+          title="Total Calls"
+          mainValue={formatNumber(kpis.total_booked)}
+          previousValue={previousKpis ? formatNumber(previousKpis.total_booked) : "-"}
+          subtitle="Booked Call"
+          percentageChange={bookedInfo.percentageStr}
+          isPositiveChange={bookedInfo.isPositive}
+          trendData={createTrendData("booked")}
+          chartType="bar"
+          chartColor={CHART_COLORS.totalCalls}
+          headlineColor={CHART_COLORS.totalCalls}
+          valueType="number"
+        />
+
+        {/* 7. Closed Clients Card */}
+        <MetricCard
+          title="Closed Clients"
+          mainValue={formatNumber(kpis.total_closes)}
+          previousValue={previousKpis ? formatNumber(previousKpis.total_closes) : "-"}
+          subtitle="Closed Client"
+          percentageChange={closesInfo.percentageStr}
+          isPositiveChange={closesInfo.isPositive}
+          trendData={createTrendData("closes")}
+          chartType="line"
+          chartColor={CHART_COLORS.closedClients}
+          headlineColor={CHART_COLORS.closedClients}
+          valueType="number"
+        />
+      </div>
+
+      {/* Row 3: Cost Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 8. Cost per Qualified Call Card */}
+        <MetricCard
+          title="Cost per Qualified Call"
+          mainValue={formatCurrency(kpis.cost_per_qualified)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.cost_per_qualified) : "-"}
+          subtitle="Cost / Qualified"
+          percentageChange={costPerQualifiedInfo.percentageStr}
+          isPositiveChange={!costPerQualifiedInfo.isPositive} // Lower cost is better
+          trendData={createTrendData("cost_per_qualified")}
+          chartType="line"
+          chartColor={CHART_COLORS.costPerQualified}
+          headlineColor={CHART_COLORS.costPerQualified}
+          valueType="currency"
+        />
+
+        {/* 9. Cost per Call Card */}
+        <MetricCard
+          title="Cost per Call"
+          mainValue={formatCurrency(kpis.cost_per_booked)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.cost_per_booked) : "-"}
+          subtitle="Cost / Call"
+          percentageChange={costPerCallInfo.percentageStr}
+          isPositiveChange={!costPerCallInfo.isPositive} // Lower cost is better
+          trendData={createTrendData("cost_per_booked")}
+          chartType="line"
+          chartColor={CHART_COLORS.costPerCall}
+          headlineColor={CHART_COLORS.costPerCall}
+          valueType="currency"
+        />
+
+        {/* 10. Cost per Shown Call Card */}
+        <MetricCard
+          title="Cost per Shown Call"
+          mainValue={formatCurrency(kpis.cost_per_show)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.cost_per_show) : "-"}
+          subtitle="Cost / Show"
+          percentageChange={costPerShowInfo.percentageStr}
+          isPositiveChange={!costPerShowInfo.isPositive} // Lower cost is better
+          trendData={createTrendData("cost_per_show")}
+          chartType="line"
+          chartColor={CHART_COLORS.costPerShow}
+          headlineColor={CHART_COLORS.costPerShow}
+          valueType="currency"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// LEADS BREAKDOWN VIEW COMPONENTS
+// ============================================================================
+
+/** Cometly-style color variants for KPI cards */
+type KpiColor = "blue" | "green" | "purple" | "orange" | "red" | "teal" | "indigo" | "pink";
+
+/** Tailwind color class mapping for KPI cards */
+const KPI_TEXT_COLORS: Record<KpiColor, string> = {
+  blue: "text-blue-600",
+  green: "text-emerald-600",
+  purple: "text-purple-600",
+  orange: "text-orange-500",
+  red: "text-red-600",
+  teal: "text-teal-600",
+  indigo: "text-indigo-600",
+  pink: "text-pink-600",
+};
+
+/**
+ * Tremor-based Lead Quality KPI Card with Dashboard-matching styling
+ */
+function TremorKpiCard({
+  title,
+  value,
+  format: formatType,
+  color = "blue",
+}: {
+  title: string;
+  value: number;
+  format: "currency" | "percentage";
+  color?: KpiColor;
+}) {
+  const formattedValue =
+    formatType === "currency"
+      ? `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+      : `${value.toFixed(1)}%`;
+
+  return (
+    <Card className="p-5 shadow-sm border border-gray-200 rounded-xl">
+      <p className="text-sm font-semibold text-gray-700">{title}</p>
+      <p className={`text-3xl font-bold mt-2 ${KPI_TEXT_COLORS[color]}`}>
+        {formattedValue}
+      </p>
+    </Card>
+  );
+}
+
+/**
+ * Tremor-based Revenue Distribution Chart
+ */
+function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: number; q1: number; median: number; q3: number; max: number; count: number }[] }) {
+  // Placeholder data for when real data is empty
+  const placeholderData = [
+    { stage: "Applications", Min: 0, Q1: 0, Median: 0, Q3: 0, Max: 0 },
+    { stage: "Qualified", Min: 0, Q1: 0, Median: 0, Q3: 0, Max: 0 },
+    { stage: "Shown", Min: 0, Q1: 0, Median: 0, Q3: 0, Max: 0 },
+    { stage: "Closed", Min: 0, Q1: 0, Median: 0, Q3: 0, Max: 0 },
+  ];
+
+  // Transform data for Tremor BarChart
+  const realChartData = data.map((d) => ({
+    stage: d.stage,
+    Min: d.min,
+    Q1: d.q1,
+    Median: d.median,
+    Q3: d.q3,
+    Max: d.max,
+  }));
+
+  // Use real data if available, otherwise use placeholder
+  const hasData = data && data.length > 0 && data.some(item => item.min > 0 || item.median > 0 || item.max > 0);
+  const chartData = hasData ? realChartData : placeholderData;
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Revenue Distribution by Funnel Stage</h3>
+      <p className="text-sm text-gray-500 mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
+
+      <BarChart
+        data={chartData}
+        index="stage"
+        categories={["Min", "Q1", "Median", "Q3", "Max"]}
+        colors={["blue", "cyan", "indigo", "violet", "purple"]}
+        valueFormatter={(value) => `$${Intl.NumberFormat("en-US").format(value)}`}
+        yAxisWidth={80}
+        className="h-72 mt-6"
+      />
+    </Card>
+  );
+}
+
+/**
+ * Tremor-based Investment Donut Chart
+ */
+function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; count: number; percentage: number }[]; stageTitle: string }) {
+  // Placeholder data for empty state
+  const placeholderTiers = [
+    { label: "Cash Ready ($5k+)", count: 0, percentage: 0 },
+    { label: "Needs Financing", count: 0, percentage: 0 },
+    { label: "Unknown", count: 0, percentage: 100 },
+  ];
+
+  // Use real data if available, otherwise placeholder
+  const hasData = data && data.length > 0 && data.some(d => d.count > 0);
+  const displayData = hasData ? data : placeholderTiers;
+
+  // Transform data for Tremor DonutChart
+  const chartData = displayData.map((d) => ({
+    name: d.label,
+    value: d.percentage,
+  }));
+
+  const legendColors = ["rgb(16, 185, 129)", "rgb(249, 115, 22)", "rgb(156, 163, 175)"];
+
+  return (
+    <div className="bg-gray-50 rounded-lg p-4">
+      <h4 className="text-sm font-semibold text-gray-900 text-center mb-3">{stageTitle}</h4>
+      <TremorDonutChart
+        data={chartData}
+        category="value"
+        index="name"
+        colors={["emerald", "orange", "gray"]}
+        valueFormatter={(value) => `${value.toFixed(1)}%`}
+        className="h-36"
+        showLabel={false}
+      />
+      <div className="mt-4 space-y-2">
+        {displayData.map((tier, i) => (
+          <div key={i} className="flex justify-between text-xs px-1">
+            <span className="flex items-center gap-2">
+              <span
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: legendColors[i] || "#9CA3AF" }}
+              />
+              <span className="text-gray-700 font-medium">{tier.label}</span>
+            </span>
+            <span className="font-bold text-gray-900">{tier.percentage.toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Tremor-based Investment Ability Chart (Multiple Donut Charts)
+ */
+function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] }) {
+  // Placeholder data for empty state
+  const placeholderData: InvestmentBreakdown[] = [
+    { stage: "Applications", tiers: [{ label: "Cash Ready ($5k+)", count: 0, percentage: 0 }, { label: "Needs Financing", count: 0, percentage: 0 }, { label: "Unknown", count: 0, percentage: 100 }] },
+    { stage: "Qualified", tiers: [{ label: "Cash Ready ($5k+)", count: 0, percentage: 0 }, { label: "Needs Financing", count: 0, percentage: 0 }, { label: "Unknown", count: 0, percentage: 100 }] },
+    { stage: "Shown", tiers: [{ label: "Cash Ready ($5k+)", count: 0, percentage: 0 }, { label: "Needs Financing", count: 0, percentage: 0 }, { label: "Unknown", count: 0, percentage: 100 }] },
+    { stage: "Closed", tiers: [{ label: "Cash Ready ($5k+)", count: 0, percentage: 0 }, { label: "Needs Financing", count: 0, percentage: 0 }, { label: "Unknown", count: 0, percentage: 100 }] },
+  ];
+
+  const hasData = data && data.length > 0;
+  const displayData = hasData ? data : placeholderData;
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Investment Ability Breakdown</h3>
+      <p className="text-sm text-gray-500 mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        {displayData.map((stage) => (
+          <TremorInvestmentDonut key={stage.stage} data={stage.tiers} stageTitle={stage.stage} />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/** Funnel stage colors (Cometly-style gradients) */
+const FUNNEL_COLORS = [
+  { from: "rgb(139, 92, 246)", to: "rgb(124, 58, 237)" }, // Purple - Applications
+  { from: "rgb(16, 185, 129)", to: "rgb(5, 150, 105)" },  // Green - Qualified
+  { from: "rgb(59, 130, 246)", to: "rgb(37, 99, 235)" },  // Blue - Shown
+  { from: "rgb(20, 184, 166)", to: "rgb(13, 148, 136)" }, // Teal - Closed
+];
+
+/**
+ * Tremor-wrapped Revenue Funnel Chart
+ */
+function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
+  // Placeholder data for empty state
+  const placeholderData: RevenueFunnelStage[] = [
+    { stage: "Applications", count: 0, totalRevenue: 0, avgRevenue: 0 },
+    { stage: "Qualified", count: 0, totalRevenue: 0, avgRevenue: 0 },
+    { stage: "Shown", count: 0, totalRevenue: 0, avgRevenue: 0 },
+    { stage: "Closed", count: 0, totalRevenue: 0, avgRevenue: 0 },
+  ];
+
+  const hasData = data && data.length > 0 && data.some(d => d.count > 0 || d.totalRevenue > 0);
+  const displayData = hasData ? data : placeholderData;
+  const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.totalRevenue), 1) : 1;
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Revenue Funnel</h3>
+      <p className="text-sm text-gray-500 mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
+
+      <div className="space-y-5 mt-6">
+        {displayData.map((stage, index) => {
+          const prevStage = index > 0 ? displayData[index - 1] : null;
+          const dropRate =
+            prevStage && prevStage.totalRevenue > 0
+              ? ((prevStage.totalRevenue - stage.totalRevenue) / prevStage.totalRevenue) * 100
+              : 0;
+
+          const widthPercent = maxRevenue > 0 ? (stage.totalRevenue / maxRevenue) * 100 : 0;
+          const colors = FUNNEL_COLORS[index % FUNNEL_COLORS.length];
+
+          return (
+            <div key={stage.stage}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-bold text-gray-900">{stage.stage}</div>
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold text-gray-800">{stage.count}</span> leads &bull;{" "}
+                  <span className="font-bold" style={{ color: colors.from }}>
+                    ${stage.totalRevenue.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="relative h-14 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
+                <div
+                  className="absolute h-full transition-all duration-500 rounded-lg shadow-sm"
+                  style={{
+                    width: `${Math.max(widthPercent, hasData ? 5 : 0)}%`,
+                    background: `linear-gradient(90deg, ${colors.from}, ${colors.to})`,
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-500 drop-shadow-md">
+                  {hasData ? (
+                    <span className="text-white">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  ) : (
+                    <span>$0</span>
+                  )}
+                </div>
+              </div>
+              {index < displayData.length - 1 && dropRate > 0 && (
+                <div className="flex items-center justify-center gap-1 text-xs font-semibold text-red-600 mt-2">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  </svg>
+                  {dropRate.toFixed(1)}% drop
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Tremor-based Lead Source Quality Table
+ */
+function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
+  const [sortColumn, setSortColumn] = useState<keyof SourceQuality>("totalRevenue");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  const handleSort = (column: keyof SourceQuality) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("desc");
+    }
+  };
+
+  const sortedData = [...data].sort((a, b) => {
+    const aValue = a[sortColumn];
+    const bValue = b[sortColumn];
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortDirection === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    }
+    const aNum = Number(aValue) || 0;
+    const bNum = Number(bValue) || 0;
+    return sortDirection === "asc" ? aNum - bNum : bNum - aNum;
+  });
+
+  const renderSortIndicator = (column: keyof SourceQuality) => {
+    if (sortColumn !== column) return null;
+    return sortDirection === "asc" ? " ↑" : " ↓";
+  };
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Lead Source Quality</h3>
+      <p className="text-sm text-gray-500 mt-1 mb-4">Compares the performance of different lead sources.</p>
+
+      <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
+        <Table>
+          <TableHead>
+            <TableRow className="bg-gray-50">
+              <TableHeaderCell
+                className="cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("source")}
+              >
+                Source{renderSortIndicator("source")}
+              </TableHeaderCell>
+              <TableHeaderCell
+                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("avgRevenue")}
+              >
+                Avg Revenue{renderSortIndicator("avgRevenue")}
+              </TableHeaderCell>
+              <TableHeaderCell
+                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("qualRate")}
+              >
+                Qual Rate{renderSortIndicator("qualRate")}
+              </TableHeaderCell>
+              <TableHeaderCell
+                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("showRate")}
+              >
+                Show Rate{renderSortIndicator("showRate")}
+              </TableHeaderCell>
+              <TableHeaderCell
+                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("closeRate")}
+              >
+                Close Rate{renderSortIndicator("closeRate")}
+              </TableHeaderCell>
+              <TableHeaderCell
+                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                onClick={() => handleSort("totalRevenue")}
+              >
+                Total Revenue{renderSortIndicator("totalRevenue")}
+              </TableHeaderCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                  No lead sources found for this period
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedData.map((row, index) => (
+                <TableRow key={index} className="hover:bg-gray-50">
+                  <TableCell className="max-w-[200px] truncate font-medium text-gray-900" title={row.source}>
+                    {row.source}
+                  </TableCell>
+                  <TableCell className="text-center text-gray-700">
+                    ${row.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </TableCell>
+                  <TableCell className="text-center text-gray-700">{row.qualRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-gray-700">{row.showRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-gray-700">{row.closeRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center font-semibold text-gray-900">
+                    ${row.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Tremor-based Revenue Trends Chart
+ */
+function TremorRevenueTrendsChart({ data, dateRange }: { data: RevenueTrendPoint[]; dateRange?: { from?: Date; to?: Date } }) {
+  // Generate placeholder data with dates spanning the range
+  const generatePlaceholderData = () => {
+    const placeholderDates: { date: string; "Avg Revenue - Qualified": number; "Avg Revenue - Shown": number }[] = [];
+    const today = new Date();
+    const startDate = dateRange?.from || new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const endDate = dateRange?.to || today;
+
+    // Generate weekly points for placeholder
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      placeholderDates.push({
+        date: currentDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        "Avg Revenue - Qualified": 0,
+        "Avg Revenue - Shown": 0,
+      });
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+    return placeholderDates.length > 0 ? placeholderDates : [
+      { date: "Week 1", "Avg Revenue - Qualified": 0, "Avg Revenue - Shown": 0 },
+      { date: "Week 2", "Avg Revenue - Qualified": 0, "Avg Revenue - Shown": 0 },
+      { date: "Week 3", "Avg Revenue - Qualified": 0, "Avg Revenue - Shown": 0 },
+      { date: "Week 4", "Avg Revenue - Qualified": 0, "Avg Revenue - Shown": 0 },
+    ];
+  };
+
+  // Transform data for Tremor AreaChart
+  const realChartData = data.map((d) => {
+    const date = new Date(d.date);
+    return {
+      date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      "Avg Revenue - Qualified": d.avgRevenueQualified,
+      "Avg Revenue - Shown": d.avgRevenueShown,
+    };
+  });
+
+  const hasData = data && data.length > 0 && data.some(d => d.avgRevenueQualified > 0 || d.avgRevenueShown > 0);
+  const chartData = hasData ? realChartData : generatePlaceholderData();
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Revenue Trends Over Time</h3>
+      <p className="text-sm text-gray-500 mt-1">Tracks average revenue potential over the selected date range.</p>
+
+      <AreaChart
+        data={chartData}
+        index="date"
+        categories={["Avg Revenue - Qualified", "Avg Revenue - Shown"]}
+        colors={["blue", "emerald"]}
+        valueFormatter={(value) => `$${Intl.NumberFormat("en-US").format(value)}`}
+        yAxisWidth={80}
+        className="h-72 mt-6"
+        showLegend={true}
+      />
+    </Card>
+  );
+}
+
+/** Heatmap column colors (Cometly-style) */
+const HEATMAP_COLORS = {
+  qualified: { base: "139, 92, 246" },  // Purple
+  shown: { base: "16, 185, 129" },      // Green
+  closed: { base: "20, 184, 166" },     // Teal
+};
+
+/**
+ * Tremor-wrapped Investment Heatmap
+ */
+function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
+  // Placeholder data for empty state
+  const placeholderData: InvestmentHeatmapRow[] = [
+    { tier: "Under $5k/month", qualified: 0, shown: 0, closed: 0 },
+    { tier: "$5k-$10k/month", qualified: 0, shown: 0, closed: 0 },
+    { tier: "$10k-$25k/month", qualified: 0, shown: 0, closed: 0 },
+    { tier: "$25k+/month", qualified: 0, shown: 0, closed: 0 },
+  ];
+
+  const hasData = data && data.length > 0 && data.some(d => d.qualified > 0 || d.shown > 0 || d.closed > 0);
+  const displayData = hasData ? data : placeholderData;
+
+  const maxValues = {
+    qualified: Math.max(...displayData.map((d) => d.qualified), 1),
+    shown: Math.max(...displayData.map((d) => d.shown), 1),
+    closed: Math.max(...displayData.map((d) => d.closed), 1),
+  };
+
+  const getColor = (value: number, column: "qualified" | "shown" | "closed") => {
+    if (!hasData) return `rgba(${HEATMAP_COLORS[column].base}, 0.1)`;
+    const intensity = value / maxValues[column];
+    return `rgba(${HEATMAP_COLORS[column].base}, ${Math.max(0.15, intensity * 0.9)})`;
+  };
+
+  const getTextColor = (value: number, column: "qualified" | "shown" | "closed") => {
+    if (!hasData) return "#9CA3AF";
+    const intensity = value / maxValues[column];
+    return intensity > 0.4 ? "white" : "#1f2937";
+  };
+
+  return (
+    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
+      <h3 className="text-lg font-semibold text-gray-900">Revenue Tier Heatmap</h3>
+      <p className="text-sm text-gray-500 mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
+
+      <div className="overflow-x-auto mt-6">
+        <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm">
+          <thead>
+            <tr>
+              <th className="px-6 py-4 bg-gray-100 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                Revenue Tier
+              </th>
+              <th className="px-6 py-4 bg-purple-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.qualified.base})` }}>
+                Qualified
+              </th>
+              <th className="px-6 py-4 bg-emerald-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.shown.base})` }}>
+                Shown
+              </th>
+              <th className="px-6 py-4 bg-teal-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.closed.base})` }}>
+                Closed
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {displayData.map((row, index) => (
+              <tr key={row.tier} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                <td className="px-6 py-4 font-semibold text-sm text-gray-900">
+                  {row.tier}
+                </td>
+                <td
+                  className="px-6 py-4 text-center text-sm font-bold transition-colors"
+                  style={{ backgroundColor: getColor(row.qualified, "qualified"), color: getTextColor(row.qualified, "qualified") }}
+                >
+                  {row.qualified}
+                </td>
+                <td
+                  className="px-6 py-4 text-center text-sm font-bold transition-colors"
+                  style={{ backgroundColor: getColor(row.shown, "shown"), color: getTextColor(row.shown, "shown") }}
+                >
+                  {row.shown}
+                </td>
+                <td
+                  className="px-6 py-4 text-center text-sm font-bold transition-colors"
+                  style={{ backgroundColor: getColor(row.closed, "closed"), color: getTextColor(row.closed, "closed") }}
+                >
+                  {row.closed}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+/**
+ * Main Leads Breakdown View Component
+ */
+function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
+  const [leadsData, setLeadsData] = useState<LeadsBreakdownData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+
+      const filter: DateRangeFilter | undefined = dateRange?.from
+        ? { from: dateRange.from, to: dateRange.to }
+        : undefined;
+
+      const result = await getLeadsBreakdownData(filter);
+
+      if (result.error) {
+        setError(result.error.message);
+        setLeadsData(null);
+      } else {
+        setLeadsData(result.data);
+      }
+
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [dateRange]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-sm text-gray-500">Loading leads breakdown data...</p>
         </div>
       </div>
     );
@@ -556,13 +1752,166 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-lg shadow-md">
-          <div className="text-red-500 text-xl mb-4">⚠️ Error</div>
-          <p className="text-gray-600">{error}</p>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!leadsData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-500">No data available for the selected date range.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Row 1: Lead Quality KPI Cards (Tremor-based) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <TremorKpiCard
+          title="Avg Revenue - Qualified"
+          value={leadsData.avgRevenueQualified}
+          format="currency"
+          color="purple"
+        />
+        <TremorKpiCard
+          title="Avg Revenue - Shown"
+          value={leadsData.avgRevenueShown}
+          format="currency"
+          color="green"
+        />
+        <TremorKpiCard
+          title="Avg Revenue - Closed"
+          value={leadsData.avgRevenueClosed}
+          format="currency"
+          color="teal"
+        />
+        <TremorKpiCard
+          title="Qualification Rate"
+          value={leadsData.qualificationRate}
+          format="percentage"
+          color="blue"
+        />
+        <TremorKpiCard
+          title="Show Rate"
+          value={leadsData.showRate}
+          format="percentage"
+          color="orange"
+        />
+        <TremorKpiCard
+          title="Close Rate"
+          value={leadsData.closeRate}
+          format="percentage"
+          color="red"
+        />
+      </div>
+
+      {/* Row 2: Revenue Distribution Charts (Tremor-based) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TremorRevenueDistributionChart data={leadsData.revenueByStage} />
+        <TremorInvestmentAbilityChart data={leadsData.investmentBreakdown} />
+      </div>
+
+      {/* Row 3: Revenue Funnel */}
+      <TremorRevenueFunnelChart data={leadsData.revenueFunnel} />
+
+      {/* Row 4: Lead Source Quality Table (Tremor-based) */}
+      <TremorLeadSourceQualityTable data={leadsData.sourceQuality} />
+
+      {/* Row 5: Revenue Trends Over Time (Tremor-based) */}
+      <TremorRevenueTrendsChart data={leadsData.revenueTrends} dateRange={dateRange ? { from: dateRange.from, to: dateRange.to } : undefined} />
+
+      {/* Row 6: Investment Ability Heatmap */}
+      <TremorInvestmentHeatmap data={leadsData.investmentHeatmap} />
+    </div>
+  );
+}
+
+// ============================================================================
+// PLACEHOLDER VIEW COMPONENT
+// ============================================================================
+
+function PlaceholderView({ title }: { title: string }) {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <p className="text-sm text-gray-500 mt-1">This feature is coming soon.</p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
+export default function DashboardPage() {
+  const [currentView, setCurrentView] = useState<ViewType>("Dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRangeValue>({
+    from: startOfDay(subDays(new Date(), 30)),
+    to: endOfDay(new Date()),
+    selectValue: "last30",
+  });
+  const [breakdownLevel, setBreakdownLevel] = useState<BreakdownLevel>("campaign");
+
+  // Wrapper function to ensure dateRange is always valid
+  const handleDateRangeChange = useCallback((range: DateRangeValue) => {
+    console.log("📅 [handleDateRangeChange] Received range:", range);
+
+    if (range?.from) {
+      // Ensure both from and to are valid Date objects
+      const from = startOfDay(range.from);
+      // If `to` is undefined or null, default to the same day as `from`
+      const to = range.to ? endOfDay(range.to) : endOfDay(range.from);
+
+      const validRange: DateRangeValue = {
+        from,
+        to,
+        selectValue: range.selectValue,
+      };
+
+      console.log("✅ [handleDateRangeChange] Setting valid range:", validRange);
+      setDateRange(validRange);
+    } else {
+      // If range is completely cleared, default back to today
+      console.log("⚠️ [handleDateRangeChange] Range cleared, defaulting to today");
+      setDateRange({
+        from: startOfDay(new Date()),
+        to: endOfDay(new Date()),
+        selectValue: "today",
+      });
+    }
+  }, []);
+
+  const { data, loading, error, refetch } = useDashboardData(dateRange, breakdownLevel);
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-100 items-center justify-center">
+        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h3>
+          <p className="text-sm text-gray-500 mb-4">{error}</p>
           <button
-            onClick={fetchData}
-            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            onClick={refetch}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
           >
             Retry
           </button>
@@ -572,1230 +1921,57 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Ad Performance Dashboard
-                </h1>
-                <p className="text-sm text-gray-500">
-                  Real-time metrics and analytics
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Live Indicator */}
-              <div className="flex items-center gap-2 text-green-600 text-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                Live
-              </div>
-
-              {/* Date Range Picker */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowDatePicker(!showDatePicker)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5 text-gray-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span className="text-sm text-gray-700">
-                    {dateRange?.from && dateRange?.to
-                      ? `${format(dateRange.from, "MMM dd, yyyy")} - ${format(dateRange.to, "MMM dd, yyyy")}`
-                      : "Select date range"}
-                  </span>
-                </button>
-
-                {showDatePicker && (
-                  <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-50">
-                    {/* Quick Presets */}
-                    <div className="flex gap-2 mb-4 pb-4 border-b border-gray-200">
-                      <button
-                        onClick={() => setQuickRange(7)}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                      >
-                        Last 7 days
-                      </button>
-                      <button
-                        onClick={() => setQuickRange(14)}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                      >
-                        Last 14 days
-                      </button>
-                      <button
-                        onClick={() => setQuickRange(30)}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                      >
-                        Last 30 days
-                      </button>
-                    </div>
-
-                    <DayPicker
-                      mode="range"
-                      selected={dateRange}
-                      onSelect={(range) => {
-                        setDateRange(range);
-                        if (range?.from && range?.to) {
-                          setShowDatePicker(false);
-                        }
-                      }}
-                      numberOfMonths={2}
-                      className="text-sm"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Marketing Performance Card - NEW */}
-        <div className="mb-6">
-          <MarketingCard
-            metrics={marketingMetrics}
-            formatCurrency={formatCurrency}
-            formatPercent={formatPercent}
-            onExpand={() => setIsMarketingExpanded(true)}
-          />
-        </div>
-
-        {/* Widgets Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Cost Analysis Widget */}
-          <CostAnalysisWidget
-            totals={totals}
-            dailyMetrics={dailyMetrics}
-            formatCurrency={formatCurrency}
-          />
-
-          {/* Revenue Analysis Widget */}
-          <RevenueAnalysisWidget
-            totals={totals}
-            dailyMetrics={dailyMetrics}
-            formatCurrency={formatCurrency}
-          />
-        </div>
-
-        {/* Best Performing Ads Widget */}
-        <BestPerformingAdsWidget
-          adMetrics={adMetrics}
-          totals={totals}
-          formatCurrency={formatCurrency}
-          formatPercent={formatPercent}
-          formatRoas={formatRoas}
-        />
-
-        {/* Footer */}
-        <div className="mt-6 text-center text-gray-500 text-sm">
-          <p>
-            Last updated: {lastUpdated.toLocaleTimeString()} • Data syncs
-            automatically
-          </p>
-        </div>
-      </main>
-
-      {/* Click outside to close date picker */}
-      {showDatePicker && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setShowDatePicker(false)}
-        />
-      )}
-
-      {/* Marketing Expanded View Modal */}
-      {isMarketingExpanded && (
-        <MarketingExpandedView
-          adMetrics={adMarketingMetrics}
-          formatCurrency={formatCurrency}
-          formatPercent={formatPercent}
-          onClose={() => setIsMarketingExpanded(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// Marketing Card Component
-function MarketingCard({
-  metrics,
-  formatCurrency,
-  formatPercent,
-  onExpand,
-}: {
-  metrics: MarketingMetrics;
-  formatCurrency: (value: number) => string;
-  formatPercent: (value: number) => string;
-  onExpand: () => void;
-}) {
-  // Color helper functions
-  const getCostPerBookedColor = (value: number) => {
-    if (value < 50) return "text-green-600";
-    if (value <= 100) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getCostPerBookedBg = (value: number) => {
-    if (value < 50) return "bg-green-50 border-green-200";
-    if (value <= 100) return "bg-yellow-50 border-yellow-200";
-    return "bg-red-50 border-red-200";
-  };
-
-  const getQualifiedColor = (value: number) => {
-    if (value > 70) return "text-green-600";
-    if (value >= 50) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getQualifiedBg = (value: number) => {
-    if (value > 70) return "bg-green-50 border-green-200";
-    if (value >= 50) return "bg-yellow-50 border-yellow-200";
-    return "bg-red-50 border-red-200";
-  };
-
-  const getAbrColor = (value: number) => {
-    if (value > 10) return "text-green-600";
-    if (value >= 5) return "text-yellow-600";
-    return "text-red-600";
-  };
-
-  const getAbrBg = (value: number) => {
-    if (value > 10) return "bg-green-50 border-green-200";
-    if (value >= 5) return "bg-yellow-50 border-yellow-200";
-    return "bg-red-50 border-red-200";
-  };
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
-              />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Marketing Performance
-            </h2>
-            <p className="text-sm text-gray-500">
-              Key acquisition metrics at a glance
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        {/* Cost per Booked Appointment */}
-        <div
-          className={`rounded-lg border p-4 ${getCostPerBookedBg(metrics.costPerBooked)}`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">
-              Cost per Booked
-            </span>
-            <svg
-              className="w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <p
-            className={`text-3xl font-bold ${getCostPerBookedColor(metrics.costPerBooked)}`}
-          >
-            {formatCurrency(metrics.costPerBooked)}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {metrics.totalBookedCalls} booked from {formatCurrency(metrics.totalSpend)} spend
-          </p>
-        </div>
-
-        {/* % of Qualified Appointments */}
-        <div
-          className={`rounded-lg border p-4 ${getQualifiedBg(metrics.qualifiedPercentage)}`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">
-              Qualified Rate
-            </span>
-            <svg
-              className="w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-          <p
-            className={`text-3xl font-bold ${getQualifiedColor(metrics.qualifiedPercentage)}`}
-          >
-            {formatPercent(metrics.qualifiedPercentage)}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {metrics.totalQualifiedCalls} qualified of {metrics.totalBookedCalls} booked
-          </p>
-        </div>
-
-        {/* ABR (Appointment Booking Rate) */}
-        <div className={`rounded-lg border p-4 ${getAbrBg(metrics.abr)}`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-600">
-              Booking Rate (ABR)
-            </span>
-            <svg
-              className="w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              />
-            </svg>
-          </div>
-          <p className={`text-3xl font-bold ${getAbrColor(metrics.abr)}`}>
-            {formatPercent(metrics.abr)}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">
-            {metrics.totalBookedCalls} booked from {metrics.totalClicks.toLocaleString()} clicks
-          </p>
-        </div>
-      </div>
-
-      {/* Expand Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={onExpand}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
-        >
-          <span>View Rankings</span>
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Marketing Expanded View Modal
-function MarketingExpandedView({
-  adMetrics,
-  formatCurrency,
-  formatPercent,
-  onClose,
-}: {
-  adMetrics: AdMarketingMetrics[];
-  formatCurrency: (value: number) => string;
-  formatPercent: (value: number) => string;
-  onClose: () => void;
-}) {
-  // Prepare ranked data for each table
-
-  // Table 1: Best by Cost per Booked (lowest first, exclude ads with 0 booked calls)
-  const bestByCostPerBooked = useMemo(() => {
-    return adMetrics
-      .filter((ad) => ad.booked_calls > 0)
-      .sort((a, b) => a.cost_per_booked - b.cost_per_booked)
-      .slice(0, 10);
-  }, [adMetrics]);
-
-  // Table 2: Best by Cost per Qualified (lowest first, exclude ads with 0 qualified calls)
-  const bestByCostPerQualified = useMemo(() => {
-    return adMetrics
-      .filter((ad) => ad.qualified_calls > 0)
-      .sort((a, b) => a.cost_per_qualified - b.cost_per_qualified)
-      .slice(0, 10);
-  }, [adMetrics]);
-
-  // Table 3: Best by ABR (highest first, exclude ads with 0 clicks)
-  const bestByAbr = useMemo(() => {
-    return adMetrics
-      .filter((ad) => ad.total_clicks > 0)
-      .sort((a, b) => b.abr - a.abr)
-      .slice(0, 10);
-  }, [adMetrics]);
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={onClose}
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar
+        currentView={currentView}
+        setView={setCurrentView}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
       />
 
-      {/* Modal */}
-      <div className="relative min-h-screen flex items-start justify-center p-4 pt-10">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-y-auto">
-          {/* Header */}
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-purple-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  Marketing Performance Rankings
-                </h2>
-                <p className="text-sm text-gray-500">
-                  Top 10 ads by key marketing metrics
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <svg
-                className="w-6 h-6 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Table 1: Best by Cost per Booked */}
-              <RankingTable
-                title="Best Ads by Cost per Booked"
-                subtitle="Lowest cost per booked appointment"
-                icon={
-                  <svg
-                    className="w-5 h-5 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                }
-                iconBg="bg-green-100"
-                data={bestByCostPerBooked}
-                columns={[
-                  { key: "rank", label: "#", align: "center" },
-                  { key: "ad_name", label: "Ad Name", align: "left" },
-                  { key: "cost_per_booked", label: "Cost/Booked", align: "right" },
-                  { key: "booked_calls", label: "Booked", align: "right" },
-                  { key: "total_spend", label: "Spend", align: "right" },
-                ]}
-                formatters={{
-                  cost_per_booked: formatCurrency,
-                  total_spend: formatCurrency,
-                }}
-              />
-
-              {/* Table 2: Best by Cost per Qualified */}
-              <RankingTable
-                title="Best Ads by Cost per Qualified"
-                subtitle="Lowest cost per qualified appointment"
-                icon={
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                }
-                iconBg="bg-blue-100"
-                data={bestByCostPerQualified}
-                columns={[
-                  { key: "rank", label: "#", align: "center" },
-                  { key: "ad_name", label: "Ad Name", align: "left" },
-                  { key: "cost_per_qualified", label: "Cost/Qualified", align: "right" },
-                  { key: "qualified_calls", label: "Qualified", align: "right" },
-                  { key: "total_spend", label: "Spend", align: "right" },
-                ]}
-                formatters={{
-                  cost_per_qualified: formatCurrency,
-                  total_spend: formatCurrency,
-                }}
-              />
-
-              {/* Table 3: Best by ABR */}
-              <RankingTable
-                title="Best Ads by Booking Rate"
-                subtitle="Highest appointment booking rate"
-                icon={
-                  <svg
-                    className="w-5 h-5 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                }
-                iconBg="bg-purple-100"
-                data={bestByAbr}
-                columns={[
-                  { key: "rank", label: "#", align: "center" },
-                  { key: "ad_name", label: "Ad Name", align: "left" },
-                  { key: "abr", label: "ABR", align: "right" },
-                  { key: "booked_calls", label: "Booked", align: "right" },
-                  { key: "total_clicks", label: "Clicks", align: "right" },
-                ]}
-                formatters={{
-                  abr: formatPercent,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Reusable Ranking Table Component
-function RankingTable({
-  title,
-  subtitle,
-  icon,
-  iconBg,
-  data,
-  columns,
-  formatters = {},
-}: {
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  data: AdMarketingMetrics[];
-  columns: Array<{
-    key: string;
-    label: string;
-    align: "left" | "center" | "right";
-  }>;
-  formatters?: Record<string, (value: number) => string>;
-}) {
-  const getAlignment = (align: string) => {
-    switch (align) {
-      case "left":
-        return "text-left";
-      case "center":
-        return "text-center";
-      case "right":
-        return "text-right";
-      default:
-        return "text-left";
-    }
-  };
-
-  const getValue = (item: AdMarketingMetrics, key: string, index: number) => {
-    if (key === "rank") return index + 1;
-    const value = item[key as keyof AdMarketingMetrics];
-    if (formatters[key] && typeof value === "number") {
-      return formatters[key](value);
-    }
-    if (typeof value === "number") {
-      return value.toLocaleString();
-    }
-    return value;
-  };
-
-  return (
-    <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-      {/* Table Header */}
-      <div className="bg-white px-4 py-3 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-8 h-8 ${iconBg} rounded-lg flex items-center justify-center`}
-          >
-            {icon}
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{title}</h3>
-            <p className="text-xs text-gray-500">{subtitle}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Table Content */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className={`px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider ${getAlignment(col.align)}`}
-                >
-                  {col.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {data.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-3 py-4 text-center text-gray-500 text-sm"
-                >
-                  No data available
-                </td>
-              </tr>
-            ) : (
-              data.map((item, index) => (
-                <tr
-                  key={item.ad_id}
-                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={`px-3 py-2 text-sm ${getAlignment(col.align)} ${
-                        col.key === "rank"
-                          ? "font-bold text-purple-600 bg-purple-50"
-                          : col.key === "ad_name"
-                            ? "font-medium text-gray-900 max-w-[150px] truncate"
-                            : "text-gray-700"
-                      }`}
-                    >
-                      {getValue(item, col.key, index)}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// KPI Card Component
-function KpiCard({
-  title,
-  value,
-  icon,
-  trend,
-}: {
-  title: string;
-  value: string;
-  icon?: React.ReactNode;
-  trend?: { value: number; isPositive: boolean };
-}) {
-  return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-gray-500">{title}</span>
-        {icon && <span className="text-gray-400">{icon}</span>}
-      </div>
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-bold text-gray-900">{value}</span>
-        {trend && (
-          <span
-            className={`text-sm ${trend.isPositive ? "text-green-500" : "text-red-500"}`}
-          >
-            {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Cost Analysis Widget
-function CostAnalysisWidget({
-  totals,
-  dailyMetrics,
-  formatCurrency,
-}: {
-  totals: Totals;
-  dailyMetrics: DailyMetric[];
-  formatCurrency: (value: number) => string;
-}) {
-  const costPerLead =
-    totals.booked_calls > 0 ? totals.total_spend / totals.booked_calls : 0;
-  const costPerSale =
-    totals.deals_won > 0 ? totals.total_spend / totals.deals_won : 0;
-
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-5 h-5 text-orange-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Cost Analysis</h2>
-          <p className="text-sm text-gray-500">Track your acquisition costs</p>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <KpiCard title="Total Spend" value={formatCurrency(totals.total_spend)} />
-        <KpiCard title="Cost Per Lead" value={formatCurrency(costPerLead)} />
-        <KpiCard title="Cost Per Sale" value={formatCurrency(costPerSale)} />
-      </div>
-
-      {/* Chart */}
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dailyMetrics}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 12, fill: "#6B7280" }}
-              tickLine={false}
-              axisLine={{ stroke: "#E5E7EB" }}
-            />
-            <YAxis
-              tick={{ fontSize: 12, fill: "#6B7280" }}
-              tickLine={false}
-              axisLine={{ stroke: "#E5E7EB" }}
-              tickFormatter={(value) => {
-                const numValue = typeof value === "number" ? value : 0;
-                return `$${numValue}`;
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: "8px",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-              }}
-              formatter={(value, name) => {
-                const numValue = typeof value === "number" ? value : 0;
-                return [`$${numValue.toFixed(2)}`, String(name)];
-              }}
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="costPerLead"
-              name="Cost/Lead"
-              stroke="#F97316"
-              strokeWidth={2}
-              dot={{ fill: "#F97316", strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="costPerSale"
-              name="Cost/Sale"
-              stroke="#8B5CF6"
-              strokeWidth={2}
-              dot={{ fill: "#8B5CF6", strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-// Revenue Analysis Widget
-function RevenueAnalysisWidget({
-  totals,
-  dailyMetrics,
-  formatCurrency,
-}: {
-  totals: Totals;
-  dailyMetrics: DailyMetric[];
-  formatCurrency: (value: number) => string;
-}) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-5 h-5 text-green-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Revenue Analysis
-          </h2>
-          <p className="text-sm text-gray-500">Track your sales performance</p>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <KpiCard title="Total Sales" value={totals.deals_won.toString()} />
-        <KpiCard
-          title="Total Revenue"
-          value={formatCurrency(totals.total_revenue)}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <Header
+          title={currentView}
+          dateRange={dateRange}
+          setDateRange={handleDateRangeChange}
         />
-        <KpiCard
-          title="ROAS"
-          value={
-            totals.total_spend > 0
-              ? `${(totals.total_revenue / totals.total_spend).toFixed(2)}x`
-              : "0.00x"
-          }
-        />
-      </div>
 
-      {/* Chart */}
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dailyMetrics}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 12, fill: "#6B7280" }}
-              tickLine={false}
-              axisLine={{ stroke: "#E5E7EB" }}
+        {/* Main Content */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+          {currentView === "Dashboard" && (
+            <DashboardView
+              data={data}
+              loading={loading}
+              breakdownLevel={breakdownLevel}
+              onBreakdownChange={setBreakdownLevel}
             />
-            <YAxis
-              yAxisId="left"
-              tick={{ fontSize: 12, fill: "#6B7280" }}
-              tickLine={false}
-              axisLine={{ stroke: "#E5E7EB" }}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              tick={{ fontSize: 12, fill: "#6B7280" }}
-              tickLine={false}
-              axisLine={{ stroke: "#E5E7EB" }}
-              tickFormatter={(value) => {
-                const numValue = typeof value === "number" ? value : 0;
-                return `$${numValue}`;
-              }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFF",
-                border: "1px solid #E5E7EB",
-                borderRadius: "8px",
-                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-              }}
-              formatter={(value, name) => {
-                const numValue = typeof value === "number" ? value : 0;
-                const label = String(name);
-                return [
-                  label === "Revenue"
-                    ? `$${numValue.toFixed(2)}`
-                    : numValue.toString(),
-                  label,
-                ];
-              }}
-            />
-            <Legend />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="sales"
-              name="Sales"
-              stroke="#8B5CF6"
-              strokeWidth={2}
-              dot={{ fill: "#8B5CF6", strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="revenue"
-              name="Revenue"
-              stroke="#10B981"
-              strokeWidth={2}
-              dot={{ fill: "#10B981", strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-// Best Performing Ads Widget
-function BestPerformingAdsWidget({
-  adMetrics,
-  totals,
-  formatCurrency,
-  formatPercent,
-  formatRoas,
-}: {
-  adMetrics: AdMetrics[];
-  totals: Totals;
-  formatCurrency: (value: number) => string;
-  formatPercent: (value: number) => string;
-  formatRoas: (value: number) => string;
-}) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <svg
-            className="w-5 h-5 text-blue-500"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Best Performing Ads
-          </h2>
-          <p className="text-sm text-gray-500">
-            Detailed performance by individual ad
-          </p>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Ad Name
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Spend
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Leads
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Qualified
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                DQ
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Shows
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Show Rate
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Sales
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Close Rate
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Revenue
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Cost/Lead
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                ROAS
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {adMetrics.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={12}
-                  className="px-4 py-8 text-center text-gray-500"
-                >
-                  No data available for the selected date range.
-                </td>
-              </tr>
-            ) : (
-              adMetrics.map((metric, index) => (
-                <tr
-                  key={metric.ad_id}
-                  className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50 transition-colors`}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <span className="font-medium text-gray-900 truncate max-w-xs">
-                        {metric.ad_name}
-                      </span>
-                      <span className="text-xs text-gray-400 truncate">
-                        {metric.ad_id}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {formatCurrency(metric.total_spend)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
-                      {metric.booked_calls}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                      {metric.qualified_calls}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                      {metric.dq_calls}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {metric.shows}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span
-                      className={`font-medium ${
-                        metric.show_rate >= 70
-                          ? "text-green-600"
-                          : metric.show_rate >= 50
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }`}
-                    >
-                      {formatPercent(metric.show_rate)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                      {metric.deals_won}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span
-                      className={`font-medium ${
-                        metric.close_rate >= 30
-                          ? "text-green-600"
-                          : metric.close_rate >= 15
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }`}
-                    >
-                      {formatPercent(metric.close_rate)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium text-emerald-600">
-                    {formatCurrency(metric.total_revenue)}
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {formatCurrency(metric.cost_per_call)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <span
-                      className={`font-semibold ${
-                        metric.roas >= 3
-                          ? "text-green-600"
-                          : metric.roas >= 1
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }`}
-                    >
-                      {formatRoas(metric.roas)}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-
-          {/* Totals Row */}
-          {adMetrics.length > 0 && (
-            <tfoot>
-              <tr className="bg-gray-100 font-semibold border-t-2 border-gray-300">
-                <td className="px-4 py-3 text-gray-900">TOTAL</td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {formatCurrency(totals.total_spend)}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totals.booked_calls}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totals.qualified_calls}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totals.dq_calls}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totals.shows}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {formatPercent(
-                    totals.booked_calls > 0
-                      ? (totals.shows / totals.booked_calls) * 100
-                      : 0
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totals.deals_won}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {formatPercent(
-                    totals.booked_calls > 0
-                      ? (totals.deals_won / totals.booked_calls) * 100
-                      : 0
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right text-emerald-600">
-                  {formatCurrency(totals.total_revenue)}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {formatCurrency(
-                    totals.booked_calls > 0
-                      ? totals.total_spend / totals.booked_calls
-                      : 0
-                  )}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {formatRoas(
-                    totals.total_spend > 0
-                      ? totals.total_revenue / totals.total_spend
-                      : 0
-                  )}
-                </td>
-              </tr>
-            </tfoot>
           )}
-        </table>
+          {currentView === "Leads Breakdown" && (
+            <LeadsBreakdownView dateRange={dateRange} />
+          )}
+          {currentView === "Ads Manager" && (
+            <PlaceholderView title="Ads Manager" />
+          )}
+          {currentView === "Report Builder" && (
+            <PlaceholderView title="Report Builder" />
+          )}
+          {currentView === "Contacts" && (
+            <PlaceholderView title="Contacts" />
+          )}
+          {currentView === "Events Manager" && (
+            <PlaceholderView title="Events Manager" />
+          )}
+          {currentView === "Integrations" && (
+            <PlaceholderView title="Integrations" />
+          )}
+        </main>
       </div>
+
+      {/* Debug Panel - Shows raw database data */}
+      <DebugPanel />
     </div>
   );
 }

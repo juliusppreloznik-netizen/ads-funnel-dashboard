@@ -50,3 +50,36 @@ body {
 .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
   background-color: #f3f4f6;
 }
+
+/* Tremor DateRangePicker Fixes */
+[data-tremor-id="tremor-DateRangePicker"] {
+  position: relative;
+  z-index: 50;
+}
+
+/* Ensure the dropdown has proper background and shadow */
+[data-tremor-id="tremor-DateRangePicker"] [role="dialog"],
+[data-tremor-id="tremor-DateRangePicker"] [data-headlessui-state],
+.tremor-DateRangePicker-calendarDropdown {
+  background-color: white !important;
+  z-index: 9999 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.75rem !important;
+}
+
+/* Fix Tremor popover/dropdown layering */
+[data-headlessui-portal] {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Ensure proper text colors in date picker */
+[data-tremor-id="tremor-DateRangePicker"] button,
+[data-tremor-id="tremor-DateRangePicker"] span {
+  color: #374151;
+}
+
+[data-tremor-id="tremor-DateRangePicker"] button:hover {
+  background-color: #f3f4f6;
+}

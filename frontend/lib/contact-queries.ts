@@ -3,6 +3,7 @@
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 // ============================================================================
 // SUPABASE CLIENT INITIALIZATION
@@ -13,7 +14,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 let supabaseInstance: SupabaseClient | null = null;
 
-function getSupabase(): SupabaseClient {
+export function getSupabase(): SupabaseClient {
   if (!supabaseInstance) {
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
   }
@@ -75,6 +76,8 @@ export interface Contact {
   deal_closed_at: string | null;
   // Financial
   final_deal_value: number | null;
+  // Form responses (JSONB from GHL)
+  form_responses: Record<string, string> | null;
   // Metadata
   created_at: string;
   updated_at: string;
@@ -191,13 +194,18 @@ export interface MarketingKPIs {
   total_leads: number;
   total_booked: number;
   total_qualified: number;
+  total_dq: number;
   total_shows: number;
   total_closes: number;
   total_revenue: number;
+  // Ad metrics from ads table
+  total_clicks: number;
+  total_impressions: number;
   // Cost metrics
   cost_per_lead: number;
   cost_per_booked: number;
   cost_per_qualified: number;
+  cost_per_dq: number;
   cost_per_show: number;
   cost_per_close: number;
   // Conversion rates
@@ -214,17 +222,40 @@ export interface MarketingKPIs {
 /** Daily trend data point */
 export interface DailyTrendData {
   date: string;
+  // Contact funnel metrics
   leads: number;
   booked: number;
   qualified: number;
+  dq: number;
   shows: number;
   closes: number;
   revenue: number;
+  // Ad metrics from ads table
+  spend: number;
+  clicks: number;
+  impressions: number;
   // Calculated daily rates
   booking_rate: number;
   show_rate: number;
   close_rate: number;
+  // Calculated daily cost metrics
+  cost_per_booked: number;
+  cost_per_qualified: number;
+  cost_per_dq: number;
+  cost_per_show: number;
 }
+
+/** Source breakdown KPIs (campaign/adset/ad level) */
+export interface SourceKPIs {
+  source: string;
+  qualified: number;
+  dq: number;
+  shown: number;
+  closes: number;
+}
+
+/** Breakdown level for source table */
+export type BreakdownLevel = "campaign" | "adset" | "ad";
 
 /** Query result wrapper */
 export interface QueryResult<T> {
@@ -237,18 +268,57 @@ export interface QueryResult<T> {
 // ============================================================================
 
 /**
- * Format date for Supabase timestamp comparison
+ * Get the user's timezone
+ */
+function getUserTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+/**
+ * Converts a local date to the start of the day in UTC.
+ * This ensures consistent timezone handling with Supabase.
+ */
+function getStartOfDayUTC(date: Date): Date {
+  const userTimeZone = getUserTimeZone();
+  // Convert the date to the user's timezone, get start of day, then convert back to UTC
+  const zonedDate = toZonedTime(date, userTimeZone);
+  const startOfDayLocal = startOfDay(zonedDate);
+  return fromZonedTime(startOfDayLocal, userTimeZone);
+}
+
+/**
+ * Converts a local date to the end of the day in UTC.
+ * This ensures consistent timezone handling with Supabase.
+ */
+function getEndOfDayUTC(date: Date): Date {
+  const userTimeZone = getUserTimeZone();
+  // Convert the date to the user's timezone, get end of day, then convert back to UTC
+  const zonedDate = toZonedTime(date, userTimeZone);
+  const endOfDayLocal = endOfDay(zonedDate);
+  return fromZonedTime(endOfDayLocal, userTimeZone);
+}
+
+/**
+ * Format date for Supabase timestamp comparison (contacts table)
+ * Uses UTC to match database storage format
  */
 function formatDateForQuery(date: Date, type: "start" | "end"): string {
-  const targetDate = type === "start" ? startOfDay(date) : endOfDay(date);
-  return format(targetDate, "yyyy-MM-dd'T'HH:mm:ss");
+  const targetDate = type === "start" ? getStartOfDayUTC(date) : getEndOfDayUTC(date);
+  // Use ISO 8601 format with 'Z' suffix to explicitly indicate UTC
+  const formatted = format(targetDate, "yyyy-MM-dd'T'HH:mm:ss.SSS") + "Z";
+  console.log(`📅 [formatDateForQuery] ${type}: local=${date.toISOString()} -> UTC=${formatted}`);
+  return formatted;
 }
 
 /**
  * Format date for Supabase date comparison (ads table)
+ * The ads table uses DATE type (no timezone), so we just need the date string
  */
 function formatDateOnly(date: Date): string {
-  return format(date, "yyyy-MM-dd");
+  // For date-only columns, use the user's local date
+  const userTimeZone = getUserTimeZone();
+  const zonedDate = toZonedTime(date, userTimeZone);
+  return format(zonedDate, "yyyy-MM-dd");
 }
 
 /**
@@ -276,6 +346,99 @@ function getFunnelStage(contact: Contact): FunnelStage {
   if (contact.is_qualified === true || contact.qualified_at) return "qualified";
   if (contact.call_booked_at) return "booked";
   return "lead";
+}
+
+// ============================================================================
+// DIAGNOSTIC FUNCTION
+// ============================================================================
+
+/**
+ * Diagnostic function to check raw data availability in both tables
+ * Run this to verify data exists before applying date filters
+ */
+export async function diagnoseDatabaseState(): Promise<void> {
+  const supabase = getSupabase();
+
+  console.log("🔬 [DIAGNOSTIC] Checking database state...");
+
+  // Check contacts table
+  const { data: allContacts, error: contactsError, count: contactsCount } = await supabase
+    .from("contacts")
+    .select("id, form_submitted_at, call_booked_at, is_qualified, showed_up_at, deal_closed_at", { count: "exact" })
+    .limit(10);
+
+  console.log("📊 [DIAGNOSTIC] Contacts table:", {
+    totalCount: contactsCount,
+    error: contactsError?.message ?? null,
+    sampleRecords: allContacts?.map(c => ({
+      id: c.id?.substring(0, 8) + "...",
+      form_submitted_at: c.form_submitted_at,
+      call_booked_at: c.call_booked_at,
+      is_qualified: c.is_qualified,
+      showed_up_at: c.showed_up_at,
+      deal_closed_at: c.deal_closed_at,
+    })),
+  });
+
+  // Check ads table
+  const { data: allAds, error: adsError, count: adsCount } = await supabase
+    .from("ads")
+    .select("id, ad_id, ad_name, date, spend, clicks, impressions", { count: "exact" })
+    .order("date", { ascending: false })
+    .limit(10);
+
+  console.log("📊 [DIAGNOSTIC] Ads table:", {
+    totalCount: adsCount,
+    error: adsError?.message ?? null,
+    sampleRecords: allAds?.map(a => ({
+      ad_id: a.ad_id?.substring(0, 12) + "...",
+      ad_name: a.ad_name?.substring(0, 30),
+      date: a.date,
+      spend: a.spend,
+      clicks: a.clicks,
+      impressions: a.impressions,
+    })),
+  });
+
+  // Get date ranges in the data
+  const { data: minMaxContacts } = await supabase
+    .from("contacts")
+    .select("form_submitted_at")
+    .not("form_submitted_at", "is", null)
+    .order("form_submitted_at", { ascending: true })
+    .limit(1);
+
+  const { data: maxContacts } = await supabase
+    .from("contacts")
+    .select("form_submitted_at")
+    .not("form_submitted_at", "is", null)
+    .order("form_submitted_at", { ascending: false })
+    .limit(1);
+
+  const { data: minAds } = await supabase
+    .from("ads")
+    .select("date")
+    .order("date", { ascending: true })
+    .limit(1);
+
+  const { data: maxAds } = await supabase
+    .from("ads")
+    .select("date")
+    .order("date", { ascending: false })
+    .limit(1);
+
+  console.log("📅 [DIAGNOSTIC] Date ranges in data:", {
+    contacts: {
+      earliest: minMaxContacts?.[0]?.form_submitted_at ?? "none",
+      latest: maxContacts?.[0]?.form_submitted_at ?? "none",
+    },
+    ads: {
+      earliest: minAds?.[0]?.date ?? "none",
+      latest: maxAds?.[0]?.date ?? "none",
+    },
+  });
+
+  console.log("🔬 [DIAGNOSTIC] Complete");
 }
 
 // ============================================================================
@@ -653,7 +816,21 @@ export async function getMarketingKPIsFromContacts(
   try {
     const supabase = getSupabase();
 
+    console.log("🔍 [getMarketingKPIsFromContacts] Starting query...");
+    console.log("📅 [getMarketingKPIsFromContacts] Date range:", dateRange);
+
+    // Build date strings for logging
+    const fromDateStr = dateRange?.from ? formatDateForQuery(dateRange.from, "start") : "undefined";
+    const toDateStr = dateRange?.to ? formatDateForQuery(dateRange.to, "end") : "undefined";
+    const fromDateOnly = dateRange?.from ? formatDateOnly(dateRange.from) : "undefined";
+    const toDateOnly = dateRange?.to ? formatDateOnly(dateRange.to) : "undefined";
+
+    console.log("📅 [getMarketingKPIsFromContacts] Contacts filter: form_submitted_at >= ", fromDateStr, " AND <= ", toDateStr);
+    console.log("📅 [getMarketingKPIsFromContacts] Ads filter: date >= ", fromDateOnly, " AND <= ", toDateOnly);
+
     // Fetch contacts data
+    // Use OR filter to include contacts where EITHER form_submitted_at OR call_booked_at is in range
+    // This ensures we capture booking records that may have different ghl_contact_ids
     let contactsQuery = supabase
       .from("contacts")
       .select(`
@@ -662,23 +839,31 @@ export async function getMarketingKPIsFromContacts(
         is_qualified,
         showed_up_at,
         deal_closed_at,
-        final_deal_value
+        final_deal_value,
+        disqualified_at
       `);
 
-    if (dateRange?.from) {
-      contactsQuery = contactsQuery.gte(
-        "form_submitted_at",
-        formatDateForQuery(dateRange.from, "start")
+    if (dateRange?.from && dateRange?.to) {
+      const fromStr = formatDateForQuery(dateRange.from, "start");
+      const toStr = formatDateForQuery(dateRange.to, "end");
+      // Include records where form_submitted_at is in range OR call_booked_at is in range
+      // Using proper OR: (form_submitted_at in range) OR (call_booked_at in range)
+      contactsQuery = contactsQuery.or(
+        `and(form_submitted_at.gte.${fromStr},form_submitted_at.lte.${toStr}),and(call_booked_at.gte.${fromStr},call_booked_at.lte.${toStr})`
       );
-    }
-    if (dateRange?.to) {
-      contactsQuery = contactsQuery.lte(
-        "form_submitted_at",
-        formatDateForQuery(dateRange.to, "end")
+    } else if (dateRange?.from) {
+      const fromStr = formatDateForQuery(dateRange.from, "start");
+      contactsQuery = contactsQuery.or(
+        `form_submitted_at.gte.${fromStr},call_booked_at.gte.${fromStr}`
+      );
+    } else if (dateRange?.to) {
+      const toStr = formatDateForQuery(dateRange.to, "end");
+      contactsQuery = contactsQuery.or(
+        `form_submitted_at.lte.${toStr},call_booked_at.lte.${toStr}`
       );
     }
 
-    // Fetch ads data
+    // Fetch ads data with clicks and impressions
     let adsQuery = supabase.from("ads").select("spend, clicks, impressions");
 
     if (dateRange?.from) {
@@ -691,34 +876,58 @@ export async function getMarketingKPIsFromContacts(
     // Execute both queries in parallel
     const [contactsResult, adsResult] = await Promise.all([contactsQuery, adsQuery]);
 
+    console.log("📊 [getMarketingKPIsFromContacts] Contacts query result:", {
+      count: contactsResult.data?.length ?? 0,
+      error: contactsResult.error?.message ?? null,
+      sampleData: contactsResult.data?.slice(0, 3),
+    });
+
+    console.log("📊 [getMarketingKPIsFromContacts] Ads query result:", {
+      count: adsResult.data?.length ?? 0,
+      error: adsResult.error?.message ?? null,
+      sampleData: adsResult.data?.slice(0, 3),
+    });
+
     if (contactsResult.error) {
-      console.error("Error fetching contacts:", contactsResult.error);
+      console.error("❌ Error fetching contacts:", contactsResult.error);
       return { data: null, error: new Error(contactsResult.error.message) };
     }
 
     if (adsResult.error) {
-      console.error("Error fetching ads:", adsResult.error);
+      console.error("❌ Error fetching ads:", adsResult.error);
       return { data: null, error: new Error(adsResult.error.message) };
     }
 
     const contacts = contactsResult.data || [];
     const ads = adsResult.data || [];
 
+    console.log("✅ [getMarketingKPIsFromContacts] Raw data counts - Contacts:", contacts.length, "Ads:", ads.length);
+
     // Calculate totals from ads
     const total_spend = ads.reduce((sum, ad) => sum + (Number(ad.spend) || 0), 0);
+    const total_clicks = ads.reduce((sum, ad) => sum + (Number(ad.clicks) || 0), 0);
+    const total_impressions = ads.reduce((sum, ad) => sum + (Number(ad.impressions) || 0), 0);
 
     // Calculate funnel totals from contacts
     let total_leads = 0;
     let total_booked = 0;
     let total_qualified = 0;
+    let total_dq = 0;
     let total_shows = 0;
     let total_closes = 0;
     let total_revenue = 0;
 
     for (const contact of contacts) {
       if (contact.form_submitted_at) total_leads++;
-      if (contact.call_booked_at) total_booked++;
-      if (contact.is_qualified === true) total_qualified++;
+      if (contact.call_booked_at) {
+        total_booked++;
+        // Count qualified vs DQ
+        if (contact.is_qualified === true) {
+          total_qualified++;
+        } else if (contact.is_qualified === false || contact.disqualified_at) {
+          total_dq++;
+        }
+      }
       if (contact.showed_up_at) total_shows++;
       if (contact.deal_closed_at) {
         total_closes++;
@@ -732,13 +941,18 @@ export async function getMarketingKPIsFromContacts(
       total_leads,
       total_booked,
       total_qualified,
+      total_dq,
       total_shows,
       total_closes,
       total_revenue,
+      // Ad metrics
+      total_clicks,
+      total_impressions,
       // Cost metrics
       cost_per_lead: safeDivide(total_spend, total_leads),
       cost_per_booked: safeDivide(total_spend, total_booked),
       cost_per_qualified: safeDivide(total_spend, total_qualified),
+      cost_per_dq: safeDivide(total_spend, total_dq),
       cost_per_show: safeDivide(total_spend, total_shows),
       cost_per_close: safeDivide(total_spend, total_closes),
       // Conversion rates
@@ -754,6 +968,19 @@ export async function getMarketingKPIsFromContacts(
       avg_deal_value: safeDivide(total_revenue, total_closes),
     };
 
+    console.log("📈 [getMarketingKPIsFromContacts] Calculated KPIs:", {
+      total_spend,
+      total_leads,
+      total_booked,
+      total_qualified,
+      total_dq,
+      total_shows,
+      total_closes,
+      total_revenue,
+      total_clicks,
+      total_impressions,
+    });
+
     return { data: kpis, error: null };
   } catch (err) {
     console.error("Error in getMarketingKPIsFromContacts:", err);
@@ -766,7 +993,8 @@ export async function getMarketingKPIsFromContacts(
 
 /**
  * Get daily time-series data for charts
- * Returns leads, booked, qualified, shows, closes, revenue by date
+ * Returns leads, booked, qualified, dq, shows, closes, revenue, spend, clicks, impressions by date
+ * Also includes daily cost metrics (cost_per_qualified, cost_per_dq, cost_per_show)
  */
 export async function getDailyContactTrends(
   dateRange?: DateRangeFilter
@@ -774,7 +1002,8 @@ export async function getDailyContactTrends(
   try {
     const supabase = getSupabase();
 
-    let query = supabase
+    // Fetch contacts data
+    let contactsQuery = supabase
       .from("contacts")
       .select(`
         form_submitted_at,
@@ -782,32 +1011,66 @@ export async function getDailyContactTrends(
         is_qualified,
         showed_up_at,
         deal_closed_at,
-        final_deal_value
+        final_deal_value,
+        disqualified_at
       `);
 
     if (dateRange?.from) {
-      query = query.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
+      contactsQuery = contactsQuery.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
     }
     if (dateRange?.to) {
-      query = query.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
+      contactsQuery = contactsQuery.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
     }
 
-    const { data: contacts, error } = await query;
+    // Fetch ads data for the same date range
+    let adsQuery = supabase.from("ads").select("date, spend, clicks, impressions");
 
-    if (error) {
-      console.error("Error fetching contacts for trends:", error);
-      return { data: null, error: new Error(error.message) };
+    if (dateRange?.from) {
+      adsQuery = adsQuery.gte("date", formatDateOnly(dateRange.from));
+    }
+    if (dateRange?.to) {
+      adsQuery = adsQuery.lte("date", formatDateOnly(dateRange.to));
     }
 
-    if (!contacts || contacts.length === 0) {
-      return { data: [], error: null };
+    // Execute both queries in parallel
+    const [contactsResult, adsResult] = await Promise.all([contactsQuery, adsQuery]);
+
+    if (contactsResult.error) {
+      console.error("Error fetching contacts for trends:", contactsResult.error);
+      return { data: null, error: new Error(contactsResult.error.message) };
     }
 
-    // Group by date
+    if (adsResult.error) {
+      console.error("Error fetching ads for trends:", adsResult.error);
+      return { data: null, error: new Error(adsResult.error.message) };
+    }
+
+    const contacts = contactsResult.data || [];
+    const ads = adsResult.data || [];
+
+    // Group ads data by date
+    const adsMap = new Map<string, {
+      spend: number;
+      clicks: number;
+      impressions: number;
+    }>();
+
+    for (const ad of ads) {
+      const dateKey = ad.date;
+      const current = adsMap.get(dateKey) || { spend: 0, clicks: 0, impressions: 0 };
+      adsMap.set(dateKey, {
+        spend: current.spend + (Number(ad.spend) || 0),
+        clicks: current.clicks + (Number(ad.clicks) || 0),
+        impressions: current.impressions + (Number(ad.impressions) || 0),
+      });
+    }
+
+    // Group contacts by date
     const dailyMap = new Map<string, {
       leads: number;
       booked: number;
       qualified: number;
+      dq: number;
       shows: number;
       closes: number;
       revenue: number;
@@ -824,6 +1087,7 @@ export async function getDailyContactTrends(
           leads: 0,
           booked: 0,
           qualified: 0,
+          dq: 0,
           shows: 0,
           closes: 0,
           revenue: 0,
@@ -834,8 +1098,15 @@ export async function getDailyContactTrends(
 
       dayData.leads++;
 
-      if (contact.call_booked_at) dayData.booked++;
-      if (contact.is_qualified === true) dayData.qualified++;
+      if (contact.call_booked_at) {
+        dayData.booked++;
+        // Count qualified vs DQ
+        if (contact.is_qualified === true) {
+          dayData.qualified++;
+        } else if (contact.is_qualified === false || contact.disqualified_at) {
+          dayData.dq++;
+        }
+      }
       if (contact.showed_up_at) dayData.shows++;
       if (contact.deal_closed_at) {
         dayData.closes++;
@@ -843,20 +1114,159 @@ export async function getDailyContactTrends(
       }
     }
 
+    // Get all unique dates from both contacts and ads
+    const allDates = new Set<string>([...dailyMap.keys(), ...adsMap.keys()]);
+
     // Convert to array and sort by date
-    const trends: DailyTrendData[] = Array.from(dailyMap.entries())
-      .map(([date, data]) => ({
-        date,
-        ...data,
-        booking_rate: toPercentage(data.booked, data.leads),
-        show_rate: toPercentage(data.shows, data.booked),
-        close_rate: toPercentage(data.closes, data.booked),
-      }))
+    const trends: DailyTrendData[] = Array.from(allDates)
+      .map((date) => {
+        const contactData = dailyMap.get(date) || {
+          leads: 0,
+          booked: 0,
+          qualified: 0,
+          dq: 0,
+          shows: 0,
+          closes: 0,
+          revenue: 0,
+        };
+        const adData = adsMap.get(date) || { spend: 0, clicks: 0, impressions: 0 };
+
+        return {
+          date,
+          // Contact metrics
+          leads: contactData.leads,
+          booked: contactData.booked,
+          qualified: contactData.qualified,
+          dq: contactData.dq,
+          shows: contactData.shows,
+          closes: contactData.closes,
+          revenue: contactData.revenue,
+          // Ad metrics
+          spend: adData.spend,
+          clicks: adData.clicks,
+          impressions: adData.impressions,
+          // Conversion rates
+          booking_rate: toPercentage(contactData.booked, contactData.leads),
+          show_rate: toPercentage(contactData.shows, contactData.booked),
+          close_rate: toPercentage(contactData.closes, contactData.booked),
+          // Cost metrics
+          cost_per_booked: safeDivide(adData.spend, contactData.booked),
+          cost_per_qualified: safeDivide(adData.spend, contactData.qualified),
+          cost_per_dq: safeDivide(adData.spend, contactData.dq),
+          cost_per_show: safeDivide(adData.spend, contactData.shows),
+        };
+      })
       .sort((a, b) => a.date.localeCompare(b.date));
 
     return { data: trends, error: null };
   } catch (err) {
     console.error("Error in getDailyContactTrends:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+}
+
+// ============================================================================
+// SOURCE BREAKDOWN QUERY
+// ============================================================================
+
+/**
+ * Get KPIs broken down by source (campaign, ad set, or ad)
+ * Returns qualified calls, DQ calls, shown calls, and closes per source
+ */
+export async function getSourceKPIs(
+  dateRange?: DateRangeFilter,
+  breakdownLevel: BreakdownLevel = "campaign"
+): Promise<QueryResult<SourceKPIs[]>> {
+  try {
+    const supabase = getSupabase();
+
+    // Determine which field to group by
+    const groupByField =
+      breakdownLevel === "campaign"
+        ? "campaign_name"
+        : breakdownLevel === "adset"
+        ? "adset_name"
+        : "ad_name";
+
+    // Build query
+    let query = supabase
+      .from("contacts")
+      .select(`
+        ${groupByField},
+        is_qualified,
+        showed_up_at,
+        deal_closed_at,
+        disqualified_at
+      `)
+      .not(groupByField, "is", null);
+
+    // Apply date filter
+    if (dateRange?.from) {
+      query = query.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
+    }
+    if (dateRange?.to) {
+      query = query.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Error fetching source KPIs:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    if (!data || data.length === 0) {
+      return { data: [], error: null };
+    }
+
+    // Group and aggregate by source
+    const sourceMap = new Map<string, SourceKPIs>();
+
+    for (const contact of data) {
+      const source = (contact as Record<string, unknown>)[groupByField] as string || "Unknown";
+
+      if (!sourceMap.has(source)) {
+        sourceMap.set(source, {
+          source,
+          qualified: 0,
+          dq: 0,
+          shown: 0,
+          closes: 0,
+        });
+      }
+
+      const kpis = sourceMap.get(source)!;
+
+      // Count qualified calls
+      if (contact.is_qualified === true) {
+        kpis.qualified++;
+      }
+
+      // Count DQ calls
+      if (contact.is_qualified === false || contact.disqualified_at) {
+        kpis.dq++;
+      }
+
+      // Count shown calls
+      if (contact.showed_up_at) {
+        kpis.shown++;
+      }
+
+      // Count closes
+      if (contact.deal_closed_at) {
+        kpis.closes++;
+      }
+    }
+
+    // Convert to array and sort by qualified (descending) by default
+    const result = Array.from(sourceMap.values()).sort((a, b) => b.qualified - a.qualified);
+
+    return { data: result, error: null };
+  } catch (err) {
+    console.error("Error in getSourceKPIs:", err);
     return {
       data: null,
       error: err instanceof Error ? err : new Error("Unknown error"),
@@ -929,4 +1339,438 @@ export async function getTopAdsByMetric(
   });
 
   return { data: sorted.slice(0, limit), error: null };
+}
+
+// ============================================================================
+// LEADS BREAKDOWN DATA
+// ============================================================================
+
+/** Revenue distribution stats for a funnel stage */
+export interface RevenueDistributionStats {
+  stage: string;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  count: number;
+}
+
+/** Investment tier breakdown */
+export interface InvestmentTier {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+/** Investment breakdown by stage */
+export interface InvestmentBreakdown {
+  stage: string;
+  tiers: InvestmentTier[];
+}
+
+/** Revenue funnel stage data */
+export interface RevenueFunnelStage {
+  stage: string;
+  totalRevenue: number;
+  count: number;
+  avgRevenue: number;
+}
+
+/** Source quality metrics */
+export interface SourceQuality {
+  source: string;
+  avgRevenue: number;
+  qualRate: number;
+  showRate: number;
+  closeRate: number;
+  totalRevenue: number;
+  leadCount: number;
+}
+
+/** Daily revenue trend data */
+export interface RevenueTrendPoint {
+  date: string;
+  avgRevenueQualified: number;
+  avgRevenueShown: number;
+  leadCount: number;
+}
+
+/** Investment heatmap row */
+export interface InvestmentHeatmapRow {
+  tier: string;
+  qualified: number;
+  shown: number;
+  closed: number;
+}
+
+/** Complete leads breakdown data */
+export interface LeadsBreakdownData {
+  // KPI metrics
+  avgRevenueQualified: number;
+  avgRevenueShown: number;
+  avgRevenueClosed: number;
+  qualificationRate: number;
+  showRate: number;
+  closeRate: number;
+  // Revenue distribution by stage
+  revenueByStage: RevenueDistributionStats[];
+  // Investment ability breakdown
+  investmentBreakdown: InvestmentBreakdown[];
+  // Revenue funnel
+  revenueFunnel: RevenueFunnelStage[];
+  // Source quality
+  sourceQuality: SourceQuality[];
+  // Revenue trends
+  revenueTrends: RevenueTrendPoint[];
+  // Investment heatmap
+  investmentHeatmap: InvestmentHeatmapRow[];
+}
+
+// ============================================================================
+// FORM RESPONSE HELPERS (for GHL form data)
+// ============================================================================
+
+/**
+ * Extract form response value from contact's form_responses JSONB
+ */
+function getFormResponse(contact: Contact, fieldName: string): string | null {
+  if (!contact.form_responses) return null;
+  return contact.form_responses[fieldName] || null;
+}
+
+/**
+ * Map revenue text from GHL form to numeric value (midpoint of range)
+ */
+function parseRevenueToNumber(revenueText: string | null): number {
+  if (!revenueText) return 0;
+
+  switch (revenueText) {
+    case "Under $5k/month":
+      return 2500; // Midpoint of $0-$5k
+    case "$5k-$10k/month":
+      return 7500; // Midpoint of $5k-$10k
+    case "$10k-$25k/month":
+      return 17500; // Midpoint of $10k-$25k
+    case "$25k+/month":
+      return 30000; // Conservative estimate for $25k+
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Get revenue tier label from form response
+ */
+function getRevenueTier(revenueText: string | null): string {
+  if (!revenueText) return "Unknown";
+  return revenueText;
+}
+
+/**
+ * Get investment tier label from form response
+ */
+function getInvestmentTierLabel(investmentText: string | null): string {
+  if (!investmentText) return "Unknown";
+  if (investmentText.includes("$5k in cash")) return "Cash Ready ($5k+)";
+  if (investmentText.includes("financing")) return "Needs Financing";
+  return "Unknown";
+}
+
+/**
+ * Calculate revenue distribution statistics using form responses
+ */
+function calculateDistribution(stage: string, contacts: Contact[]): RevenueDistributionStats {
+  const revenues = contacts
+    .map((c) => {
+      const revenue = getFormResponse(c, "revenue");
+      return parseRevenueToNumber(revenue);
+    })
+    .filter((r) => r > 0)
+    .sort((a, b) => a - b);
+
+  if (revenues.length === 0) {
+    return { stage, min: 0, q1: 0, median: 0, q3: 0, max: 0, count: 0 };
+  }
+
+  return {
+    stage,
+    min: revenues[0],
+    q1: revenues[Math.floor(revenues.length * 0.25)] || revenues[0],
+    median: revenues[Math.floor(revenues.length * 0.5)] || revenues[0],
+    q3: revenues[Math.floor(revenues.length * 0.75)] || revenues[revenues.length - 1],
+    max: revenues[revenues.length - 1],
+    count: revenues.length,
+  };
+}
+
+/**
+ * Calculate investment tier breakdown using form responses
+ */
+function calculateInvestmentTiers(contacts: Contact[]): InvestmentTier[] {
+  const tierKeys = ["Cash Ready ($5k+)", "Needs Financing", "Unknown"] as const;
+  const counts: Record<string, number> = {
+    "Cash Ready ($5k+)": 0,
+    "Needs Financing": 0,
+    Unknown: 0,
+  };
+
+  const total = contacts.length;
+
+  contacts.forEach((c) => {
+    const investment = getFormResponse(c, "investment_ability");
+    const tierLabel = getInvestmentTierLabel(investment);
+    counts[tierLabel]++;
+  });
+
+  return tierKeys.map((label) => ({
+    label,
+    count: counts[label],
+    percentage: total > 0 ? (counts[label] / total) * 100 : 0,
+  }));
+}
+
+/**
+ * Check if contact's revenue falls within a tier based on form response
+ */
+function isInRevenueTier(contact: Contact, tier: string): boolean {
+  const revenue = getFormResponse(contact, "revenue");
+  const revenueTier = getRevenueTier(revenue);
+  return revenueTier === tier;
+}
+
+/**
+ * Get comprehensive leads breakdown data for the Leads Breakdown view
+ * Uses form_responses JSONB field for revenue and investment data
+ */
+export async function getLeadsBreakdownData(
+  dateRange?: DateRangeFilter
+): Promise<QueryResult<LeadsBreakdownData>> {
+  try {
+    const supabase = getSupabase();
+
+    // Fetch all contacts in date range
+    let query = supabase.from("contacts").select("*");
+
+    if (dateRange?.from) {
+      query = query.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
+    }
+    if (dateRange?.to) {
+      query = query.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
+    }
+
+    const { data: rawContacts, error } = await query;
+
+    if (error) {
+      console.error("Error fetching contacts for leads breakdown:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    const contacts = (rawContacts || []) as Contact[];
+
+    // Filter contacts by funnel stage
+    const allLeads = contacts.filter((c) => c.form_submitted_at);
+    const qualified = contacts.filter((c) => c.is_qualified === true);
+    const shown = contacts.filter((c) => c.showed_up_at);
+    const closed = contacts.filter((c) => c.deal_closed_at);
+
+    // Helper to get revenue from form_responses
+    const getContactRevenue = (c: Contact): number => {
+      const revenue = getFormResponse(c, "revenue");
+      return parseRevenueToNumber(revenue);
+    };
+
+    // Calculate KPI metrics using form responses
+    const avgRevenueQualified =
+      qualified.length > 0
+        ? qualified.reduce((sum, c) => sum + getContactRevenue(c), 0) / qualified.length
+        : 0;
+
+    const avgRevenueShown =
+      shown.length > 0
+        ? shown.reduce((sum, c) => sum + getContactRevenue(c), 0) / shown.length
+        : 0;
+
+    const avgRevenueClosed =
+      closed.length > 0
+        ? closed.reduce((sum, c) => sum + getContactRevenue(c), 0) / closed.length
+        : 0;
+
+    const qualificationRate =
+      allLeads.length > 0 ? (qualified.length / allLeads.length) * 100 : 0;
+
+    const showRate = qualified.length > 0 ? (shown.length / qualified.length) * 100 : 0;
+
+    const closeRate = shown.length > 0 ? (closed.length / shown.length) * 100 : 0;
+
+    // Calculate revenue distribution by stage
+    const revenueByStage: RevenueDistributionStats[] = [
+      calculateDistribution("Applications", allLeads),
+      calculateDistribution("Qualified", qualified),
+      calculateDistribution("Shown", shown),
+      calculateDistribution("Closed", closed),
+    ];
+
+    // Calculate investment ability breakdown
+    const investmentBreakdown: InvestmentBreakdown[] = [
+      { stage: "Applications", tiers: calculateInvestmentTiers(allLeads) },
+      { stage: "Qualified", tiers: calculateInvestmentTiers(qualified) },
+      { stage: "Shown", tiers: calculateInvestmentTiers(shown) },
+      { stage: "Closed", tiers: calculateInvestmentTiers(closed) },
+    ];
+
+    // Calculate revenue funnel using form responses
+    const revenueFunnel: RevenueFunnelStage[] = [
+      {
+        stage: "Applications",
+        totalRevenue: allLeads.reduce((sum, c) => sum + getContactRevenue(c), 0),
+        count: allLeads.length,
+        avgRevenue:
+          allLeads.length > 0
+            ? allLeads.reduce((sum, c) => sum + getContactRevenue(c), 0) / allLeads.length
+            : 0,
+      },
+      {
+        stage: "Qualified",
+        totalRevenue: qualified.reduce((sum, c) => sum + getContactRevenue(c), 0),
+        count: qualified.length,
+        avgRevenue: avgRevenueQualified,
+      },
+      {
+        stage: "Shown",
+        totalRevenue: shown.reduce((sum, c) => sum + getContactRevenue(c), 0),
+        count: shown.length,
+        avgRevenue: avgRevenueShown,
+      },
+      {
+        stage: "Closed",
+        totalRevenue: closed.reduce((sum, c) => sum + getContactRevenue(c), 0),
+        count: closed.length,
+        avgRevenue: avgRevenueClosed,
+      },
+    ];
+
+    // Calculate source quality (grouped by campaign) using form responses
+    const sourceMap = new Map<
+      string,
+      {
+        source: string;
+        totalRevenue: number;
+        leadCount: number;
+        qualified: number;
+        shown: number;
+        closed: number;
+      }
+    >();
+
+    contacts.forEach((contact) => {
+      const source = contact.campaign_name || "Unknown";
+      if (!sourceMap.has(source)) {
+        sourceMap.set(source, {
+          source,
+          totalRevenue: 0,
+          leadCount: 0,
+          qualified: 0,
+          shown: 0,
+          closed: 0,
+        });
+      }
+      const stats = sourceMap.get(source)!;
+      stats.leadCount++;
+      stats.totalRevenue += getContactRevenue(contact);
+      if (contact.is_qualified === true) stats.qualified++;
+      if (contact.showed_up_at) stats.shown++;
+      if (contact.deal_closed_at) stats.closed++;
+    });
+
+    const sourceQuality: SourceQuality[] = Array.from(sourceMap.values())
+      .map((s) => ({
+        source: s.source,
+        avgRevenue: s.leadCount > 0 ? s.totalRevenue / s.leadCount : 0,
+        qualRate: s.leadCount > 0 ? (s.qualified / s.leadCount) * 100 : 0,
+        showRate: s.qualified > 0 ? (s.shown / s.qualified) * 100 : 0,
+        closeRate: s.shown > 0 ? (s.closed / s.shown) * 100 : 0,
+        totalRevenue: s.totalRevenue,
+        leadCount: s.leadCount,
+      }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+    // Calculate revenue trends (daily) using form responses
+    const trendMap = new Map<
+      string,
+      {
+        date: string;
+        qualified: number[];
+        shown: number[];
+        leadCount: number;
+      }
+    >();
+
+    contacts.forEach((contact) => {
+      const date = contact.form_submitted_at?.split("T")[0];
+      if (!date) return;
+      if (!trendMap.has(date)) {
+        trendMap.set(date, {
+          date,
+          qualified: [],
+          shown: [],
+          leadCount: 0,
+        });
+      }
+      const trend = trendMap.get(date)!;
+      trend.leadCount++;
+      if (contact.is_qualified === true) {
+        trend.qualified.push(getContactRevenue(contact));
+      }
+      if (contact.showed_up_at) {
+        trend.shown.push(getContactRevenue(contact));
+      }
+    });
+
+    const revenueTrends: RevenueTrendPoint[] = Array.from(trendMap.values())
+      .map((t) => ({
+        date: t.date,
+        avgRevenueQualified:
+          t.qualified.length > 0
+            ? t.qualified.reduce((a, b) => a + b, 0) / t.qualified.length
+            : 0,
+        avgRevenueShown:
+          t.shown.length > 0 ? t.shown.reduce((a, b) => a + b, 0) / t.shown.length : 0,
+        leadCount: t.leadCount,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Calculate investment heatmap based on revenue tiers from form responses
+    const revenueTiers = ["Under $5k/month", "$5k-$10k/month", "$10k-$25k/month", "$25k+/month"];
+    const investmentHeatmap: InvestmentHeatmapRow[] = revenueTiers.map((tier) => ({
+      tier,
+      qualified: qualified.filter((c) => isInRevenueTier(c, tier)).length,
+      shown: shown.filter((c) => isInRevenueTier(c, tier)).length,
+      closed: closed.filter((c) => isInRevenueTier(c, tier)).length,
+    }));
+
+    return {
+      data: {
+        avgRevenueQualified,
+        avgRevenueShown,
+        avgRevenueClosed,
+        qualificationRate,
+        showRate,
+        closeRate,
+        revenueByStage,
+        investmentBreakdown,
+        revenueFunnel,
+        sourceQuality,
+        revenueTrends,
+        investmentHeatmap,
+      },
+      error: null,
+    };
+  } catch (err) {
+    console.error("Error in getLeadsBreakdownData:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
 }

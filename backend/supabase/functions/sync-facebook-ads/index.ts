@@ -66,6 +66,10 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  // Declare these outside try block so they're accessible in catch
+  let logId: number | null = null;
+  let supabase: ReturnType<typeof createClient> | null = null;
+
   try {
     // Get environment variables
     const facebookAccessToken = Deno.env.get("FACEBOOK_ACCESS_TOKEN");
@@ -83,7 +87,7 @@ Deno.serve(async (req: Request) => {
       throw new Error("Missing Supabase environment variables");
     }
 
-    // Parse request body for optional date range
+    // Parse request body for optional date range and log_id
     let startDate: string;
     let endDate: string;
 
@@ -92,6 +96,7 @@ Deno.serve(async (req: Request) => {
         const body = await req.json();
         startDate = body.start_date || getDefaultStartDate();
         endDate = body.end_date || getDefaultEndDate();
+        logId = body.log_id ? parseInt(body.log_id) : null;
       } catch {
         startDate = getDefaultStartDate();
         endDate = getDefaultEndDate();
@@ -101,12 +106,14 @@ Deno.serve(async (req: Request) => {
       const url = new URL(req.url);
       startDate = url.searchParams.get("start_date") || getDefaultStartDate();
       endDate = url.searchParams.get("end_date") || getDefaultEndDate();
+      const logIdParam = url.searchParams.get("log_id");
+      logId = logIdParam ? parseInt(logIdParam) : null;
     }
 
-    console.log(`Syncing Facebook ads from ${startDate} to ${endDate}`);
+    console.log(`Syncing Facebook ads from ${startDate} to ${endDate} (log_id: ${logId})`);
 
     // Initialize Supabase client with service role key for admin access
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Fetch ad insights from Facebook
     const insights = await fetchAllAdInsights(
@@ -119,11 +126,30 @@ Deno.serve(async (req: Request) => {
     console.log(`Fetched ${insights.length} ad insights from Facebook`);
 
     if (insights.length === 0) {
+      // Update sync log if log_id was provided
+      if (logId) {
+        const { error: logError } = await supabase
+          .from("facebook_ads_sync_log")
+          .update({
+            status: "success",
+            sync_completed_at: new Date().toISOString(),
+            records_synced: 0,
+          })
+          .eq("id", logId);
+
+        if (logError) {
+          console.error("Failed to update sync log:", logError);
+        } else {
+          console.log(`Updated sync log ${logId} to completed (0 records)`);
+        }
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
           message: "No ad data found for the specified date range",
           synced_count: 0,
+          log_id: logId,
         }),
         {
           status: 200,
@@ -165,11 +191,31 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Successfully synced ${adRecords.length} ad records`);
 
+    // Update sync log if log_id was provided
+    if (logId) {
+      const { error: logError } = await supabase
+        .from("facebook_ads_sync_log")
+        .update({
+          status: "success",
+          sync_completed_at: new Date().toISOString(),
+          records_synced: adRecords.length,
+        })
+        .eq("id", logId);
+
+      if (logError) {
+        console.error("Failed to update sync log:", logError);
+        // Don't throw - the sync itself was successful
+      } else {
+        console.log(`Updated sync log ${logId} to completed (${adRecords.length} records)`);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         synced_count: adRecords.length,
         date_range: { start: startDate, end: endDate },
+        log_id: logId,
         data: data,
       }),
       {
@@ -183,10 +229,29 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error("Sync error:", error);
 
+    // Update sync log if log_id was provided and supabase is available
+    if (logId && supabase) {
+      try {
+        await supabase
+          .from("facebook_ads_sync_log")
+          .update({
+            status: "failed",
+            sync_completed_at: new Date().toISOString(),
+            error_message: error instanceof Error ? error.message : "Unknown error",
+          })
+          .eq("id", logId);
+
+        console.log(`Updated sync log ${logId} to failed`);
+      } catch (logError) {
+        console.error("Failed to update sync log:", logError);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         error: "Sync failed",
         details: error instanceof Error ? error.message : "Unknown error",
+        log_id: logId,
       }),
       {
         status: 500,

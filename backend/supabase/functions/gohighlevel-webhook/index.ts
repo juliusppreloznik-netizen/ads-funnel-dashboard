@@ -2,6 +2,7 @@
 // Comprehensive GoHighLevel webhook handler for contact-level tracking
 
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
+import { parse, isValid } from "npm:date-fns@3.3.1";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -226,40 +227,43 @@ const corsHeaders = {
 /**
  * Verify webhook secret from header or query parameter
  * GoHighLevel doesn't send Supabase auth headers, so we use a custom secret
+ *
+ * NOTE: This function is currently disabled. Uncomment the verification block
+ * in the main handler and this function to re-enable webhook authentication.
  */
-function verifyWebhookSecret(req: Request): { valid: boolean; error?: string } {
-  const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
-
-  // If no secret is configured, log warning but allow requests (for development)
-  if (!webhookSecret) {
-    console.warn("[Security] WEBHOOK_SECRET not configured - allowing all requests");
-    return { valid: true };
-  }
-
-  // Check x-webhook-secret header first
-  const headerSecret = req.headers.get("x-webhook-secret");
-  if (headerSecret === webhookSecret) {
-    return { valid: true };
-  }
-
-  // Check query parameter as fallback
-  try {
-    const url = new URL(req.url);
-    const querySecret = url.searchParams.get("secret");
-    if (querySecret === webhookSecret) {
-      return { valid: true };
-    }
-  } catch {
-    // URL parsing failed, continue to reject
-  }
-
-  // No valid secret found
-  console.error("[Security] Invalid or missing webhook secret");
-  return {
-    valid: false,
-    error: "Unauthorized: Invalid or missing webhook secret",
-  };
-}
+// function verifyWebhookSecret(req: Request): { valid: boolean; error?: string } {
+//   const webhookSecret = Deno.env.get("WEBHOOK_SECRET");
+//
+//   // If no secret is configured, log warning but allow requests (for development)
+//   if (!webhookSecret) {
+//     console.warn("[Security] WEBHOOK_SECRET not configured - allowing all requests");
+//     return { valid: true };
+//   }
+//
+//   // Check x-webhook-secret header first
+//   const headerSecret = req.headers.get("x-webhook-secret");
+//   if (headerSecret === webhookSecret) {
+//     return { valid: true };
+//   }
+//
+//   // Check query parameter as fallback
+//   try {
+//     const url = new URL(req.url);
+//     const querySecret = url.searchParams.get("secret");
+//     if (querySecret === webhookSecret) {
+//       return { valid: true };
+//     }
+//   } catch {
+//     // URL parsing failed, continue to reject
+//   }
+//
+//   // No valid secret found
+//   console.error("[Security] Invalid or missing webhook secret");
+//   return {
+//     valid: false,
+//     error: "Unauthorized: Invalid or missing webhook secret",
+//   };
+// }
 
 // ============================================================================
 // HELPER FUNCTIONS - Data Sanitization
@@ -319,6 +323,78 @@ function sanitizeContactRecord(record: Record<string, unknown>): Record<string, 
   }
 
   return sanitized;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS - Date Parsing
+// ============================================================================
+
+/**
+ * Parse human-readable date strings from GoHighLevel to ISO 8601 format
+ * Handles formats like:
+ * - "Saturday, January 31, 2026 2:00 PM" (from appointment.start_time)
+ * - "2026-01-31T11:29:50.606" (ISO format)
+ * - "2026-01-31T11:29:50.606Z" (ISO with Z)
+ */
+function parseHumanReadableDate(dateString: string | null | undefined): string | null {
+  if (!dateString) return null;
+
+  try {
+    // If it's already in ISO format with Z, return as-is
+    if (dateString.includes("T") && dateString.endsWith("Z")) {
+      return dateString;
+    }
+
+    // If it's already in ISO format without Z, add Z
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)) {
+      return dateString.endsWith("Z") ? dateString : `${dateString}Z`;
+    }
+
+    // Try to parse human-readable format: "Saturday, January 31, 2026 2:00 PM"
+    // Remove day of week if present (e.g., "Saturday, ")
+    let cleanedDate = dateString;
+    const dayOfWeekMatch = dateString.match(/^[A-Za-z]+,\s*/);
+    if (dayOfWeekMatch) {
+      cleanedDate = dateString.slice(dayOfWeekMatch[0].length);
+    }
+
+    // Try multiple parsing formats
+    const formats = [
+      "MMMM d, yyyy h:mm a",      // "January 31, 2026 2:00 PM"
+      "MMMM d, yyyy h:mm:ss a",   // "January 31, 2026 2:00:00 PM"
+      "MMMM dd, yyyy h:mm a",     // "January 31, 2026 2:00 PM" (with leading zero)
+      "MMM d, yyyy h:mm a",       // "Jan 31, 2026 2:00 PM"
+      "MM/dd/yyyy h:mm a",        // "01/31/2026 2:00 PM"
+      "yyyy-MM-dd HH:mm:ss",      // "2026-01-31 14:00:00"
+    ];
+
+    for (const formatStr of formats) {
+      try {
+        const parsedDate = parse(cleanedDate, formatStr, new Date());
+        if (isValid(parsedDate)) {
+          const isoString = parsedDate.toISOString();
+          console.log(`[Date Parsing] Successfully parsed "${dateString}" -> "${isoString}" using format "${formatStr}"`);
+          return isoString;
+        }
+      } catch {
+        // Try next format
+      }
+    }
+
+    // If all parsing attempts fail, try native Date constructor as last resort
+    const nativeDate = new Date(dateString);
+    if (isValid(nativeDate)) {
+      const isoString = nativeDate.toISOString();
+      console.log(`[Date Parsing] Parsed "${dateString}" -> "${isoString}" using native Date`);
+      return isoString;
+    }
+
+    console.error(`[Date Parsing] Failed to parse date: "${dateString}"`);
+    return null;
+  } catch (error) {
+    console.error(`[Date Parsing] Error parsing date "${dateString}":`, error);
+    return null;
+  }
 }
 
 // ============================================================================
@@ -440,8 +516,9 @@ function extractAppointmentData(payload: GHLWebhookPayload): {
   calendarId: string | null;
   calendarName: string | null;
   isQualified: boolean | null;
-  scheduledTime: string | null;
+  startTime: string | null;
   status: string | null;
+  selectedTimezone: string | null;
 } {
   const appointment = payload.appointment || {};
   const calendar = payload.calendar || {};
@@ -476,7 +553,8 @@ function extractAppointmentData(payload: GHLWebhookPayload): {
     }
   }
 
-  const scheduledTime =
+  // Extract start time - this is often in human-readable format from GHL
+  const startTime =
     (appointment as GHLAppointment).startTime ||
     (appointment as GHLAppointment).start_time ||
     null;
@@ -486,7 +564,13 @@ function extractAppointmentData(payload: GHLWebhookPayload): {
     (appointment as GHLAppointment).appointmentStatus ||
     null;
 
-  return { calendarId, calendarName, isQualified, scheduledTime, status };
+  const selectedTimezone =
+    (appointment as GHLAppointment).selectedTimezone ||
+    null;
+
+  console.log(`[Appointment] Extracted start_time: "${startTime}" (timezone: ${selectedTimezone})`);
+
+  return { calendarId, calendarName, isQualified, startTime, status, selectedTimezone };
 }
 
 function extractOpportunityData(payload: GHLWebhookPayload): {
@@ -585,16 +669,48 @@ async function handleAppointmentBooked(
   const contactData = extractContactData(payload);
   const now = new Date().toISOString();
 
+  // Parse the human-readable start time to ISO 8601 format
+  const callScheduledFor = parseHumanReadableDate(appointmentData.startTime);
+  console.log(`[Appointment Booked] Parsed call_scheduled_for: "${callScheduledFor}" (from: "${appointmentData.startTime}")`);
+
+  // Only update appointment-specific fields - DO NOT spread contactData
+  // to avoid overwriting UTM attribution data with NULL values
   const updateData: Record<string, unknown> = {
     ghl_contact_id: contactId,
-    ...contactData,
+    // Basic contact info (safe to update)
+    first_name: contactData.first_name,
+    last_name: contactData.last_name,
+    email: contactData.email,
+    phone: contactData.phone,
+    // Appointment-specific fields
     calendar_id: appointmentData.calendarId,
     calendar_name: appointmentData.calendarName,
     is_qualified: appointmentData.isQualified,
     call_booked_at: now,
-    call_scheduled_for: appointmentData.scheduledTime,
+    call_scheduled_for: callScheduledFor, // Use parsed ISO date
     updated_at: now,
   };
+
+  // Only include UTM/attribution fields if they are present in the payload (not null/undefined)
+  // This preserves existing attribution data from form submission
+  if (contactData.ad_id) updateData.ad_id = contactData.ad_id;
+  if (contactData.ad_name) updateData.ad_name = contactData.ad_name;
+  if (contactData.campaign_id) updateData.campaign_id = contactData.campaign_id;
+  if (contactData.campaign_name) updateData.campaign_name = contactData.campaign_name;
+  if (contactData.adset_id) updateData.adset_id = contactData.adset_id;
+  if (contactData.adset_name) updateData.adset_name = contactData.adset_name;
+  if (contactData.utm_source) updateData.utm_source = contactData.utm_source;
+  if (contactData.utm_medium) updateData.utm_medium = contactData.utm_medium;
+  if (contactData.utm_campaign) updateData.utm_campaign = contactData.utm_campaign;
+  if (contactData.utm_content) updateData.utm_content = contactData.utm_content;
+  if (contactData.utm_term) updateData.utm_term = contactData.utm_term;
+  if (contactData.fbclid) updateData.fbclid = contactData.fbclid;
+
+  // Only include custom fields if present
+  if (contactData.revenue) updateData.revenue = contactData.revenue;
+  if (contactData.investment_ability) updateData.investment_ability = contactData.investment_ability;
+  if (contactData.deal_value) updateData.deal_value = contactData.deal_value;
+  if (contactData.scaling_challenge) updateData.scaling_challenge = contactData.scaling_challenge;
 
   // Set qualification timestamp
   if (appointmentData.isQualified === true) {
@@ -679,16 +795,72 @@ async function handlePipelineStageChange(
   const contactData = extractContactData(payload);
   const now = new Date().toISOString();
 
-  // First, fetch existing contact to get current stage history
+  // First, fetch existing contact to check for attribution and get stage history
   const { data: existingContact, error: fetchError } = await supabase
     .from("contacts")
-    .select("pipeline_stage_history")
+    .select("ghl_contact_id, email, phone, ad_id, pipeline_stage_history")
     .eq("ghl_contact_id", contactId)
     .single();
 
   if (fetchError && fetchError.code !== "PGRST116") {
-    // PGRST116 = no rows found
     console.error(`[Pipeline Stage] Error fetching existing contact:`, fetchError);
+  }
+
+  // CRITICAL FIX: If this contact doesn't have ad attribution, try to find
+  // a duplicate contact with the same email/phone that DOES have attribution
+  let targetContactId = contactId;
+  let targetHistory = (existingContact?.pipeline_stage_history as PipelineStageEntry[]) || [];
+
+  if (existingContact && !existingContact.ad_id) {
+    const email = existingContact.email || contactData.email;
+    const phone = existingContact.phone || contactData.phone;
+
+    console.log(`[Pipeline Stage] Contact ${contactId} has no attribution. Searching for attributed duplicate...`);
+    console.log(`[Pipeline Stage] Search criteria - email: ${email}, phone: ${phone}`);
+
+    // Try to find a contact with the same email/phone that HAS ad_id
+    let attributedContact = null;
+
+    if (email) {
+      const { data: emailMatch } = await supabase
+        .from("contacts")
+        .select("ghl_contact_id, ad_id, pipeline_stage_history")
+        .eq("email", email)
+        .not("ad_id", "is", null)
+        .neq("ghl_contact_id", contactId)
+        .limit(1)
+        .single();
+
+      if (emailMatch) {
+        attributedContact = emailMatch;
+        console.log(`[Pipeline Stage] Found attributed contact by email: ${emailMatch.ghl_contact_id} (ad_id: ${emailMatch.ad_id})`);
+      }
+    }
+
+    if (!attributedContact && phone) {
+      const { data: phoneMatch } = await supabase
+        .from("contacts")
+        .select("ghl_contact_id, ad_id, pipeline_stage_history")
+        .eq("phone", phone)
+        .not("ad_id", "is", null)
+        .neq("ghl_contact_id", contactId)
+        .limit(1)
+        .single();
+
+      if (phoneMatch) {
+        attributedContact = phoneMatch;
+        console.log(`[Pipeline Stage] Found attributed contact by phone: ${phoneMatch.ghl_contact_id} (ad_id: ${phoneMatch.ad_id})`);
+      }
+    }
+
+    if (attributedContact) {
+      // Update the attributed contact instead
+      targetContactId = attributedContact.ghl_contact_id;
+      targetHistory = (attributedContact.pipeline_stage_history as PipelineStageEntry[]) || [];
+      console.log(`[Pipeline Stage] Will update attributed contact ${targetContactId} instead of ${contactId}`);
+    } else {
+      console.log(`[Pipeline Stage] No attributed duplicate found, updating original contact ${contactId}`);
+    }
   }
 
   // Build stage history entry
@@ -698,12 +870,10 @@ async function handlePipelineStageChange(
     timestamp: now,
   };
 
-  // Get existing history or initialize empty array
-  const existingHistory = (existingContact?.pipeline_stage_history as PipelineStageEntry[]) || [];
-  const updatedHistory = [...existingHistory, stageEntry];
+  const updatedHistory = [...targetHistory, stageEntry];
 
   const updateData: Record<string, unknown> = {
-    ghl_contact_id: contactId,
+    ghl_contact_id: targetContactId,
     current_pipeline: opportunityData.pipelineName,
     current_stage: opportunityData.stageName,
     pipeline_stage_history: updatedHistory,
@@ -713,11 +883,25 @@ async function handlePipelineStageChange(
   // Handle specific stage transitions
   const stageName = opportunityData.stageName?.toLowerCase() || "";
 
+  // No-show stages
   if (stageName === "appointment no-show" || stageName === "appointment no show") {
     updateData.no_show_at = now;
     console.log(`[Pipeline Stage] Stage "${opportunityData.stageName}" - setting no_show_at`);
   }
 
+  // Show stages - these indicate the contact showed up for their appointment
+  if (
+    stageName === "follow-up high intent" ||
+    stageName === "follow up high intent" ||
+    stageName === "appointment show" ||
+    stageName === "appointment showed" ||
+    stageName === "showed up"
+  ) {
+    updateData.showed_up_at = now;
+    console.log(`[Pipeline Stage] Stage "${opportunityData.stageName}" - setting showed_up_at`);
+  }
+
+  // Deal closed stage
   if (stageName === "deal closed") {
     updateData.deal_closed_at = now;
 
@@ -734,7 +918,7 @@ async function handlePipelineStageChange(
   // Sanitize record: remove undefined values and validate timestamps
   const cleanRecord = sanitizeContactRecord(updateData);
 
-  console.log(`[Pipeline Stage] Upserting contact with stage: ${opportunityData.stageName}`);
+  console.log(`[Pipeline Stage] Upserting contact ${targetContactId} with stage: ${opportunityData.stageName}`);
 
   const { data, error } = await supabase
     .from("contacts")
@@ -745,6 +929,27 @@ async function handlePipelineStageChange(
   if (error) {
     console.error(`[Pipeline Stage] Error updating contact:`, error);
     return { contact: null, error: new Error(error.message) };
+  }
+
+  // Also update the original contact (without attribution) with the same stage info
+  // to keep both records in sync
+  if (targetContactId !== contactId) {
+    console.log(`[Pipeline Stage] Also updating original contact ${contactId} with stage info`);
+    const originalUpdateData: Record<string, unknown> = {
+      ghl_contact_id: contactId,
+      current_pipeline: opportunityData.pipelineName,
+      current_stage: opportunityData.stageName,
+      updated_at: now,
+    };
+
+    // Copy the timestamp fields to the original contact too
+    if (updateData.no_show_at) originalUpdateData.no_show_at = updateData.no_show_at;
+    if (updateData.showed_up_at) originalUpdateData.showed_up_at = updateData.showed_up_at;
+    if (updateData.deal_closed_at) originalUpdateData.deal_closed_at = updateData.deal_closed_at;
+    if (updateData.final_deal_value) originalUpdateData.final_deal_value = updateData.final_deal_value;
+
+    const cleanOriginalRecord = sanitizeContactRecord(originalUpdateData);
+    await supabase.from("contacts").upsert(cleanOriginalRecord, { onConflict: "ghl_contact_id" });
   }
 
   console.log(`[Pipeline Stage] Successfully updated contact:`, data?.ghl_contact_id);
@@ -826,7 +1031,38 @@ async function insertEventRecord(
   const opportunityData = extractOpportunityData(payload);
   const appointmentData = extractAppointmentData(payload);
 
+  // Map event types to what the dashboard expects
+  // Dashboard looks for: "booked_call", "showed_up", "deal_won"
+  let dashboardEventType: string;
+  switch (eventType) {
+    case "appointment_booked":
+    case "appointment_create":
+      dashboardEventType = "booked_call";
+      break;
+    case "appointment_update":
+    case "appointment_status":
+      // Check if it's a show or no-show
+      const status = appointmentData.status?.toLowerCase();
+      if (status === "showed" || status === "completed" || status === "confirmed") {
+        dashboardEventType = "showed_up";
+      } else {
+        dashboardEventType = "appointment_status"; // Keep original for tracking
+      }
+      break;
+    case "deal_closed":
+    case "opportunity_status_update":
+      dashboardEventType = "deal_won";
+      break;
+    case "form_submission":
+    case "contact_create":
+      dashboardEventType = "form_submission";
+      break;
+    default:
+      dashboardEventType = eventType;
+  }
+
   // Determine calendar type from appointment data
+  // Dashboard expects: "Qualified" or "DQ"
   let calendarType: string | null = null;
   if (appointmentData.isQualified === true) {
     calendarType = "Qualified";
@@ -836,7 +1072,7 @@ async function insertEventRecord(
 
   const eventRecord: EventRecord = {
     contact_id: contactId,
-    event_type: eventType,
+    event_type: dashboardEventType,
     ad_id: contactData.ad_id || null,
     cash_collected: opportunityData.monetaryValue,
     calendar_type: calendarType,
@@ -846,7 +1082,13 @@ async function insertEventRecord(
     created_at: new Date().toISOString(),
   };
 
-  console.log(`[Events] Inserting event record for backward compatibility`);
+  console.log(`[Events] Inserting event record:`, {
+    contact_id: contactId,
+    event_type: dashboardEventType,
+    calendar_type: calendarType,
+    ad_id: contactData.ad_id,
+    cash_collected: opportunityData.monetaryValue,
+  });
 
   const { error } = await supabase.from("events").insert([eventRecord]);
 
@@ -854,7 +1096,7 @@ async function insertEventRecord(
     console.error(`[Events] Error inserting event record:`, error);
     // Don't throw - this is for backward compatibility, main flow should continue
   } else {
-    console.log(`[Events] Successfully inserted event record`);
+    console.log(`[Events] Successfully inserted event record with type: ${dashboardEventType}`);
   }
 }
 
@@ -876,17 +1118,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  // Verify webhook secret (custom auth for external webhooks)
-  const secretVerification = verifyWebhookSecret(req);
-  if (!secretVerification.valid) {
-    return new Response(
-      JSON.stringify({ error: secretVerification.error }),
-      {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
-  }
+  // NOTE: Webhook secret verification disabled to allow GoHighLevel webhooks
+  // without custom header configuration. Re-enable if needed by uncommenting below.
+  // const secretVerification = verifyWebhookSecret(req);
+  // if (!secretVerification.valid) {
+  //   return new Response(
+  //     JSON.stringify({ error: secretVerification.error }),
+  //     {
+  //       status: 401,
+  //       headers: { ...corsHeaders, "Content-Type": "application/json" },
+  //     }
+  //   );
+  // }
 
   try {
     // Initialize Supabase client with service role for admin access
