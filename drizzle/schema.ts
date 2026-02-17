@@ -136,3 +136,22 @@ export const changeRequests = mysqlTable("changeRequests", {
 
 export type ChangeRequest = typeof changeRequests.$inferSelect;
 export type InsertChangeRequest = typeof changeRequests.$inferInsert;
+
+/**
+ * Help Videos table - admin-managed tutorial video library
+ */
+export const helpVideos = mysqlTable("helpVideos", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  youtubeUrl: varchar("youtubeUrl", { length: 500 }).notNull(),
+  videoId: varchar("videoId", { length: 50 }).notNull(), // YouTube video ID extracted from URL
+  category: varchar("category", { length: 100 }).notNull(),
+  tags: text("tags"), // Comma-separated tags for search
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HelpVideo = typeof helpVideos.$inferSelect;
+export type InsertHelpVideo = typeof helpVideos.$inferInsert;

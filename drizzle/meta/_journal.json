@@ -71,6 +71,13 @@
       "when": 1771307665263,
       "tag": "0009_clear_wolfpack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1771312142612,
+      "tag": "0010_stiff_patriot",
+      "breakpoints": true
     }
   ]
 }

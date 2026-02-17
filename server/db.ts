@@ -1,6 +1,6 @@
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel } from "../drizzle/schema";
+import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, helpVideos, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel, InsertHelpVideo, HelpVideo } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import * as bcrypt from 'bcryptjs';
 
@@ -573,4 +573,75 @@ export async function markOnboardingStepIncomplete(clientId: number, stepKey: st
       .set({ completed: 0, completedAt: null, updatedAt: new Date() })
       .where(eq(onboardingProgress.id, existing[0].id));
   }
+}
+
+// ============================================================================
+// HELP VIDEOS HELPERS
+// ============================================================================
+
+export async function getAllHelpVideos(): Promise<HelpVideo[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(helpVideos).orderBy(asc(helpVideos.sortOrder), asc(helpVideos.id));
+}
+
+export async function getHelpVideoById(id: number): Promise<HelpVideo | undefined> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(helpVideos).where(eq(helpVideos.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createHelpVideo(video: { title: string; description?: string; youtubeUrl: string; videoId: string; category: string; tags?: string; }): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get the max sort order
+  const existing = await db.select().from(helpVideos).orderBy(desc(helpVideos.sortOrder));
+  const maxOrder = existing.length > 0 ? existing[0].sortOrder : 0;
+  
+  const result = await db.insert(helpVideos).values({
+    title: video.title,
+    description: video.description || null,
+    youtubeUrl: video.youtubeUrl,
+    videoId: video.videoId,
+    category: video.category,
+    tags: video.tags || null,
+    sortOrder: maxOrder + 1,
+  });
+  
+  return result[0].insertId;
+}
+
+export async function updateHelpVideo(id: number, updates: { title?: string; description?: string; youtubeUrl?: string; videoId?: string; category?: string; tags?: string; }): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+  if (updates.title !== undefined) updateData.title = updates.title;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.youtubeUrl !== undefined) updateData.youtubeUrl = updates.youtubeUrl;
+  if (updates.videoId !== undefined) updateData.videoId = updates.videoId;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.tags !== undefined) updateData.tags = updates.tags;
+  
+  await db.update(helpVideos).set(updateData).where(eq(helpVideos.id, id));
+}
+
+export async function deleteHelpVideo(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(helpVideos).where(eq(helpVideos.id, id));
+}
+
+export async function getHelpVideoCategories(): Promise<string[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const videos = await db.select({ category: helpVideos.category }).from(helpVideos);
+  const categories = Array.from(new Set(videos.map(v => v.category)));
+  return categories.sort();
 }

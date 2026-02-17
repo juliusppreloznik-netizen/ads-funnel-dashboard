@@ -256,3 +256,16 @@
 - [x] Add search/filter by keyword and category tabs
 - [x] Add route /admin/help-videos and "Help Videos" button in admin dashboard header
 - [x] Run tests and verify all pass (54/54)
+
+## Add Custom Video Feature (Help Videos Library)
+- [x] Create helpVideos database table with title, description, youtubeUrl, videoId, category, tags, sortOrder
+- [x] Seed 5 default onboarding videos into the database
+- [x] Add db.ts CRUD helpers: getAllHelpVideos, getHelpVideoById, createHelpVideo, updateHelpVideo, deleteHelpVideo, getHelpVideoCategories
+- [x] Add tRPC routes: helpVideos.list, helpVideos.categories, helpVideos.create, helpVideos.update, helpVideos.delete
+- [x] Rewrite HelpVideos page to fetch from database instead of hardcoded array
+- [x] Add "Add Video" button with dialog: YouTube URL input with live preview, title, description, category picker + custom category, tags
+- [x] Add edit button on each video card with pre-filled dialog
+- [x] Add delete button with confirmation dialog
+- [x] YouTube URL parser supports standard, short, embed, and bare ID formats
+- [x] Categories dynamically derived from actual video data
+- [x] Write 20 tests (12 CRUD + 8 YouTube URL extraction) — all 74 tests passing

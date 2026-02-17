@@ -719,6 +719,54 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
       }),
   }),
 
+  // Help Videos - admin-managed tutorial video library
+  helpVideos: router({
+    list: protectedProcedure.query(async () => {
+      return await db.getAllHelpVideos();
+    }),
+
+    categories: protectedProcedure.query(async () => {
+      return await db.getHelpVideoCategories();
+    }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        youtubeUrl: z.string().min(1),
+        videoId: z.string().min(1),
+        category: z.string().min(1),
+        tags: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createHelpVideo(input);
+        return { success: true, id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        youtubeUrl: z.string().optional(),
+        videoId: z.string().optional(),
+        category: z.string().optional(),
+        tags: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        await db.updateHelpVideo(id, updates);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteHelpVideo(input.id);
+        return { success: true };
+      }),
+  }),
+
   // Change requests - admin logs feature/change requests from any page
   changeRequests: router({
     create: protectedProcedure
