@@ -376,6 +376,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
             if (contact.phone) updateData.phone = contact.phone;
             if (cashCollected !== null) updateData.cash_collected = cashCollected;
             if (dealValue !== null) updateData.deal_value = dealValue;
+            // Use dateAdded as form_submitted_at for date attribution
+            if (contact.dateAdded) updateData.form_submitted_at = contact.dateAdded;
+            // Mark as deal closed if they have revenue
+            if ((cashCollected !== null && cashCollected > 0) || (dealValue !== null && dealValue > 0)) {
+              if (!updateData.deal_closed_at) {
+                updateData.deal_closed_at = contact.dateUpdated || new Date().toISOString();
+              }
+            }
 
             await supabase.from("contacts").upsert(updateData, { onConflict: "ghl_contact_id" });
           }
@@ -438,6 +446,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
       if (cashCollected !== null) updateData.cash_collected = cashCollected;
       if (dealValue !== null) updateData.deal_value = dealValue;
+      // Use dateAdded as form_submitted_at for date attribution
+      if (contact.dateAdded) updateData.form_submitted_at = contact.dateAdded;
+      // Mark as deal closed if they have revenue
+      if ((cashCollected !== null && cashCollected > 0) || (dealValue !== null && dealValue > 0)) {
+        updateData.deal_closed_at = contact.dateUpdated || new Date().toISOString();
+      }
 
       const { error } = await supabase
         .from("contacts")
