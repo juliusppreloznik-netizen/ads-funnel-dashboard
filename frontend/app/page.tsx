@@ -1404,6 +1404,14 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
   const cashCollectedInfo = getChangeInfo(kpis.total_cash_collected, previousKpis?.total_cash_collected);
   const dealValueInfo = getChangeInfo(kpis.total_deal_value, previousKpis?.total_deal_value);
 
+  // Calculate Cash ROAS
+  const cashRoas = kpis.total_spend > 0 ? kpis.total_cash_collected / kpis.total_spend : 0;
+  const previousCashRoas = previousKpis && previousKpis.total_spend > 0
+    ? previousKpis.total_cash_collected / previousKpis.total_spend
+    : 0;
+  const cashRoasInfo = getChangeInfo(cashRoas, previousCashRoas);
+  const formatCashRoas = (value: number) => kpis.total_spend > 0 ? `${value.toFixed(1)}x` : "N/A";
+
   return (
     <div className="space-y-6">
       {/* Row 1: Ad Performance Metrics */}
@@ -1573,23 +1581,8 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
       </div>
 
       {/* Row 4: Revenue Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {/* 11. Total Cash Collected Card */}
-        <MetricCard
-          title="Total Cash Collected"
-          mainValue={formatCurrency(kpis.total_cash_collected)}
-          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.total_cash_collected) : "-"}
-          subtitle="Cash In"
-          percentageChange={cashCollectedInfo.percentageStr}
-          isPositiveChange={cashCollectedInfo.isPositive}
-          trendData={createTrendData("revenue")}
-          chartType="bar"
-          chartColor="#10B981"
-          headlineColor="#10B981"
-          valueType="currency"
-        />
-
-        {/* 12. Total Deal Value Card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 11. Total Deal Value Card */}
         <MetricCard
           title="Total Deal Value"
           mainValue={formatCurrency(kpis.total_deal_value)}
@@ -1601,6 +1594,36 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
           chartType="bar"
           chartColor="#8B5CF6"
           headlineColor="#8B5CF6"
+          valueType="currency"
+        />
+
+        {/* 12. Cash ROAS Card */}
+        <MetricCard
+          title="Cash ROAS"
+          mainValue={formatCashRoas(cashRoas)}
+          previousValue={previousKpis && previousKpis.total_spend > 0 ? `${previousCashRoas.toFixed(1)}x` : "-"}
+          subtitle="Cash / Ad Spend"
+          percentageChange={cashRoasInfo.percentageStr}
+          isPositiveChange={cashRoasInfo.isPositive}
+          trendData={createTrendData("revenue")}
+          chartType="bar"
+          chartColor="#059669"
+          headlineColor="#059669"
+          valueType="number"
+        />
+
+        {/* 13. Total Cash Collected Card */}
+        <MetricCard
+          title="Total Cash Collected"
+          mainValue={formatCurrency(kpis.total_cash_collected)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.total_cash_collected) : "-"}
+          subtitle="Cash In"
+          percentageChange={cashCollectedInfo.percentageStr}
+          isPositiveChange={cashCollectedInfo.isPositive}
+          trendData={createTrendData("revenue")}
+          chartType="bar"
+          chartColor="#10B981"
+          headlineColor="#10B981"
           valueType="currency"
         />
       </div>
