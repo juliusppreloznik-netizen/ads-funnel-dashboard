@@ -31,6 +31,8 @@ interface GHLContactsResponse {
     currentPage: number;
     nextPage: number | null;
     prevPage: number | null;
+    startAfter?: number;
+    startAfterId?: string;
   };
 }
 
@@ -95,14 +97,18 @@ async function fetchGHLContacts(
   apiKey: string,
   locationId: string,
   limit: number = 100,
-  skip: number = 0
-): Promise<{ contacts: GHLContact[]; total: number }> {
+  startAfter?: number,
+  startAfterId?: string
+): Promise<{ contacts: GHLContact[]; total: number; nextStartAfter?: number; nextStartAfterId?: string }> {
   const url = new URL("https://services.leadconnectorhq.com/contacts/");
   url.searchParams.set("locationId", locationId);
   url.searchParams.set("limit", limit.toString());
-  url.searchParams.set("skip", skip.toString());
+  if (startAfter !== undefined && startAfterId) {
+    url.searchParams.set("startAfter", startAfter.toString());
+    url.searchParams.set("startAfterId", startAfterId);
+  }
 
-  console.log(`[GHL API] Fetching contacts: skip=${skip}, limit=${limit}`);
+  console.log(`[GHL API] Fetching contacts: limit=${limit}, startAfter=${startAfter}`);
 
   const response = await fetch(url.toString(), {
     method: "GET",
@@ -125,6 +131,8 @@ async function fetchGHLContacts(
   return {
     contacts: data.contacts || [],
     total: data.meta?.total || data.contacts?.length || 0,
+    nextStartAfter: data.meta?.startAfter,
+    nextStartAfterId: data.meta?.startAfterId,
   };
 }
 
@@ -177,17 +185,20 @@ async function syncContacts(
     errors: [],
   };
 
-  let skip = 0;
   let hasMore = true;
+  let startAfter: number | undefined;
+  let startAfterId: string | undefined;
 
   while (hasMore && result.total_fetched < maxContacts) {
     try {
-      const { contacts, total } = await fetchGHLContacts(
+      const fetchResult = await fetchGHLContacts(
         apiKey,
         locationId,
         batchSize,
-        skip
+        startAfter,
+        startAfterId
       );
+      const { contacts, nextStartAfter, nextStartAfterId } = fetchResult;
 
       if (contacts.length === 0) {
         hasMore = false;
@@ -246,18 +257,19 @@ async function syncContacts(
       }
 
       // Check if there are more contacts
-      skip += contacts.length;
-      hasMore = contacts.length === batchSize && skip < total;
+      startAfter = nextStartAfter;
+      startAfterId = nextStartAfterId;
+      hasMore = contacts.length === batchSize && nextStartAfter !== undefined && nextStartAfterId !== undefined;
 
       // Rate limiting - wait between batches
       if (hasMore) {
         await new Promise((resolve) => setTimeout(resolve, 200));
       }
     } catch (error) {
-      console.error(`[Sync] Batch error at skip=${skip}:`, error);
-      result.errors.push(`Batch at skip=${skip}: ${error instanceof Error ? error.message : String(error)}`);
-      // Continue with next batch
-      skip += batchSize;
+      console.error(`[Sync] Batch error:`, error);
+      result.errors.push(`Batch error: ${error instanceof Error ? error.message : String(error)}`);
+      // Stop on error since we can't continue without pagination info
+      hasMore = false;
     }
   }
 
@@ -306,7 +318,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Parse request body for options
-    let options: { batchSize?: number; maxContacts?: number; contactId?: string } = {};
+    let options: { batchSize?: number; maxContacts?: number; contactId?: string; scanRevenue?: boolean } = {};
     if (req.method === "POST") {
       try {
         options = await req.json();
@@ -317,6 +329,82 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // If scanRevenue mode, find all contacts with revenue data and sync them
+    if (options.scanRevenue) {
+      console.log(`[Sync] Scanning for all contacts with revenue data...`);
+
+      const revenueContacts: Array<{
+        id: string;
+        name: string;
+        cash_collected: number | null;
+        deal_value: number | null;
+      }> = [];
+
+      const batchSize = 100;
+      const maxPages = 30; // Limit to 3000 contacts
+      let page = 0;
+      let startAfter: number | undefined;
+      let startAfterId: string | undefined;
+
+      while (page < maxPages) {
+        const result = await fetchGHLContacts(ghlApiKey, ghlLocationId, batchSize, startAfter, startAfterId);
+        const { contacts, nextStartAfter, nextStartAfterId } = result;
+
+        if (contacts.length === 0) break;
+
+        for (const contact of contacts) {
+          const cashCollected = extractCustomFieldValue(contact, CUSTOM_FIELD_IDS.CASH_COLLECTED);
+          const dealValue = extractCustomFieldValue(contact, CUSTOM_FIELD_IDS.DEAL_VALUE);
+
+          if (cashCollected !== null || dealValue !== null) {
+            revenueContacts.push({
+              id: contact.id,
+              name: `${contact.firstName || ""} ${contact.lastName || ""}`.trim(),
+              cash_collected: cashCollected,
+              deal_value: dealValue,
+            });
+
+            // Sync to database
+            const updateData: Record<string, unknown> = {
+              ghl_contact_id: contact.id,
+              updated_at: new Date().toISOString(),
+            };
+            if (contact.firstName) updateData.first_name = contact.firstName;
+            if (contact.lastName) updateData.last_name = contact.lastName;
+            if (contact.email) updateData.email = contact.email;
+            if (contact.phone) updateData.phone = contact.phone;
+            if (cashCollected !== null) updateData.cash_collected = cashCollected;
+            if (dealValue !== null) updateData.deal_value = dealValue;
+
+            await supabase.from("contacts").upsert(updateData, { onConflict: "ghl_contact_id" });
+          }
+        }
+
+        console.log(`[Sync] Page ${page + 1}: Found ${revenueContacts.length} contacts with revenue so far...`);
+
+        // Update pagination for next page
+        startAfter = nextStartAfter;
+        startAfterId = nextStartAfterId;
+        page++;
+
+        if (contacts.length < batchSize || !nextStartAfter || !nextStartAfterId) break;
+
+        // Rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+
+      console.log(`[Sync] Scan complete. Found ${revenueContacts.length} contacts with revenue.`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          total_found: revenueContacts.length,
+          contacts: revenueContacts,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // If contactId is provided, sync just that one contact
     if (options.contactId) {
