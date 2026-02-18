@@ -14,6 +14,12 @@ const CALENDAR_NAMES = {
   DQ: "Scaling Blueprint Call*", // with asterisk at end
 } as const;
 
+// Custom field IDs for revenue tracking (from GHL account)
+const CUSTOM_FIELD_IDS = {
+  CASH_COLLECTED: "TNV6O7CmlSXosQekT6r5",
+  DEAL_VALUE: "noXrsRQa0wubLdHPqutQ",
+} as const;
+
 // Event types we handle
 type EventType =
   | "form_submission"
@@ -25,7 +31,8 @@ type EventType =
   | "pipeline_stage_changed"
   | "opportunity_stage_update"
   | "deal_closed"
-  | "opportunity_status_update";
+  | "opportunity_status_update"
+  | "contact_update";
 
 // GoHighLevel contact object structure
 interface GHLContact {
@@ -60,6 +67,8 @@ interface GHLContact {
   investmentAbility?: string | number;
   deal_value?: string | number;
   dealValue?: string | number;
+  cash_collected?: string | number;
+  cashCollected?: string | number;
   scaling_challenge?: string;
   scalingChallenge?: string;
   [key: string]: unknown;
@@ -166,6 +175,7 @@ interface ContactRecord {
   revenue?: number | null;
   investment_ability?: number | null;
   deal_value?: number | null;
+  cash_collected?: number | null;
   scaling_challenge?: string | null;
   // Pipeline
   current_pipeline?: string | null;
@@ -452,6 +462,8 @@ function extractEventType(payload: GHLWebhookPayload): string | null {
     opportunity_status_update: "deal_closed",
     deal_closed: "deal_closed",
     deal_won: "deal_closed",
+    contactupdate: "contact_update",
+    contact_update: "contact_update",
   };
 
   return typeMap[normalized] || rawType;
@@ -486,6 +498,42 @@ function extractContactData(payload: GHLWebhookPayload): Partial<ContactRecord> 
     return isNaN(parsed) ? null : parsed;
   };
 
+  // Helper to extract custom field by ID from array format
+  // GHL sometimes returns customFields as an array: [{id: "xxx", value: "123"}, ...]
+  const getCustomFieldById = (fieldId: string): number | null => {
+    // Check if customFields is an array
+    const fieldsArray = Array.isArray(customFields)
+      ? customFields
+      : Array.isArray(contact.customFields)
+      ? contact.customFields
+      : null;
+
+    if (fieldsArray) {
+      for (const field of fieldsArray) {
+        if (field && typeof field === "object" && "id" in field && field.id === fieldId) {
+          const val = field.value;
+          if (val === null || val === undefined) return null;
+          if (typeof val === "number") return val;
+          if (typeof val === "string") {
+            const cleaned = val.replace(/[$,]/g, "").trim();
+            const parsed = parseFloat(cleaned);
+            return isNaN(parsed) ? null : parsed;
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  // Extract cash_collected and deal_value from custom fields by ID first, then fall back to property names
+  const cashCollected =
+    getCustomFieldById(CUSTOM_FIELD_IDS.CASH_COLLECTED) ||
+    getNumericValue(["cash_collected", "cashCollected"]);
+
+  const dealValue =
+    getCustomFieldById(CUSTOM_FIELD_IDS.DEAL_VALUE) ||
+    getNumericValue(["deal_value", "dealValue"]);
+
   return {
     first_name: getValue(["first_name", "firstName"]),
     last_name: getValue(["last_name", "lastName"]),
@@ -507,7 +555,8 @@ function extractContactData(payload: GHLWebhookPayload): Partial<ContactRecord> 
     // Custom fields
     revenue: getNumericValue(["revenue"]),
     investment_ability: getNumericValue(["investment_ability", "investmentAbility"]),
-    deal_value: getNumericValue(["deal_value", "dealValue"]),
+    deal_value: dealValue,
+    cash_collected: cashCollected,
     scaling_challenge: getValue(["scaling_challenge", "scalingChallenge"]),
   };
 }
@@ -1017,6 +1066,75 @@ async function handleDealClosed(
   return { contact: data, error: null };
 }
 
+async function handleContactUpdate(
+  supabase: SupabaseClient,
+  contactId: string,
+  payload: GHLWebhookPayload
+): Promise<{ contact: ContactRecord | null; error: Error | null }> {
+  console.log(`[Contact Update] Processing for contact: ${contactId}`);
+
+  const contactData = extractContactData(payload);
+  const now = new Date().toISOString();
+
+  // Build update data - only update fields that have values
+  const updateData: Record<string, unknown> = {
+    ghl_contact_id: contactId,
+    updated_at: now,
+  };
+
+  // Update basic contact info if provided
+  if (contactData.first_name) updateData.first_name = contactData.first_name;
+  if (contactData.last_name) updateData.last_name = contactData.last_name;
+  if (contactData.email) updateData.email = contactData.email;
+  if (contactData.phone) updateData.phone = contactData.phone;
+
+  // Update revenue fields - these are the key fields for revenue tracking
+  if (contactData.cash_collected !== null && contactData.cash_collected !== undefined) {
+    updateData.cash_collected = contactData.cash_collected;
+    console.log(`[Contact Update] Updating cash_collected: ${contactData.cash_collected}`);
+  }
+
+  if (contactData.deal_value !== null && contactData.deal_value !== undefined) {
+    updateData.deal_value = contactData.deal_value;
+    console.log(`[Contact Update] Updating deal_value: ${contactData.deal_value}`);
+  }
+
+  // Update other custom fields if present
+  if (contactData.revenue !== null) updateData.revenue = contactData.revenue;
+  if (contactData.investment_ability !== null) updateData.investment_ability = contactData.investment_ability;
+  if (contactData.scaling_challenge) updateData.scaling_challenge = contactData.scaling_challenge;
+
+  // Only update attribution fields if they are present (don't overwrite with null)
+  if (contactData.ad_id) updateData.ad_id = contactData.ad_id;
+  if (contactData.ad_name) updateData.ad_name = contactData.ad_name;
+  if (contactData.campaign_id) updateData.campaign_id = contactData.campaign_id;
+  if (contactData.campaign_name) updateData.campaign_name = contactData.campaign_name;
+  if (contactData.adset_id) updateData.adset_id = contactData.adset_id;
+  if (contactData.adset_name) updateData.adset_name = contactData.adset_name;
+
+  // Sanitize record
+  const cleanRecord = sanitizeContactRecord(updateData);
+
+  console.log(`[Contact Update] Upserting contact with revenue data:`, {
+    cash_collected: contactData.cash_collected,
+    deal_value: contactData.deal_value,
+  });
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .upsert(cleanRecord, { onConflict: "ghl_contact_id" })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`[Contact Update] Error updating contact:`, error);
+    return { contact: null, error: new Error(error.message) };
+  }
+
+  console.log(`[Contact Update] Successfully updated contact:`, data?.ghl_contact_id);
+  return { contact: data, error: null };
+}
+
 // ============================================================================
 // BACKWARD COMPATIBILITY - Events Table
 // ============================================================================
@@ -1211,6 +1329,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       case "deal_closed":
       case "opportunity_status_update":
         result = await handleDealClosed(supabase, contactId, payload);
+        break;
+
+      case "contact_update":
+        result = await handleContactUpdate(supabase, contactId, payload);
         break;
 
       default:
