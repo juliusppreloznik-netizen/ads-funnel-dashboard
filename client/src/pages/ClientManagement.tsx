@@ -780,23 +780,26 @@ function NotepadPanel({
         </button>
       </div>
 
-      {/* Client Selector */}
-      <div className="p-3 border-b border-white/10">
-        <Select
-          value={notepadClientId?.toString() || ""}
-          onValueChange={(val) => setNotepadClientId(val ? parseInt(val) : null)}
-        >
-          <SelectTrigger className="bg-white/5 border-white/10 text-white text-sm h-9">
-            <SelectValue placeholder="Select a client..." />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-white/10 max-h-60">
-            {activeClients.map((client) => (
-              <SelectItem key={client.id} value={client.id.toString()} className="text-white text-sm">
-                {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Client Selector - Horizontal Scroll */}
+      <div className="px-3 py-2 border-b border-white/10">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+          {activeClients.map((client) => {
+            const isActive = notepadClientId === client.id;
+            return (
+              <button
+                key={client.id}
+                onClick={() => setNotepadClientId(client.id)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                  isActive
+                    ? "bg-violet-600 text-white shadow-md shadow-violet-600/25"
+                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/10"
+                }`}
+              >
+                {client.name?.split(' ')[0] || 'Client'}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Notes Area */}

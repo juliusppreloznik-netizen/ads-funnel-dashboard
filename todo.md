@@ -291,3 +291,6 @@
 ## Direct Onboarding Link (No Client ID Required)
 - [x] Create /setup route that shows the onboarding flow without requiring a client ID
 - [x] Add "Setup Guide" copyable link to admin Quick Links bar
+
+## Internal Notes UI Improvement
+- [x] Change client dropdown in Internal Notes to horizontal scrollable pill/chip selector
