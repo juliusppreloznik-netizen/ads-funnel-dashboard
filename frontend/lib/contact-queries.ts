@@ -56,6 +56,7 @@ export interface Contact {
   revenue: number | null;
   investment_ability: number | null;
   deal_value: number | null;
+  cash_collected: number | null;
   scaling_challenge: string | null;
   // Pipeline
   current_pipeline: string | null;
@@ -198,6 +199,8 @@ export interface MarketingKPIs {
   total_shows: number;
   total_closes: number;
   total_revenue: number;
+  total_cash_collected: number;
+  total_deal_value: number;
   // Ad metrics from ads table
   total_clicks: number;
   total_impressions: number;
@@ -257,6 +260,8 @@ export interface SourceKPIs {
   // Financial metrics
   spend: number;
   revenue: number;
+  cashCollected: number;
+  dealValue: number;
   // Calculated rates
   showRate: number;
   closeRate: number;
@@ -311,11 +316,12 @@ function getEndOfDayUTC(date: Date): Date {
 /**
  * Format date for Supabase timestamp comparison (contacts table)
  * Uses UTC to match database storage format
+ * NOTE: We use toISOString() which is properly handled by Supabase/PostgREST
  */
 function formatDateForQuery(date: Date, type: "start" | "end"): string {
   const targetDate = type === "start" ? getStartOfDayUTC(date) : getEndOfDayUTC(date);
-  // Use ISO 8601 format with 'Z' suffix to explicitly indicate UTC
-  const formatted = format(targetDate, "yyyy-MM-dd'T'HH:mm:ss.SSS") + "Z";
+  // Use native toISOString() which Supabase handles correctly
+  const formatted = targetDate.toISOString();
   console.log(`📅 [formatDateForQuery] ${type}: local=${date.toISOString()} -> UTC=${formatted}`);
   return formatted;
 }
@@ -850,27 +856,26 @@ export async function getMarketingKPIsFromContacts(
         showed_up_at,
         deal_closed_at,
         final_deal_value,
+        cash_collected,
+        deal_value,
         disqualified_at
       `);
 
     if (dateRange?.from && dateRange?.to) {
       const fromStr = formatDateForQuery(dateRange.from, "start");
       const toStr = formatDateForQuery(dateRange.to, "end");
-      // Include records where form_submitted_at is in range OR call_booked_at is in range
-      // Using proper OR: (form_submitted_at in range) OR (call_booked_at in range)
-      contactsQuery = contactsQuery.or(
-        `and(form_submitted_at.gte.${fromStr},form_submitted_at.lte.${toStr}),and(call_booked_at.gte.${fromStr},call_booked_at.lte.${toStr})`
-      );
+      console.log("🔍 [getMarketingKPIsFromContacts] Filter range:", { fromStr, toStr });
+      // Use simple filter on form_submitted_at only to avoid OR filter complexity
+      // This captures all leads that submitted forms in the date range
+      contactsQuery = contactsQuery
+        .gte("form_submitted_at", fromStr)
+        .lte("form_submitted_at", toStr);
     } else if (dateRange?.from) {
       const fromStr = formatDateForQuery(dateRange.from, "start");
-      contactsQuery = contactsQuery.or(
-        `form_submitted_at.gte.${fromStr},call_booked_at.gte.${fromStr}`
-      );
+      contactsQuery = contactsQuery.gte("form_submitted_at", fromStr);
     } else if (dateRange?.to) {
       const toStr = formatDateForQuery(dateRange.to, "end");
-      contactsQuery = contactsQuery.or(
-        `form_submitted_at.lte.${toStr},call_booked_at.lte.${toStr}`
-      );
+      contactsQuery = contactsQuery.lte("form_submitted_at", toStr);
     }
 
     // Fetch ads data with clicks and impressions
@@ -926,6 +931,8 @@ export async function getMarketingKPIsFromContacts(
     let total_shows = 0;
     let total_closes = 0;
     let total_revenue = 0;
+    let total_cash_collected = 0;
+    let total_deal_value = 0;
 
     for (const contact of contacts) {
       if (contact.form_submitted_at) total_leads++;
@@ -943,6 +950,9 @@ export async function getMarketingKPIsFromContacts(
         total_closes++;
         total_revenue += Number(contact.final_deal_value) || 0;
       }
+      // Revenue tracking
+      total_cash_collected += Number(contact.cash_collected) || 0;
+      total_deal_value += Number(contact.deal_value) || 0;
     }
 
     const kpis: MarketingKPIs = {
@@ -955,6 +965,8 @@ export async function getMarketingKPIsFromContacts(
       total_shows,
       total_closes,
       total_revenue,
+      total_cash_collected,
+      total_deal_value,
       // Ad metrics
       total_clicks,
       total_impressions,
@@ -1224,7 +1236,9 @@ export async function getSourceKPIs(
         showed_up_at,
         deal_closed_at,
         disqualified_at,
-        final_deal_value
+        final_deal_value,
+        cash_collected,
+        deal_value
       `)
       .not(groupByField, "is", null);
 
@@ -1289,6 +1303,8 @@ export async function getSourceKPIs(
       shown: number;
       closes: number;
       revenue: number;
+      cashCollected: number;
+      dealValue: number;
     }>();
 
     for (const contact of contacts) {
@@ -1307,6 +1323,8 @@ export async function getSourceKPIs(
           shown: 0,
           closes: 0,
           revenue: 0,
+          cashCollected: 0,
+          dealValue: 0,
         });
       }
 
@@ -1337,6 +1355,10 @@ export async function getSourceKPIs(
         kpis.closes++;
         kpis.revenue += Number(contact.final_deal_value) || 0;
       }
+
+      // Aggregate revenue tracking fields
+      kpis.cashCollected += Number((contact as Record<string, unknown>).cash_collected) || 0;
+      kpis.dealValue += Number((contact as Record<string, unknown>).deal_value) || 0;
     }
 
     // Also add ads that have spend but no contacts
@@ -1357,6 +1379,8 @@ export async function getSourceKPIs(
           shown: 0,
           closes: 0,
           revenue: 0,
+          cashCollected: 0,
+          dealValue: 0,
         });
       }
     }
@@ -1377,6 +1401,8 @@ export async function getSourceKPIs(
         closes: kpi.closes,
         spend,
         revenue: kpi.revenue,
+        cashCollected: kpi.cashCollected,
+        dealValue: kpi.dealValue,
         showRate: booked > 0 ? (kpi.shown / booked) * 100 : 0,
         closeRate: kpi.shown > 0 ? (kpi.closes / kpi.shown) * 100 : 0,
         costPerLead: kpi.applications > 0 ? spend / kpi.applications : 0,

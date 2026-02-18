@@ -787,6 +787,8 @@ interface SourceKPITotals {
   closes: number;
   spend: number;
   revenue: number;
+  cashCollected: number;
+  dealValue: number;
   showRate: number;
   closeRate: number;
   costPerLead: number;
@@ -842,6 +844,8 @@ const DEFAULT_COLUMN_ORDER = [
   "closes",
   "closeRate",
   "revenue",
+  "cashCollected",
+  "dealValue",
   "costPerLead",
   "roas",
 ];
@@ -947,6 +951,40 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     render: (row) => <RevenueText value={row.revenue} />,
     getValue: (row) => row.revenue,
     renderTotal: (totals) => <RevenueText value={totals.revenue} />,
+  },
+  cashCollected: {
+    id: "cashCollected",
+    label: "CASH COLLECTED",
+    shortLabel: "CASH",
+    align: "right",
+    render: (row) => (
+      <span className="text-sm font-semibold text-emerald-600">
+        ${formatNumber(Math.round(row.cashCollected))}
+      </span>
+    ),
+    getValue: (row) => row.cashCollected,
+    renderTotal: (totals) => (
+      <span className="text-sm font-semibold text-emerald-600">
+        ${formatNumber(Math.round(totals.cashCollected))}
+      </span>
+    ),
+  },
+  dealValue: {
+    id: "dealValue",
+    label: "DEAL VALUE",
+    shortLabel: "DEAL",
+    align: "right",
+    render: (row) => (
+      <span className="text-sm font-semibold text-purple-600">
+        ${formatNumber(Math.round(row.dealValue))}
+      </span>
+    ),
+    getValue: (row) => row.dealValue,
+    renderTotal: (totals) => (
+      <span className="text-sm font-semibold text-purple-600">
+        ${formatNumber(Math.round(totals.dealValue))}
+      </span>
+    ),
   },
   costPerLead: {
     id: "costPerLead",
@@ -1143,12 +1181,14 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
       closes: acc.closes + row.closes,
       spend: acc.spend + row.spend,
       revenue: acc.revenue + row.revenue,
+      cashCollected: acc.cashCollected + row.cashCollected,
+      dealValue: acc.dealValue + row.dealValue,
       showRate: 0,
       closeRate: 0,
       costPerLead: 0,
       roas: 0,
     }),
-    { applications: 0, qualified: 0, dq: 0, shown: 0, closes: 0, spend: 0, revenue: 0, showRate: 0, closeRate: 0, costPerLead: 0, roas: 0 }
+    { applications: 0, qualified: 0, dq: 0, shown: 0, closes: 0, spend: 0, revenue: 0, cashCollected: 0, dealValue: 0, showRate: 0, closeRate: 0, costPerLead: 0, roas: 0 }
   );
 
   // Calculate derived totals
@@ -1361,6 +1401,8 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
   const costPerQualifiedInfo = getChangeInfo(kpis.cost_per_qualified, previousKpis?.cost_per_qualified);
   const costPerCallInfo = getChangeInfo(kpis.cost_per_booked, previousKpis?.cost_per_booked);
   const costPerShowInfo = getChangeInfo(kpis.cost_per_show, previousKpis?.cost_per_show);
+  const cashCollectedInfo = getChangeInfo(kpis.total_cash_collected, previousKpis?.total_cash_collected);
+  const dealValueInfo = getChangeInfo(kpis.total_deal_value, previousKpis?.total_deal_value);
 
   return (
     <div className="space-y-6">
@@ -1526,6 +1568,39 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
           chartType="line"
           chartColor={CHART_COLORS.costPerShow}
           headlineColor={CHART_COLORS.costPerShow}
+          valueType="currency"
+        />
+      </div>
+
+      {/* Row 4: Revenue Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        {/* 11. Total Cash Collected Card */}
+        <MetricCard
+          title="Total Cash Collected"
+          mainValue={formatCurrency(kpis.total_cash_collected)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.total_cash_collected) : "-"}
+          subtitle="Cash In"
+          percentageChange={cashCollectedInfo.percentageStr}
+          isPositiveChange={cashCollectedInfo.isPositive}
+          trendData={createTrendData("revenue")}
+          chartType="bar"
+          chartColor="#10B981"
+          headlineColor="#10B981"
+          valueType="currency"
+        />
+
+        {/* 12. Total Deal Value Card */}
+        <MetricCard
+          title="Total Deal Value"
+          mainValue={formatCurrency(kpis.total_deal_value)}
+          previousValue={previousKpis ? formatCurrencyCompact(previousKpis.total_deal_value) : "-"}
+          subtitle="Contract Value"
+          percentageChange={dealValueInfo.percentageStr}
+          isPositiveChange={dealValueInfo.isPositive}
+          trendData={createTrendData("revenue")}
+          chartType="bar"
+          chartColor="#8B5CF6"
+          headlineColor="#8B5CF6"
           valueType="currency"
         />
       </div>
