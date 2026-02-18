@@ -780,26 +780,24 @@ function NotepadPanel({
         </button>
       </div>
 
-      {/* Client Selector - Horizontal Scroll */}
-      <div className="px-3 py-2 border-b border-white/10">
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
-          {activeClients.map((client) => {
-            const isActive = notepadClientId === client.id;
-            return (
-              <button
-                key={client.id}
-                onClick={() => setNotepadClientId(client.id)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
-                  isActive
-                    ? "bg-violet-600 text-white shadow-md shadow-violet-600/25"
-                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/10"
-                }`}
-              >
-                {client.name?.split(' ')[0] || 'Client'}
-              </button>
-            );
-          })}
-        </div>
+      {/* Client Selector - Vertical Scroll */}
+      <div className="border-b border-white/10 overflow-y-auto max-h-36" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+        {activeClients.map((client) => {
+          const isActive = notepadClientId === client.id;
+          return (
+            <button
+              key={client.id}
+              onClick={() => setNotepadClientId(client.id)}
+              className={`w-full text-left px-4 py-2 text-xs font-medium transition-all border-l-2 ${
+                isActive
+                  ? "bg-violet-600/15 text-white border-l-violet-500"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white border-l-transparent"
+              }`}
+            >
+              {client.name || 'Client'}
+            </button>
+          );
+        })}
       </div>
 
       {/* Notes Area */}

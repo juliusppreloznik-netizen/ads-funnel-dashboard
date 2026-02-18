@@ -294,3 +294,4 @@
 
 ## Internal Notes UI Improvement
 - [x] Change client dropdown in Internal Notes to horizontal scrollable pill/chip selector
+- [x] Change Internal Notes client selector from horizontal scroll to vertical scroll
