@@ -27,7 +27,6 @@ export default function AdPreviewModal({
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Fetch or generate transcript
   const fetchTranscript = useCallback(async (forceRegenerate = false) => {
@@ -99,7 +98,6 @@ export default function AdPreviewModal({
   const handleDownload = async () => {
     if (!transcript) return;
 
-    // Download transcript as text file
     const transcriptText = transcript.transcript_json
       ? transcript.transcript_json
           .map((seg) => `${seg.start}-${seg.end}  ${seg.text}`)
@@ -142,28 +140,28 @@ export default function AdPreviewModal({
     <div
       ref={modalRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
     >
-      <div className="relative w-full max-w-6xl h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-7xl h-[95vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
               {transcript?.media_type === "video" ? (
-                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               )}
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 truncate max-w-md">
+              <h2 className="text-base font-semibold text-gray-900 truncate max-w-lg">
                 {adName}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 {transcript?.media_type === "video" ? "Video Ad" : "Image Ad"}
                 {transcript?.duration_seconds && ` - ${Math.floor(transcript.duration_seconds / 60)}:${(transcript.duration_seconds % 60).toString().padStart(2, "0")}`}
               </p>
@@ -174,7 +172,7 @@ export default function AdPreviewModal({
             {transcript && (
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -185,7 +183,7 @@ export default function AdPreviewModal({
             <button
               onClick={() => fetchTranscript(true)}
               disabled={generating}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <svg className={`w-4 h-4 ${generating ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -194,7 +192,7 @@ export default function AdPreviewModal({
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -204,18 +202,17 @@ export default function AdPreviewModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex min-h-0">
           {loading ? (
             <LoadingState generating={generating} />
           ) : error ? (
             <ErrorState error={error} onRetry={() => fetchTranscript(true)} />
           ) : transcript ? (
             <>
-              {/* Left Panel - Media Preview */}
-              <div className="w-3/5 bg-gray-900 flex items-center justify-center p-6 overflow-hidden">
+              {/* Left Panel - Media Preview (60%) */}
+              <div className="w-[60%] bg-neutral-900 relative flex items-center justify-center">
                 {transcript.media_type === "video" && transcript.video_url ? (
                   <VideoPlayer
-                    ref={videoRef}
                     videoUrl={transcript.video_url}
                     thumbnailUrl={transcript.thumbnail_url}
                   />
@@ -234,8 +231,8 @@ export default function AdPreviewModal({
                 )}
               </div>
 
-              {/* Right Panel - Transcript/Ad Copy */}
-              <div className="w-2/5 bg-white flex flex-col border-l border-gray-200">
+              {/* Right Panel - Transcript/Ad Copy (40%) */}
+              <div className="w-[40%] bg-white flex flex-col border-l border-gray-200 min-h-0">
                 <TranscriptPanel
                   transcript={transcript.transcript}
                   transcriptJson={transcript.transcript_json}
@@ -257,9 +254,9 @@ export default function AdPreviewModal({
 // Loading State Component
 function LoadingState({ generating }: { generating: boolean }) {
   return (
-    <div className="flex-1 flex items-center justify-center">
+    <div className="flex-1 flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
+        <div className="w-14 h-14 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
         <p className="text-gray-600 font-medium">
           {generating ? "Fetching ad creative..." : "Loading..."}
         </p>
@@ -276,10 +273,10 @@ function LoadingState({ generating }: { generating: boolean }) {
 // Error State Component
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <div className="flex-1 flex items-center justify-center">
+    <div className="flex-1 flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
@@ -300,7 +297,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
 function NoMediaState() {
   return (
     <div className="text-center text-gray-400">
-      <svg className="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-20 h-20 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
       <p>No media available for this ad</p>
@@ -308,17 +305,12 @@ function NoMediaState() {
   );
 }
 
-// Video Player Component
-interface VideoPlayerProps {
-  videoUrl: string;
-  thumbnailUrl?: string | null;
-}
-
-const VideoPlayer = ({ videoUrl, thumbnailUrl }: VideoPlayerProps & { ref?: React.Ref<HTMLVideoElement> }) => {
+// Video Player Component - fills the container
+function VideoPlayer({ videoUrl, thumbnailUrl }: { videoUrl: string; thumbnailUrl?: string | null }) {
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center justify-center p-4">
       <video
-        className="max-w-full max-h-full rounded-lg shadow-lg"
+        className="w-full h-full object-contain"
         controls
         poster={thumbnailUrl || undefined}
         preload="metadata"
@@ -328,52 +320,121 @@ const VideoPlayer = ({ videoUrl, thumbnailUrl }: VideoPlayerProps & { ref?: Reac
       </video>
     </div>
   );
-};
-
-// Image Viewer Component
-interface ImageViewerProps {
-  imageUrl: string;
-  alt: string;
 }
 
-function ImageViewer({ imageUrl, alt }: ImageViewerProps) {
+// Image Viewer Component - fills the container with zoom controls
+function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
   const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoom > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const resetView = () => {
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const zoomIn = () => {
+    setZoom((z) => Math.min(z + 0.5, 4));
+  };
+
+  const zoomOut = () => {
+    const newZoom = Math.max(zoom - 0.5, 1);
+    setZoom(newZoom);
+    if (newZoom === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
 
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center">
-      <div className="absolute top-4 right-4 flex gap-2 z-10">
+    <div
+      ref={containerRef}
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* Zoom Controls */}
+      <div className="absolute top-3 right-3 flex gap-1.5 z-20">
         <button
-          onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
-          className="p-2 bg-black/50 text-white rounded-lg hover:bg-black/70 transition-colors"
+          onClick={zoomIn}
+          className="p-2 bg-black/60 text-white rounded-lg hover:bg-black/80 transition-colors"
+          title="Zoom In"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
           </svg>
         </button>
         <button
-          onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
-          className="p-2 bg-black/50 text-white rounded-lg hover:bg-black/70 transition-colors"
+          onClick={zoomOut}
+          disabled={zoom <= 1}
+          className="p-2 bg-black/60 text-white rounded-lg hover:bg-black/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          title="Zoom Out"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
           </svg>
         </button>
-        <button
-          onClick={() => setZoom(1)}
-          className="p-2 bg-black/50 text-white rounded-lg hover:bg-black/70 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
+        {zoom > 1 && (
+          <button
+            onClick={resetView}
+            className="p-2 bg-black/60 text-white rounded-lg hover:bg-black/80 transition-colors"
+            title="Reset View"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        )}
       </div>
-      <div className="overflow-auto max-w-full max-h-full">
+
+      {/* Zoom indicator */}
+      {zoom > 1 && (
+        <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 text-white text-xs rounded z-20">
+          {Math.round(zoom * 100)}%
+        </div>
+      )}
+
+      {/* Image */}
+      <div
+        className={`w-full h-full flex items-center justify-center p-2 ${zoom > 1 ? "cursor-grab" : ""} ${isDragging ? "cursor-grabbing" : ""}`}
+        onMouseDown={handleMouseDown}
+        style={{
+          transform: zoom > 1 ? `translate(${position.x}px, ${position.y}px)` : undefined,
+        }}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
           alt={alt}
-          className="rounded-lg shadow-lg transition-transform duration-200"
-          style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
+          className="max-w-full max-h-full object-contain select-none"
+          style={{
+            transform: `scale(${zoom})`,
+            transformOrigin: "center center",
+            transition: isDragging ? "none" : "transform 0.2s ease-out",
+          }}
+          draggable={false}
         />
       </div>
     </div>
@@ -381,21 +442,19 @@ function ImageViewer({ imageUrl, alt }: ImageViewerProps) {
 }
 
 // Transcript Panel Component
-interface TranscriptPanelProps {
-  transcript: string | null;
-  transcriptJson: TranscriptSegment[] | null;
-  adCopy: AdCopy | null;
-  mediaType: "video" | "image" | "carousel" | null;
-  onCopy: () => void;
-}
-
 function TranscriptPanel({
   transcript,
   transcriptJson,
   adCopy,
   mediaType,
   onCopy,
-}: TranscriptPanelProps) {
+}: {
+  transcript: string | null;
+  transcriptJson: TranscriptSegment[] | null;
+  adCopy: AdCopy | null;
+  mediaType: "video" | "image" | "carousel" | null;
+  onCopy: () => void;
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -405,9 +464,9 @@ function TranscriptPanel({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Panel Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
         <h3 className="text-sm font-semibold text-gray-900">
           {mediaType === "video" ? "Ad Transcript" : "Ad Copy"}
         </h3>
@@ -436,12 +495,12 @@ function TranscriptPanel({
       </div>
 
       {/* Panel Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {mediaType === "video" && transcriptJson && transcriptJson.length > 0 ? (
           <div className="space-y-4">
             {transcriptJson.map((segment, index) => (
               <div key={index} className="flex gap-3">
-                <span className="flex-shrink-0 text-orange-500 font-mono text-sm font-medium">
+                <span className="flex-shrink-0 text-orange-500 font-mono text-sm font-medium whitespace-nowrap">
                   {segment.start}-{segment.end}
                 </span>
                 <p className="text-gray-700 text-sm leading-relaxed">
@@ -455,10 +514,10 @@ function TranscriptPanel({
             {transcript}
           </p>
         ) : adCopy ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {adCopy.headline && (
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Headline
                 </label>
                 <p className="text-gray-900 font-medium">{adCopy.headline}</p>
@@ -466,23 +525,23 @@ function TranscriptPanel({
             )}
             {adCopy.body && (
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Body
                 </label>
-                <p className="text-gray-700 whitespace-pre-wrap">{adCopy.body}</p>
+                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{adCopy.body}</p>
               </div>
             )}
             {adCopy.description && (
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Description
                 </label>
-                <p className="text-gray-700">{adCopy.description}</p>
+                <p className="text-gray-700 leading-relaxed">{adCopy.description}</p>
               </div>
             )}
             {adCopy.cta && (
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                   Call-to-Action
                 </label>
                 <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
@@ -492,8 +551,8 @@ function TranscriptPanel({
             )}
           </div>
         ) : (
-          <div className="text-center text-gray-400 py-8">
-            <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <svg className="w-12 h-12 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <p className="text-sm">No transcript available</p>
