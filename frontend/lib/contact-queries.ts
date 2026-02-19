@@ -2196,12 +2196,14 @@ export async function generateAdTranscript(
 ): Promise<QueryResult<AdTranscript>> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const response = await fetch(
       `${supabaseUrl}/functions/v1/generate-ad-transcript`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({ ad_id: adId, force_regenerate: forceRegenerate }),
       }
