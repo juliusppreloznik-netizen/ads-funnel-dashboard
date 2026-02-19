@@ -49,6 +49,9 @@ import {
 // Import Debug Panel
 import { DebugPanel } from "./DebugPanel";
 
+// Import Ads Manager View
+import AdsManagerView from "./components/AdsManagerView";
+
 // Import dnd-kit for drag-and-drop
 import {
   DndContext,
@@ -2402,7 +2405,7 @@ export default function DashboardPage() {
             <LeadsBreakdownView dateRange={dateRange} />
           )}
           {currentView === "Ads Manager" && (
-            <PlaceholderView title="Ads Manager" />
+            <AdsManagerView dateRange={dateRange} />
           )}
           {currentView === "Report Builder" && (
             <PlaceholderView title="Report Builder" />

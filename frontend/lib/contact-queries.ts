@@ -1923,3 +1923,297 @@ export async function getLeadsBreakdownData(
     };
   }
 }
+
+// ============================================================================
+// ADS MANAGER TYPES AND QUERIES
+// ============================================================================
+
+/** Transcript segment with timestamps */
+export interface TranscriptSegment {
+  start: string;
+  end: string;
+  text: string;
+}
+
+/** Ad copy structure */
+export interface AdCopy {
+  headline?: string;
+  body?: string;
+  description?: string;
+  cta?: string;
+}
+
+/** Ad transcript record from the database */
+export interface AdTranscript {
+  id: string;
+  ad_id: string;
+  creative_id: string | null;
+  video_url: string | null;
+  thumbnail_url: string | null;
+  image_url: string | null;
+  transcript: string | null;
+  transcript_json: TranscriptSegment[] | null;
+  ad_copy: AdCopy | null;
+  media_type: "video" | "image" | "carousel" | null;
+  duration_seconds: number | null;
+  status: "pending" | "processing" | "completed" | "failed";
+  error_message: string | null;
+  generated_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Ad data for Ads Manager view with aggregated metrics */
+export interface AdsManagerAd {
+  ad_id: string;
+  ad_name: string;
+  campaign_id: string | null;
+  campaign_name: string | null;
+  adset_id: string | null;
+  adset_name: string | null;
+  // Aggregated metrics
+  total_spend: number;
+  total_impressions: number;
+  total_clicks: number;
+  total_reach: number;
+  // Calculated metrics
+  avg_cpm: number;
+  avg_cpc: number;
+  avg_ctr: number;
+  // Funnel metrics
+  total_leads: number;
+  calls_booked: number;
+  shows: number;
+  closes: number;
+  revenue: number;
+  // Has transcript/creative data
+  has_transcript: boolean;
+  transcript_status: string | null;
+}
+
+/**
+ * Get all unique ads with aggregated metrics for the Ads Manager
+ */
+export async function getAdsManagerData(
+  dateRange?: DateRangeFilter
+): Promise<QueryResult<AdsManagerAd[]>> {
+  const supabase = getSupabase();
+
+  try {
+    // Build date filter for ads table
+    let adsQuery = supabase
+      .from("ads")
+      .select("ad_id, ad_name, campaign_id, campaign_name, adset_id, adset_name, spend, impressions, clicks, reach, cpm, cpc, ctr, date");
+
+    if (dateRange?.from) {
+      const startDate = formatDateOnly(dateRange.from);
+      adsQuery = adsQuery.gte("date", startDate);
+    }
+    if (dateRange?.to) {
+      const endDate = formatDateOnly(dateRange.to);
+      adsQuery = adsQuery.lte("date", endDate);
+    }
+
+    const { data: adsData, error: adsError } = await adsQuery;
+
+    if (adsError) {
+      throw adsError;
+    }
+
+    // Build date filter for contacts table
+    let contactsQuery = supabase
+      .from("contacts")
+      .select("ad_id, form_submitted_at, call_booked_at, showed_up_at, deal_closed_at, final_deal_value, is_qualified");
+
+    if (dateRange?.from) {
+      const startDate = formatDateForQuery(dateRange.from, "start");
+      contactsQuery = contactsQuery.gte("form_submitted_at", startDate);
+    }
+    if (dateRange?.to) {
+      const endDate = formatDateForQuery(dateRange.to, "end");
+      contactsQuery = contactsQuery.lte("form_submitted_at", endDate);
+    }
+
+    const { data: contactsData, error: contactsError } = await contactsQuery;
+
+    if (contactsError) {
+      throw contactsError;
+    }
+
+    // Get existing transcripts
+    const { data: transcriptsData } = await supabase
+      .from("ad_transcripts")
+      .select("ad_id, status");
+
+    const transcriptMap = new Map<string, string>();
+    (transcriptsData || []).forEach((t: { ad_id: string; status: string }) => {
+      transcriptMap.set(t.ad_id, t.status);
+    });
+
+    // Define inline types for query results
+    type AdRow = {
+      ad_id: string;
+      ad_name: string | null;
+      campaign_id: string | null;
+      campaign_name: string | null;
+      adset_id: string | null;
+      adset_name: string | null;
+      spend: number | null;
+      impressions: number | null;
+      clicks: number | null;
+      reach: number | null;
+      cpm: number | null;
+      cpc: number | null;
+      ctr: number | null;
+      date: string;
+    };
+
+    type ContactRow = {
+      ad_id: string | null;
+      form_submitted_at: string | null;
+      call_booked_at: string | null;
+      showed_up_at: string | null;
+      deal_closed_at: string | null;
+      final_deal_value: number | null;
+      is_qualified: boolean | null;
+    };
+
+    // Aggregate ads data by ad_id
+    const adsMap = new Map<string, AdsManagerAd>();
+
+    (adsData || []).forEach((ad: AdRow) => {
+      const existing = adsMap.get(ad.ad_id);
+      if (existing) {
+        existing.total_spend += ad.spend || 0;
+        existing.total_impressions += ad.impressions || 0;
+        existing.total_clicks += ad.clicks || 0;
+        existing.total_reach += ad.reach || 0;
+      } else {
+        adsMap.set(ad.ad_id, {
+          ad_id: ad.ad_id,
+          ad_name: ad.ad_name || "Unknown Ad",
+          campaign_id: ad.campaign_id,
+          campaign_name: ad.campaign_name,
+          adset_id: ad.adset_id,
+          adset_name: ad.adset_name,
+          total_spend: ad.spend || 0,
+          total_impressions: ad.impressions || 0,
+          total_clicks: ad.clicks || 0,
+          total_reach: ad.reach || 0,
+          avg_cpm: 0,
+          avg_cpc: 0,
+          avg_ctr: 0,
+          total_leads: 0,
+          calls_booked: 0,
+          shows: 0,
+          closes: 0,
+          revenue: 0,
+          has_transcript: false,
+          transcript_status: null,
+        });
+      }
+    });
+
+    // Add funnel metrics from contacts
+    (contactsData || []).forEach((contact: ContactRow) => {
+      if (!contact.ad_id) return;
+      const ad = adsMap.get(contact.ad_id);
+      if (ad) {
+        ad.total_leads += 1;
+        if (contact.call_booked_at) ad.calls_booked += 1;
+        if (contact.showed_up_at) ad.shows += 1;
+        if (contact.deal_closed_at) {
+          ad.closes += 1;
+          ad.revenue += contact.final_deal_value || 0;
+        }
+      }
+    });
+
+    // Calculate averages and add transcript status
+    const result: AdsManagerAd[] = Array.from(adsMap.values()).map((ad) => {
+      ad.avg_cpm = ad.total_impressions > 0 ? (ad.total_spend / ad.total_impressions) * 1000 : 0;
+      ad.avg_cpc = ad.total_clicks > 0 ? ad.total_spend / ad.total_clicks : 0;
+      ad.avg_ctr = ad.total_impressions > 0 ? (ad.total_clicks / ad.total_impressions) * 100 : 0;
+      ad.transcript_status = transcriptMap.get(ad.ad_id) || null;
+      ad.has_transcript = ad.transcript_status === "completed";
+      return ad;
+    });
+
+    // Sort by spend descending
+    result.sort((a, b) => b.total_spend - a.total_spend);
+
+    return { data: result, error: null };
+  } catch (err) {
+    console.error("Error in getAdsManagerData:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+}
+
+/**
+ * Get transcript for a specific ad
+ */
+export async function getAdTranscript(
+  adId: string
+): Promise<QueryResult<AdTranscript | null>> {
+  const supabase = getSupabase();
+
+  try {
+    const { data, error } = await supabase
+      .from("ad_transcripts")
+      .select("*")
+      .eq("ad_id", adId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 is "not found" which is ok
+      throw error;
+    }
+
+    return { data: data as AdTranscript | null, error: null };
+  } catch (err) {
+    console.error("Error in getAdTranscript:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+}
+
+/**
+ * Generate transcript for an ad by calling the Edge Function
+ */
+export async function generateAdTranscript(
+  adId: string,
+  forceRegenerate = false
+): Promise<QueryResult<AdTranscript>> {
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/generate-ad-transcript`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ad_id: adId, force_regenerate: forceRegenerate }),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.error || "Failed to generate transcript");
+    }
+
+    return { data: result as AdTranscript, error: null };
+  } catch (err) {
+    console.error("Error in generateAdTranscript:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+}
