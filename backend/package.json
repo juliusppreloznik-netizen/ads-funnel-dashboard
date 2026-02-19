@@ -1,0 +1,20 @@
+{
+  "name": "ads-funnel-dashboard-backend",
+  "version": "1.0.0",
+  "description": "Backend workers and utilities for ads funnel dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "transcript-worker": "tsx workers/transcript-worker.ts",
+    "transcript-worker:once": "tsx workers/transcript-worker.ts --once"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
