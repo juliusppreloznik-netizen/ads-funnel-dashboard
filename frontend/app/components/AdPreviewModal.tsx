@@ -370,7 +370,7 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      className="absolute inset-0 overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -416,9 +416,9 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
         </div>
       )}
 
-      {/* Image */}
+      {/* Image container - fills the panel */}
       <div
-        className={`w-full h-full flex items-center justify-center p-2 ${zoom > 1 ? "cursor-grab" : ""} ${isDragging ? "cursor-grabbing" : ""}`}
+        className={`absolute inset-0 ${zoom > 1 ? "cursor-grab" : ""} ${isDragging ? "cursor-grabbing" : ""}`}
         onMouseDown={handleMouseDown}
         style={{
           transform: zoom > 1 ? `translate(${position.x}px, ${position.y}px)` : undefined,
@@ -428,7 +428,7 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
         <img
           src={imageUrl}
           alt={alt}
-          className="max-w-full max-h-full object-contain select-none"
+          className="w-full h-full object-contain select-none"
           style={{
             transform: `scale(${zoom})`,
             transformOrigin: "center center",

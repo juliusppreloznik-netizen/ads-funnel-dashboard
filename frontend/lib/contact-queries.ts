@@ -1989,6 +1989,7 @@ export interface AdsManagerAd {
   // Has transcript/creative data
   has_transcript: boolean;
   transcript_status: string | null;
+  media_type: "video" | "image" | "carousel" | null;
 }
 
 /**
@@ -2040,14 +2041,14 @@ export async function getAdsManagerData(
       throw contactsError;
     }
 
-    // Get existing transcripts
+    // Get existing transcripts with media_type
     const { data: transcriptsData } = await supabase
       .from("ad_transcripts")
-      .select("ad_id, status");
+      .select("ad_id, status, media_type");
 
-    const transcriptMap = new Map<string, string>();
-    (transcriptsData || []).forEach((t: { ad_id: string; status: string }) => {
-      transcriptMap.set(t.ad_id, t.status);
+    const transcriptMap = new Map<string, { status: string; media_type: string | null }>();
+    (transcriptsData || []).forEach((t: { ad_id: string; status: string; media_type: string | null }) => {
+      transcriptMap.set(t.ad_id, { status: t.status, media_type: t.media_type });
     });
 
     // Define inline types for query results
@@ -2110,6 +2111,7 @@ export async function getAdsManagerData(
           revenue: 0,
           has_transcript: false,
           transcript_status: null,
+          media_type: null,
         });
       }
     });
@@ -2134,8 +2136,11 @@ export async function getAdsManagerData(
       ad.avg_cpm = ad.total_impressions > 0 ? (ad.total_spend / ad.total_impressions) * 1000 : 0;
       ad.avg_cpc = ad.total_clicks > 0 ? ad.total_spend / ad.total_clicks : 0;
       ad.avg_ctr = ad.total_impressions > 0 ? (ad.total_clicks / ad.total_impressions) * 100 : 0;
-      ad.transcript_status = transcriptMap.get(ad.ad_id) || null;
-      ad.has_transcript = ad.transcript_status === "completed";
+      const transcriptInfo = transcriptMap.get(ad.ad_id);
+      ad.transcript_status = transcriptInfo?.status || null;
+      ad.media_type = (transcriptInfo?.media_type as "video" | "image" | "carousel" | null) || null;
+      // Only videos can have transcripts - images just have ad copy
+      ad.has_transcript = ad.transcript_status === "completed" && ad.media_type === "video";
       return ad;
     });
 
