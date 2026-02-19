@@ -2,7 +2,7 @@
 /**
  * Transcript Worker Script
  *
- * This script runs locally to generate transcripts for video ads using manus-speech-to-text.
+ * This script runs locally to generate transcripts for video ads using Deepgram API.
  * It polls the ad_transcripts table for pending videos, downloads them, generates transcripts,
  * and uploads the results back to Supabase.
  *
@@ -14,17 +14,18 @@
  * Environment Variables (from .env file):
  *   SUPABASE_URL - Your Supabase project URL
  *   SUPABASE_SERVICE_ROLE_KEY - Service role key for admin access
+ *   DEEPGRAM_API_KEY - Your Deepgram API key for transcription
  *
  * The script will:
  * 1. Poll for pending transcripts every 30 seconds
  * 2. Download video to temp folder
- * 3. Run manus-speech-to-text on the video
+ * 3. Send to Deepgram API for transcription
  * 4. Parse output and upload transcript to Supabase
  * 5. Clean up temp files
  */
 
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { execSync } from "child_process";
+import { createClient as createSupabaseClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient as createDeepgramClient } from "@deepgram/sdk";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -45,10 +46,10 @@ dotenv.config({ path: path.join(__dirname, "../../.env") });
 // Configuration
 const POLL_INTERVAL_MS = 30000; // 30 seconds
 const TEMP_DIR = path.join(os.tmpdir(), "ad-transcripts");
-const MAX_RETRIES = 3;
 
-// Supabase client
+// Clients
 let supabase: SupabaseClient;
+let deepgram: ReturnType<typeof createDeepgramClient>;
 
 interface TranscriptSegment {
   start: string;
@@ -61,6 +62,15 @@ interface PendingTranscript {
   ad_id: string;
   video_url: string;
   duration_seconds: number | null;
+}
+
+/**
+ * Format seconds to MM:SS timestamp
+ */
+function formatTimestamp(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -78,8 +88,24 @@ function initSupabase(): void {
     process.exit(1);
   }
 
-  supabase = createClient(url, key);
+  supabase = createSupabaseClient(url, key);
   console.log("Supabase client initialized");
+}
+
+/**
+ * Initialize Deepgram client
+ */
+function initDeepgram(): void {
+  const apiKey = process.env.DEEPGRAM_API_KEY;
+
+  if (!apiKey) {
+    console.error("Missing DEEPGRAM_API_KEY environment variable");
+    console.error("\nPlease add DEEPGRAM_API_KEY to your .env file.");
+    process.exit(1);
+  }
+
+  deepgram = createDeepgramClient(apiKey);
+  console.log("Deepgram client initialized");
 }
 
 /**
@@ -145,52 +171,108 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
 }
 
 /**
- * Run manus-speech-to-text on a video file and parse output
+ * Generate transcript using Deepgram API
  */
-function generateTranscript(videoPath: string): { text: string; segments: TranscriptSegment[] } {
-  console.log(`Running manus-speech-to-text on ${videoPath}...`);
+async function generateTranscript(videoPath: string): Promise<{ text: string; segments: TranscriptSegment[] }> {
+  console.log(`Transcribing with Deepgram: ${path.basename(videoPath)}...`);
 
   try {
-    // Run manus-speech-to-text and capture output
-    const output = execSync(`manus-speech-to-text "${videoPath}"`, {
-      encoding: "utf-8",
-      maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large outputs
-    });
+    // Read the video file
+    const audioBuffer = fs.readFileSync(videoPath);
 
-    // Parse the output to extract timestamped segments
-    // Expected format: "00:00-00:13  Text content here..."
-    const segments: TranscriptSegment[] = [];
-    const lines = output.split("\n").filter((line) => line.trim());
-
-    let fullText = "";
-
-    for (const line of lines) {
-      // Try to match timestamp pattern: "00:00-00:13  Text"
-      const match = line.match(/^(\d{2}:\d{2})-(\d{2}:\d{2})\s+(.+)$/);
-      if (match) {
-        const [, start, end, text] = match;
-        segments.push({ start, end, text: text.trim() });
-        fullText += (fullText ? " " : "") + text.trim();
-      } else if (line.trim() && !line.startsWith("[") && !line.includes("Processing")) {
-        // Also capture lines without timestamps as part of the text
-        fullText += (fullText ? " " : "") + line.trim();
+    // Call Deepgram API
+    const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
+      audioBuffer,
+      {
+        model: "nova-2",
+        smart_format: true,
+        punctuate: true,
+        paragraphs: true,
+        utterances: true,
       }
+    );
+
+    if (error) {
+      throw new Error(`Deepgram API error: ${error.message}`);
     }
 
-    // If no segments were parsed, treat the entire output as plain text
-    if (segments.length === 0 && fullText) {
-      segments.push({
-        start: "00:00",
-        end: "00:00",
-        text: fullText,
-      });
+    if (!result || !result.results) {
+      throw new Error("No transcription results returned from Deepgram");
+    }
+
+    // Extract segments from utterances
+    const segments: TranscriptSegment[] = [];
+    let fullText = "";
+
+    // Check if utterances are available
+    const utterances = result.results.utterances;
+    if (utterances && utterances.length > 0) {
+      for (const utterance of utterances) {
+        segments.push({
+          start: formatTimestamp(utterance.start),
+          end: formatTimestamp(utterance.end),
+          text: utterance.transcript,
+        });
+        fullText += (fullText ? " " : "") + utterance.transcript;
+      }
+    } else {
+      // Fallback to channels/alternatives if no utterances
+      const channels = result.results.channels;
+      if (channels && channels.length > 0) {
+        const alternatives = channels[0].alternatives;
+        if (alternatives && alternatives.length > 0) {
+          const alt = alternatives[0];
+          fullText = alt.transcript || "";
+
+          // Try to get word-level timestamps and group into segments
+          const words = alt.words;
+          if (words && words.length > 0) {
+            // Group words into ~10 second segments
+            let currentSegment: { start: number; end: number; words: string[] } | null = null;
+            const SEGMENT_DURATION = 10; // seconds
+
+            for (const word of words) {
+              if (!currentSegment) {
+                currentSegment = { start: word.start, end: word.end, words: [word.word] };
+              } else if (word.start - currentSegment.start > SEGMENT_DURATION) {
+                // Save current segment and start new one
+                segments.push({
+                  start: formatTimestamp(currentSegment.start),
+                  end: formatTimestamp(currentSegment.end),
+                  text: currentSegment.words.join(" "),
+                });
+                currentSegment = { start: word.start, end: word.end, words: [word.word] };
+              } else {
+                currentSegment.end = word.end;
+                currentSegment.words.push(word.word);
+              }
+            }
+
+            // Don't forget the last segment
+            if (currentSegment && currentSegment.words.length > 0) {
+              segments.push({
+                start: formatTimestamp(currentSegment.start),
+                end: formatTimestamp(currentSegment.end),
+                text: currentSegment.words.join(" "),
+              });
+            }
+          } else if (fullText) {
+            // No word timestamps, create single segment
+            segments.push({
+              start: "00:00",
+              end: "00:00",
+              text: fullText,
+            });
+          }
+        }
+      }
     }
 
     console.log(`Generated transcript: ${segments.length} segments, ${fullText.length} chars`);
     return { text: fullText, segments };
   } catch (error) {
     if (error instanceof Error) {
-      console.error(`manus-speech-to-text error: ${error.message}`);
+      console.error(`Deepgram error: ${error.message}`);
       throw new Error(`Transcript generation failed: ${error.message}`);
     }
     throw error;
@@ -283,8 +365,8 @@ async function processTranscript(item: PendingTranscript): Promise<void> {
     const stats = fs.statSync(videoPath);
     console.log(`Downloaded: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
 
-    // Generate transcript
-    const { text, segments } = generateTranscript(videoPath);
+    // Generate transcript using Deepgram
+    const { text, segments } = await generateTranscript(videoPath);
 
     // Save to database
     await saveTranscript(item.ad_id, text, segments);
@@ -308,21 +390,12 @@ async function processTranscript(item: PendingTranscript): Promise<void> {
 async function runWorker(): Promise<void> {
   console.log("\n========================================");
   console.log("  Ad Transcript Worker");
-  console.log("  Using: manus-speech-to-text");
+  console.log("  Using: Deepgram Nova-2 API");
   console.log("========================================\n");
 
   initSupabase();
+  initDeepgram();
   ensureTempDir();
-
-  // Check if manus-speech-to-text is available
-  try {
-    execSync("which manus-speech-to-text", { encoding: "utf-8" });
-    console.log("manus-speech-to-text: found");
-  } catch {
-    console.error("ERROR: manus-speech-to-text command not found!");
-    console.error("Please ensure manus-speech-to-text is installed and in your PATH.");
-    process.exit(1);
-  }
 
   console.log(`\nPolling interval: ${POLL_INTERVAL_MS / 1000} seconds`);
   console.log(`Temp directory: ${TEMP_DIR}`);
