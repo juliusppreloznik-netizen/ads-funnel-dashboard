@@ -1,0 +1,83 @@
+{
+  "query": "SELECT id, status, priority, description, page FROM changeRequests ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END, id DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, status, priority, description, page FROM changeRequests ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END, id DESC",
+  "rows": [
+    {
+      "id": "30001",
+      "status": "pending",
+      "priority": "high",
+      "description": "chnage the email on the facebook help video to add, to duffyjamir@gmail.com",
+      "page": "/admin/clients"
+    },
+    {
+      "id": "9",
+      "status": "done",
+      "priority": "high",
+      "description": "On the Facebook business access page, add the same email for the ghl admin, but put in give full access",
+      "page": "/onboarding/600007"
+    },
+    {
+      "id": "8",
+      "status": "done",
+      "priority": "medium",
+      "description": "remove google druve link field",
+      "page": "/"
+    },
+    {
+      "id": "7",
+      "status": "done",
+      "priority": "high",
+      "description": "Change the video embed on the 4th step to this, https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.youtube.com/watch%3Fv%3Dr9bwiFVUezE&ved=2ahUKEwjHvJCM9N-SAxWRpIkEHRa_LJMQkPEHegQIGRAB&usg=AOvVaw2ZESs3unr_GLkyDVBtoI_8 watch the video yourself then change the quick steps at the bottom so they match",
+      "page": "/onboarding/720008"
+    },
+    {
+      "id": "6",
+      "status": "done",
+      "priority": "high",
+      "description": "On the \" add us as agency admin page, put the email to add as employee@catalystmarketingco.net, first and last name can be Catalyst marketing",
+      "page": "/onboarding/720008"
+    },
+    {
+      "id": "5",
+      "status": "done",
+      "priority": "high",
+      "description": "change the GHL page to once they mark done GHL account is made, make a manditory step 1b that is add us as agency admin, change the how to add us to agency admin yt video embed to this https://www.youtube.com/watch?v=njgC28VeUEc",
+      "page": "/onboarding/720008"
+    },
+    {
+      "id": "4",
+      "status": "done",
+      "priority": "high",
+      "description": ", share your login details with us via the intake form or email. remove this and put add our email as a agency admin",
+      "page": "/onboarding/720008"
+    },
+    {
+      "id": "3",
+      "status": "done",
+      "priority": "high",
+      "description": "remove Choose the plan that fits your needs (we recommend the $297/mo plan) and put choose 07 plan",
+      "page": "/onboarding/720008"
+    },
+    {
+      "id": "2",
+      "status": "done",
+      "priority": "high",
+      "description": "Make sure a client can resume the onboarding if log back in if they leave and come back",
+      "page": "/"
+    },
+    {
+      "id": "1",
+      "status": "done",
+      "priority": "high",
+      "description": "remove the ghl login and password fields from the intake",
+      "page": "/"
+    }
+  ],
+  "messages": [
+    "60001\tpending\tmedium\tchange the email on the facebook details section to ",
+    "duffyjamir@gmail.com\t/setup"
+  ],
+  "stdout": "id\tstatus\tpriority\tdescription\tpage\n60001\tpending\tmedium\tchange the email on the facebook details section to \nduffyjamir@gmail.com\t/setup\n30001\tpending\thigh\tchnage the email on the facebook help video to add, to duffyjamir@gmail.com\t/admin/clients\n9\tdone\thigh\tOn the Facebook business access page, add the same email for the ghl admin, but put in give full access\t/onboarding/600007\n8\tdone\tmedium\tremove google druve link field\t/\n7\tdone\thigh\tChange the video embed on the 4th step to this, https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.youtube.com/watch%3Fv%3Dr9bwiFVUezE&ved=2ahUKEwjHvJCM9N-SAxWRpIkEHRa_LJMQkPEHegQIGRAB&usg=AOvVaw2ZESs3unr_GLkyDVBtoI_8 watch the video yourself then change the quick steps at the bottom so they match\t/onboarding/720008\n6\tdone\thigh\tOn the \" add us as agency admin page, put the email to add as employee@catalystmarketingco.net, first and last name can be Catalyst marketing\t/onboarding/720008\n5\tdone\thigh\tchange the GHL page to once they mark done GHL account is made, make a manditory step 1b that is add us as agency admin, change the how to add us to agency admin yt video embed to this https://www.youtube.com/watch?v=njgC28VeUEc\t/onboarding/720008\n4\tdone\thigh\t, share your login details with us via the intake form or email. remove this and put add our email as a agency admin\t/onboarding/720008\n3\tdone\thigh\tremove Choose the plan that fits your needs (we recommend the $297/mo plan) and put choose 07 plan\t/onboarding/720008\n2\tdone\thigh\tMake sure a client can resume the onboarding if log back in if they leave and come back\t/\n1\tdone\thigh\tremove the ghl login and password fields from the intake\t/\n",
+  "stderr": "",
+  "execution_time_ms": 347
+}

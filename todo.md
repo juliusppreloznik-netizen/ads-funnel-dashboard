@@ -295,3 +295,8 @@
 ## Internal Notes UI Improvement
 - [x] Change client dropdown in Internal Notes to horizontal scrollable pill/chip selector
 - [x] Change Internal Notes client selector from horizontal scroll to vertical scroll
+
+## Change Request Batch #3
+- [x] CR#60001: Change the email on the Facebook details section in /setup to duffyjamir@gmail.com
+- [x] CR#30001: Change the email on the Facebook help video to duffyjamir@gmail.com
+- [x] Mark both change requests as done in database
