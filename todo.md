@@ -319,3 +319,8 @@
 - [x] Add backend tRPC procedure to clear all generated assets (VSL scripts, ad scripts) from the database
 - [x] Add "Clear Test Generations" button to admin dashboard
 - [x] Confirm dialog before clearing to prevent accidental deletion
+
+## Clear Test Client Submissions Button
+- [x] Add backend procedure to delete test/junk client submissions (Test Client, Generation Test Client, test@example.com, gentest@example.com)
+- [x] Update "Clear Test Generations" button to "Clear Test Clients" — deletes test client rows and their associated data
+- [x] Keep confirm dialog to prevent accidental deletion

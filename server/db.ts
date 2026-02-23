@@ -1,4 +1,4 @@
-import { eq, desc, and, asc } from "drizzle-orm";
+import { eq, desc, and, asc, or, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, helpVideos, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel, InsertHelpVideo, HelpVideo } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -248,6 +248,45 @@ export async function clearAllGeneratedAssets() {
   
   const result = await db.delete(generatedAssets);
   return result[0]?.affectedRows || 0;
+}
+
+export async function clearTestClients() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Find test clients by known test patterns
+  const testClients = await db.select({ id: clients.id }).from(clients).where(
+    or(
+      like(clients.name, '%Test Client%'),
+      like(clients.name, '%Generation Test%'),
+      eq(clients.email, 'test@example.com'),
+      eq(clients.email, 'gentest@example.com'),
+    )
+  );
+  
+  if (testClients.length === 0) return 0;
+  
+  const testIds = testClients.map(c => c.id);
+  
+  // Cascade delete associated data for each test client
+  for (const id of testIds) {
+    await db.delete(clientTasks).where(eq(clientTasks.clientId, id));
+    await db.delete(generatedAssets).where(eq(generatedAssets.clientId, id));
+    await db.delete(onboardingProgress).where(eq(onboardingProgress.clientId, id));
+    await db.delete(funnels).where(eq(funnels.clientId, id));
+  }
+  
+  // Delete the test clients themselves
+  await db.delete(clients).where(
+    or(
+      like(clients.name, '%Test Client%'),
+      like(clients.name, '%Generation Test%'),
+      eq(clients.email, 'test@example.com'),
+      eq(clients.email, 'gentest@example.com'),
+    )
+  );
+  
+  return testIds.length;
 }
 
 // Client Tasks management functions

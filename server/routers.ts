@@ -178,6 +178,12 @@ export const appRouter = router({
         await db.updateAdminNotes(input.clientId, input.notes);
         return { success: true };
       }),
+
+    clearTestClients: protectedProcedure
+      .mutation(async () => {
+        const deleted = await db.clearTestClients();
+        return { success: true, deleted };
+      }),
   }),
 
   // Task management
