@@ -324,3 +324,6 @@
 - [x] Add backend procedure to delete test/junk client submissions (Test Client, Generation Test Client, test@example.com, gentest@example.com)
 - [x] Update "Clear Test Generations" button to "Clear Test Clients" — deletes test client rows and their associated data
 - [x] Keep confirm dialog to prevent accidental deletion
+
+## Fix Video Unavailable on Agency Admin Step
+- [x] Replace iframe embed for m3MOW1xstbg with clickable YouTube thumbnail (embedding disabled by video owner)

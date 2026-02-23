@@ -32,6 +32,7 @@ const ONBOARDING_STEPS = [
       "Now that your GHL account is ready, you need to add us as an agency admin. This lets our team access your account to build your funnels, automations, and workflows. Watch the video below and follow the quick steps.",
     videoId: "m3MOW1xstbg",
     videoStart: 0,
+    noEmbed: true,
     instructions: [
       "Log into your GoHighLevel account",
       "Go to Settings → My Staff (or Team)",
@@ -303,13 +304,39 @@ export default function Onboarding() {
           {/* Video Embed */}
           <Card className="bg-black border-white/10 overflow-hidden">
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src={`https://www.youtube.com/embed/${step.videoId}?start=${step.videoStart}&rel=0&modestbranding=1`}
-                title={step.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {step.noEmbed ? (
+                <a
+                  href={`https://www.youtube.com/watch?v=${step.videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 w-full h-full group"
+                >
+                  <img
+                    src={`https://img.youtube.com/vi/${step.videoId}/maxresdefault.jpg`}
+                    alt={step.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${step.videoId}/hqdefault.jpg`;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
+                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Play className="h-8 w-8 text-white fill-white ml-1" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                    Watch on YouTube
+                  </div>
+                </a>
+              ) : (
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${step.videoId}?start=${step.videoStart}&rel=0&modestbranding=1`}
+                  title={step.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
             </div>
           </Card>
 
