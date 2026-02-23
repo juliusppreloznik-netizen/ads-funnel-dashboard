@@ -242,6 +242,14 @@ export async function updateAssetContent(id: number, content: string) {
     .where(eq(generatedAssets.id, id));
 }
 
+export async function clearAllGeneratedAssets() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.delete(generatedAssets);
+  return result[0]?.affectedRows || 0;
+}
+
 // Client Tasks management functions
 const DEFAULT_TASKS = [
   { name: "Assets imported into GHL", order: 1 },

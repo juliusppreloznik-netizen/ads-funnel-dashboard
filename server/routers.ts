@@ -339,6 +339,12 @@ export const appRouter = router({
 
         return { success: true };
       }),
+
+    clearAll: protectedProcedure
+      .mutation(async () => {
+        const deleted = await db.clearAllGeneratedAssets();
+        return { success: true, deleted };
+      }),
   }),
 
   // Funnel Builder

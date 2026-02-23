@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, ClipboardCopy, ExternalLink, User, Mail, Building2, KeyRound, Link2 } from "lucide-react";
+import { Loader2, Search, FileText, Zap, Sparkles, Eye, Users, Copy, Download, Settings, ClipboardCopy, ExternalLink, User, Mail, Building2, KeyRound, Link2, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
@@ -73,6 +73,16 @@ export default function AdminDashboard() {
     },
     onError: (error: any) => {
       toast.error("Failed to generate ads: " + error.message);
+    },
+  });
+
+  const clearAllGenerations = trpc.generation.clearAll.useMutation({
+    onSuccess: (data: any) => {
+      toast.success(`Cleared all test generations (${data.deleted} removed)`);
+      utils.assets.getByClientId.invalidate();
+    },
+    onError: (error: any) => {
+      toast.error("Failed to clear: " + error.message);
     },
   });
 
@@ -526,6 +536,32 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
 
+                {/* Clear Test Generations */}
+                <div className="pt-2 border-t border-white/5">
+                  <Button
+                    onClick={() => {
+                      if (confirm("Clear ALL generated assets (VSL scripts, ad scripts) for ALL clients? This cannot be undone.")) {
+                        clearAllGenerations.mutate();
+                      }
+                    }}
+                    disabled={clearAllGenerations.isPending}
+                    variant="outline"
+                    size="sm"
+                    className="bg-transparent border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                  >
+                    {clearAllGenerations.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Clearing...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Clear Test Generations
+                      </>
+                    )}
+                  </Button>
+                </div>
 
               </div>
             </div>

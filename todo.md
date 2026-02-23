@@ -314,3 +314,8 @@
 - [x] Update HelpVideos page colors
 - [x] Update all other pages and components for consistency
 - [x] Verify visual consistency across all pages — all 74 tests passing
+
+## Clear Test Generations Button
+- [x] Add backend tRPC procedure to clear all generated assets (VSL scripts, ad scripts) from the database
+- [x] Add "Clear Test Generations" button to admin dashboard
+- [x] Confirm dialog before clearing to prevent accidental deletion
