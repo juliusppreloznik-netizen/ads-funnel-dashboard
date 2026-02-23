@@ -97,7 +97,7 @@ export default function ChangeRequestButton() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-105 transition-all group"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full bg-white text-black shadow-lg shadow-black/20 hover:shadow-black/40 hover:scale-105 transition-all group"
         >
           <MessageSquarePlus className="h-5 w-5" />
           <span className="text-sm font-medium">Request Change</span>
@@ -113,15 +113,15 @@ export default function ChangeRequestButton() {
       {isOpen && (
         <div
           ref={panelRef}
-          className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[80vh] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl shadow-black/50 flex flex-col overflow-hidden"
+          className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[80vh] bg-neutral-950 border border-white/10 rounded-2xl shadow-2xl shadow-black/50 flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-slate-900/95">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-neutral-950/95">
             <div className="flex items-center gap-2">
-              <MessageSquarePlus className="h-4 w-4 text-violet-400" />
+              <MessageSquarePlus className="h-4 w-4 text-white/70" />
               <span className="text-sm font-semibold text-white">Change Requests</span>
               {pendingCount > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-400 text-xs font-medium">
+                <span className="px-1.5 py-0.5 rounded-full bg-white/15 text-white/80 text-xs font-medium">
                   {pendingCount} pending
                 </span>
               )}
@@ -141,7 +141,7 @@ export default function ChangeRequestButton() {
               onChange={(e) => setDescription(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Describe the change you want..."
-              className="bg-slate-800/50 border-white/10 text-white placeholder:text-slate-500 resize-none min-h-[80px] text-sm focus:border-violet-500/50"
+              className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 resize-none min-h-[80px] text-sm focus:border-white/30"
               rows={3}
             />
 
@@ -171,7 +171,7 @@ export default function ChangeRequestButton() {
                 onClick={handleSubmit}
                 disabled={!description.trim() || createMutation.isPending}
                 size="sm"
-                className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-3 h-7"
+                className="bg-white hover:bg-white/90 text-black text-xs px-3 h-7"
               >
                 <Send className="h-3 w-3 mr-1" />
                 {createMutation.isPending ? "..." : "Log"}

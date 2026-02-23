@@ -177,9 +177,9 @@ export default function Onboarding() {
   const isCurrentStepComplete = completedSteps[step.key];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black">
       {/* Progress Header */}
-      <div className="border-b border-white/10 bg-slate-950/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b border-white/10 bg-black/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-lg font-semibold text-white">{isGuideMode ? "Setup Guide" : "Getting Started"}</h1>
@@ -207,7 +207,7 @@ export default function Onboarding() {
                     done
                       ? "bg-green-500"
                       : i === currentStep
-                      ? "bg-violet-500"
+                      ? "bg-white"
                       : "bg-white/10"
                   }`}
                 />
@@ -229,7 +229,7 @@ export default function Onboarding() {
                 onClick={() => setCurrentStep(i)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                   i === currentStep
-                    ? "bg-violet-600 text-white"
+                    ? "bg-white text-black"
                     : done
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : "bg-white/5 text-slate-400 border border-white/10 hover:border-white/20"
@@ -253,7 +253,7 @@ export default function Onboarding() {
           {/* Step Header */}
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-violet-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/50">
                 Step {currentStep + 1} of {ONBOARDING_STEPS.length}
               </span>
             </div>
@@ -266,23 +266,23 @@ export default function Onboarding() {
 
           {/* Extra Info Card (Agency Admin + Facebook) */}
           {"extraInfo" in step && (step as any).extraInfo && (
-            <Card className="bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border-violet-500/20 p-5">
+            <Card className="bg-white/[0.06] border-white/15 p-5">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-600/20 flex items-center justify-center">
-                  <Mail className="h-5 w-5 text-violet-400" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <Mail className="h-5 w-5 text-white/70" />
                 </div>
                 <div>
                   <h4 className="text-white font-semibold mb-1">Details to Enter</h4>
                   <div className="space-y-1 text-sm">
                     <p className="text-slate-300">
                       <span className="text-slate-400">Email:</span>{" "}
-                      <span className="text-violet-300 font-mono select-all">
+                      <span className="text-white font-mono select-all">
                         {(step as any).extraInfo.email}
                       </span>
                     </p>
                     <p className="text-slate-300">
                       <span className="text-slate-400">Name:</span>{" "}
-                      <span className="text-violet-300 font-mono select-all">
+                      <span className="text-white font-mono select-all">
                         {(step as any).extraInfo.name}
                       </span>
                     </p>
@@ -314,15 +314,15 @@ export default function Onboarding() {
           </Card>
 
           {/* Instructions */}
-          <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-6">
+          <Card className="bg-white/[0.04] border-white/10 p-6">
             <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <Play className="h-4 w-4 text-violet-400" />
+              <Play className="h-4 w-4 text-white/60" />
               Quick Steps
             </h3>
             <ol className="space-y-3">
               {step.instructions.map((instruction, i) => (
                 <li key={i} className="flex gap-3 text-slate-300">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-violet-600/20 text-violet-400 flex items-center justify-center text-xs font-semibold">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-white/10 text-white/60 flex items-center justify-center text-xs font-semibold">
                     {i + 1}
                   </span>
                   <span>{instruction}</span>
@@ -351,7 +351,7 @@ export default function Onboarding() {
                   className={
                     isCurrentStepComplete
                       ? "bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30"
-                      : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
+                      : "bg-white text-black hover:bg-white/90"
                   }
                 >
                   {isCurrentStepComplete ? (
@@ -372,7 +372,7 @@ export default function Onboarding() {
             {currentStep < ONBOARDING_STEPS.length - 1 ? (
               <Button
                 onClick={handleNext}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500"
+                className="bg-white text-black hover:bg-white/90"
               >
                 Next Step
                 <ChevronRight className="h-4 w-4 ml-2" />

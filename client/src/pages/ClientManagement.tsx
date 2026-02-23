@@ -225,7 +225,7 @@ export default function ClientManagement() {
 
   if (selectedClientId && selectedClient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -251,7 +251,7 @@ export default function ClientManagement() {
                     Reset Password
                   </Button>
                 </DialogTrigger>
-              <DialogContent className="bg-slate-900 border-white/10">
+              <DialogContent className="bg-neutral-950 border-white/10">
                 <DialogHeader>
                   <DialogTitle className="text-white">Reset Client Password</DialogTitle>
                 </DialogHeader>
@@ -268,7 +268,7 @@ export default function ClientManagement() {
                   </div>
                   <Button
                     onClick={handleResetPassword}
-                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                    className="w-full bg-white text-black"
                   >
                     Reset Password
                   </Button>
@@ -289,7 +289,7 @@ export default function ClientManagement() {
                 <Button
                   onClick={() => unarchiveClientMutation.mutate({ clientId: selectedClientId })}
                   variant="outline"
-                  className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/15"
                 >
                   <ArchiveRestore className="h-4 w-4 mr-2" />
                   Unarchive
@@ -312,16 +312,16 @@ export default function ClientManagement() {
 
           {/* Progress Card */}
           {progress && (
-            <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-6">
+            <Card className="bg-white/[0.04] border-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-white">Overall Progress</h2>
-                <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+                <span className="text-2xl font-bold text-white">
                   {progress.percentage}%
                 </span>
               </div>
-              <div className="relative h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500"
+                  className="absolute inset-y-0 left-0 bg-white text-black transition-all duration-500"
                   style={{ width: `${progress.percentage}%` }}
                 />
               </div>
@@ -337,12 +337,12 @@ export default function ClientManagement() {
             {tasks && tasks.length > 0 && (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-violet-600 to-indigo-600">
+                  <Button className="bg-white text-black">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Task
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-slate-900 border-white/10">
+                <DialogContent className="bg-neutral-950 border-white/10">
                   <DialogHeader>
                     <DialogTitle className="text-white">Create New Task</DialogTitle>
                   </DialogHeader>
@@ -352,7 +352,7 @@ export default function ClientManagement() {
                       <Input
                         id="taskName"
                         placeholder="Enter task name"
-                        className="bg-slate-800 border-white/10 text-white"
+                        className="bg-white/5 border-white/10 text-white"
                         onChange={(e) => setNewTaskName(e.target.value)}
                       />
                     </div>
@@ -365,7 +365,7 @@ export default function ClientManagement() {
                           });
                         }
                       }}
-                      className="w-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                      className="w-full bg-white text-black"
                     >
                       Create Task
                     </Button>
@@ -376,11 +376,11 @@ export default function ClientManagement() {
           </div>
           <div className="space-y-4">
             {tasks && tasks.length === 0 && (
-              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+              <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
                 <p className="text-slate-400 mb-4">No tasks found for this client.</p>
                 <Button
                   onClick={() => createTasksMutation.mutate({ clientId: selectedClientId })}
-                  className="bg-gradient-to-r from-violet-600 to-indigo-600"
+                  className="bg-white text-black"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Default Tasks
@@ -388,7 +388,7 @@ export default function ClientManagement() {
               </Card>
             )}
             {tasks?.map((task: Task) => (
-              <Card key={task.id} className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-6">
+              <Card key={task.id} className="bg-white/[0.04] border-white/10 p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -445,7 +445,7 @@ export default function ClientManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -468,7 +468,7 @@ export default function ClientManagement() {
               <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10">
+              <SelectContent className="bg-neutral-950 border-white/10">
                 <SelectItem value="all" className="text-white">All Clients</SelectItem>
                 <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
                 <SelectItem value="completed" className="text-white">Completed</SelectItem>
@@ -477,12 +477,12 @@ export default function ClientManagement() {
             </Select>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-violet-600 to-indigo-600">
+              <Button className="bg-white text-black">
                 <UserPlus className="h-4 w-4 mr-2" />
                 Add Client
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-white/10 max-w-2xl">
+            <DialogContent className="bg-neutral-950 border-white/10 max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-white">Create New Client</DialogTitle>
               </DialogHeader>
@@ -557,7 +557,7 @@ export default function ClientManagement() {
                 <Button
                   type="submit"
                   disabled={createClientMutation.isPending}
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                  className="w-full bg-white text-black"
                 >
                   {createClientMutation.isPending ? "Creating..." : "Create Client"}
                 </Button>
@@ -586,10 +586,10 @@ export default function ClientManagement() {
                     key={client.id}
                     className={`p-6 cursor-pointer transition-all ${
                       isArchived
-                        ? 'bg-gradient-to-br from-slate-800/40 to-slate-700/30 border-slate-500/20 hover:border-slate-500/40 opacity-75'
+                        ? 'bg-white/[0.02] border-white/5 hover:border-white/10 opacity-75'
                         : isComplete
                         ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
-                        : 'bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 hover:border-violet-500/50'
+                        : 'bg-white/[0.04] border-white/10 hover:border-white/30'
                     }`}
                     onClick={() => setSelectedClientId(client.id)}
                   >
@@ -620,7 +620,7 @@ export default function ClientManagement() {
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                               : hasStarted
                               ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                              : 'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                              : 'bg-white/5 text-slate-400 border border-white/10'
                           }`}>
                             {isOnboardingDone ? (
                               <CheckCircle2 className="h-3 w-3" />
@@ -640,14 +640,14 @@ export default function ClientManagement() {
                           <span className={isComplete ? 'text-green-400' : 'text-slate-400'}>
                             Progress
                           </span>
-                          <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-violet-400'}`}>
+                          <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-white'}`}>
                             {client.progress.percentage}%
                           </span>
                         </div>
-                        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                           <div
                             className={`h-full transition-all duration-500 ${
-                              isComplete ? 'bg-green-500' : 'bg-gradient-to-r from-violet-600 to-indigo-600'
+                              isComplete ? 'bg-green-500' : 'bg-white text-black'
                             }`}
                             style={{ width: `${client.progress.percentage}%` }}
                           />
@@ -660,7 +660,7 @@ export default function ClientManagement() {
             </div>
 
             {clients?.length === 0 && (
-              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+              <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
                 <p className="text-slate-400">No clients yet. Create your first client to get started.</p>
               </Card>
             )}
@@ -682,7 +682,7 @@ export default function ClientManagement() {
           ) : (
             <button
               onClick={() => setNotepadOpen(true)}
-              className="fixed right-4 top-1/2 -translate-y-1/2 bg-gradient-to-b from-violet-600 to-indigo-600 text-white p-2 rounded-l-lg shadow-lg hover:from-violet-500 hover:to-indigo-500 transition-all z-10"
+              className="fixed right-4 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-l-lg shadow-lg hover:bg-white/90 transition-all z-10"
               title="Open Notepad"
             >
               <StickyNote className="h-5 w-5" />
@@ -765,11 +765,11 @@ function NotepadPanel({
   const activeClients = clients.filter(c => c.archived === 0);
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900/95 to-slate-800/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
+    <Card className="bg-neutral-950/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <StickyNote className="h-4 w-4 text-violet-400" />
+          <StickyNote className="h-4 w-4 text-white/60" />
           <h3 className="text-sm font-semibold text-white">Internal Notes</h3>
         </div>
         <button
@@ -790,7 +790,7 @@ function NotepadPanel({
               onClick={() => setNotepadClientId(client.id)}
               className={`w-full text-left px-4 py-2 text-xs font-medium transition-all border-l-2 ${
                 isActive
-                  ? "bg-violet-600/15 text-white border-l-violet-500"
+                  ? "bg-white/10 text-white border-l-white/50"
                   : "text-slate-400 hover:bg-white/5 hover:text-white border-l-transparent"
               }`}
             >

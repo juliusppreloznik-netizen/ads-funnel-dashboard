@@ -99,14 +99,14 @@ export default function ClientPortal() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
       {/* Header */}
       <div className="max-w-4xl mx-auto mb-8">
         <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ export default function ClientPortal() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Welcome Card */}
-        <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl p-8">
+        <Card className="bg-white/[0.04] border-white/10 backdrop-blur-xl p-8">
           <h1 className="text-3xl font-bold text-white mb-2">
             Welcome back, {client?.name}!
           </h1>
@@ -148,7 +148,7 @@ export default function ClientPortal() {
 
         {/* Continue Onboarding Banner */}
         {client && onboarding.completedSteps < 5 && (
-          <Card className="bg-gradient-to-r from-violet-900/40 to-indigo-900/40 border-violet-500/30 backdrop-blur-xl p-6">
+          <Card className="bg-white/[0.06] border-white/15 backdrop-blur-xl p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-white mb-1">Finish Your Onboarding</h2>
@@ -158,7 +158,7 @@ export default function ClientPortal() {
               </div>
               <Button
                 onClick={() => setLocation(`/onboarding/${client.id}`)}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 whitespace-nowrap"
+                className="bg-white text-black hover:bg-white/90 whitespace-nowrap"
               >
                 Continue Onboarding
               </Button>
@@ -167,19 +167,19 @@ export default function ClientPortal() {
         )}
 
         {/* Progress Card */}
-        <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl p-8">
+        <Card className="bg-white/[0.04] border-white/10 backdrop-blur-xl p-8">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-2xl font-bold text-white">Project Progress</h2>
-              <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+              <span className="text-3xl font-bold text-white">
                 {progress.percentage}%
               </span>
             </div>
             
             {/* Progress Bar */}
-            <div className="relative h-4 bg-slate-800 rounded-full overflow-hidden">
+            <div className="relative h-4 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500 rounded-full"
+                className="absolute inset-y-0 left-0 bg-white transition-all duration-500 rounded-full"
                 style={{ width: `${progress.percentage}%` }}
               />
             </div>

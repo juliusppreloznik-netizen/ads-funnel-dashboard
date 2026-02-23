@@ -152,7 +152,7 @@ export default function FunnelBuilder() {
             }, '*');
           }}
           disabled={isSaving}
-          className="bg-violet-600 hover:bg-violet-700"
+          className="bg-white text-black hover:bg-white/90"
         >
           {isSaving ? (
             <>

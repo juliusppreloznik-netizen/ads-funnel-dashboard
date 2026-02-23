@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function ThankYou() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl shadow-lg text-center">
         <CardHeader className="space-y-4">
           <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -25,7 +25,7 @@ export default function ThankYou() {
             </p>
             <Button
               onClick={() => window.location.href = '/client-login'}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700"
+              className="bg-white text-black hover:bg-white/90"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Access Client Portal

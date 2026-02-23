@@ -56,14 +56,14 @@ export default function ClientHelpVideos() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-white/60 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
@@ -91,7 +91,7 @@ export default function ClientHelpVideos() {
             placeholder="Search videos (e.g. domain, phone, facebook)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-slate-900/80 border-white/10 text-white placeholder:text-slate-500"
+            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
         </div>
 
@@ -109,8 +109,8 @@ export default function ClientHelpVideos() {
                 onClick={() => setActiveCategory(cat)}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-600/25"
-                    : "bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-white border border-white/5"
+                    ? "bg-white text-black shadow-lg shadow-white/10"
+                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
                 }`}
               >
                 {cat === "All" ? (
@@ -123,7 +123,7 @@ export default function ClientHelpVideos() {
                   className={`text-xs px-1.5 py-0.5 rounded-full ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-slate-700 text-slate-400"
+                      : "bg-white/10 text-slate-400"
                   }`}
                 >
                   {count}
@@ -140,7 +140,7 @@ export default function ClientHelpVideos() {
             return (
               <Card
                 key={video.id}
-                className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 overflow-hidden"
+                className="bg-white/[0.04] border-white/10 overflow-hidden"
               >
                 {/* Video Thumbnail / Player */}
                 {isExpanded ? (
@@ -171,8 +171,8 @@ export default function ClientHelpVideos() {
                       }}
                     />
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-full bg-violet-600/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                        <Play className="h-6 w-6 text-white ml-0.5" />
+                      <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                        <Play className="h-6 w-6 text-black ml-0.5" />
                       </div>
                     </div>
                   </button>
@@ -184,7 +184,7 @@ export default function ClientHelpVideos() {
                     <h3 className="text-lg font-semibold text-white">
                       {video.title}
                     </h3>
-                    <span className="text-xs px-2 py-1 rounded-full bg-slate-700/60 text-slate-400 whitespace-nowrap">
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-slate-400 whitespace-nowrap">
                       {video.category}
                     </span>
                   </div>
@@ -208,7 +208,7 @@ export default function ClientHelpVideos() {
                     ) : (
                       <Button
                         size="sm"
-                        className="bg-violet-600 hover:bg-violet-700 text-white"
+                        className="bg-white hover:bg-white/90 text-black"
                         onClick={() => setExpandedVideo(video.id)}
                       >
                         <Play className="h-4 w-4 mr-2" />
@@ -234,7 +234,7 @@ export default function ClientHelpVideos() {
         </div>
 
         {filteredVideos.length === 0 && (
-          <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+          <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
             <Search className="h-12 w-12 text-slate-600 mx-auto mb-4" />
             <p className="text-slate-400 text-lg">
               {search

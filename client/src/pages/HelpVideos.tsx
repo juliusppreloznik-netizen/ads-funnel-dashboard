@@ -251,7 +251,7 @@ export default function HelpVideos() {
             placeholder="https://www.youtube.com/watch?v=... or paste video ID"
             value={formData.youtubeUrl}
             onChange={(e) => handleUrlChange(e.target.value)}
-            className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
           {urlPreviewId && (
             <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
@@ -262,7 +262,7 @@ export default function HelpVideos() {
                   className="absolute inset-0 w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-violet-600/80 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
                     <Play className="h-5 w-5 text-white ml-0.5" />
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function HelpVideos() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, title: e.target.value }))
             }
-            className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
         </div>
 
@@ -302,7 +302,7 @@ export default function HelpVideos() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
             }
-            className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500 min-h-[80px]"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 min-h-[80px]"
           />
         </div>
 
@@ -325,8 +325,8 @@ export default function HelpVideos() {
                 }
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   formData.category === cat && !formData.customCategory
-                    ? "bg-violet-600 text-white"
-                    : "bg-slate-700/60 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5"
+                    ? "bg-white text-black"
+                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
                 }`}
               >
                 {getCategoryIcon(cat)} {cat}
@@ -343,7 +343,7 @@ export default function HelpVideos() {
                 category: e.target.value ? "" : prev.category,
               }))
             }
-            className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
         </div>
 
@@ -359,7 +359,7 @@ export default function HelpVideos() {
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, tags: e.target.value }))
             }
-            className="bg-slate-800/80 border-white/10 text-white placeholder:text-slate-500"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
         </div>
       </div>
@@ -368,14 +368,14 @@ export default function HelpVideos() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black flex items-center justify-center">
+        <Loader2 className="h-8 w-8 text-white/60 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -403,7 +403,7 @@ export default function HelpVideos() {
               setUrlPreviewId(null);
               setShowAddDialog(true);
             }}
-            className="bg-violet-600 hover:bg-violet-700 text-white"
+            className="bg-white hover:bg-white/90 text-black"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Video
@@ -418,7 +418,7 @@ export default function HelpVideos() {
               placeholder="Search videos (e.g. domain, phone, facebook)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-slate-900/80 border-white/10 text-white placeholder:text-slate-500"
+              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
             />
           </div>
         </div>
@@ -437,8 +437,8 @@ export default function HelpVideos() {
                 onClick={() => setActiveCategory(cat)}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-600/25"
-                    : "bg-slate-800/60 text-slate-400 hover:bg-slate-800 hover:text-white border border-white/5"
+                    ? "bg-white text-black shadow-lg shadow-white/10"
+                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5"
                 }`}
               >
                 {cat === "All" ? (
@@ -451,7 +451,7 @@ export default function HelpVideos() {
                   className={`text-xs px-1.5 py-0.5 rounded-full ${
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-slate-700 text-slate-400"
+                      : "bg-white/10 text-slate-400"
                   }`}
                 >
                   {count}
@@ -468,7 +468,7 @@ export default function HelpVideos() {
             return (
               <Card
                 key={video.id}
-                className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 overflow-hidden"
+                className="bg-white/[0.04] border-white/10 overflow-hidden"
               >
                 {/* Video Thumbnail / Player */}
                 {isExpanded ? (
@@ -499,7 +499,7 @@ export default function HelpVideos() {
                       }}
                     />
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-all flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-violet-600/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                      <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                         <Play className="h-7 w-7 text-white ml-1" />
                       </div>
                     </div>
@@ -512,7 +512,7 @@ export default function HelpVideos() {
                     <h3 className="text-lg font-semibold text-white">
                       {video.title}
                     </h3>
-                    <span className="text-xs px-2 py-1 rounded-full bg-slate-700/60 text-slate-400 whitespace-nowrap">
+                    <span className="text-xs px-2 py-1 rounded-full bg-white/10 text-slate-400 whitespace-nowrap">
                       {video.category}
                     </span>
                   </div>
@@ -530,7 +530,7 @@ export default function HelpVideos() {
                       className={`flex-1 transition-all ${
                         copiedId === video.id
                           ? "bg-green-600 hover:bg-green-600 text-white"
-                          : "bg-violet-600 hover:bg-violet-700 text-white"
+                          : "bg-white hover:bg-white/90 text-black"
                       }`}
                     >
                       {copiedId === video.id ? (
@@ -592,7 +592,7 @@ export default function HelpVideos() {
         </div>
 
         {filteredVideos.length === 0 && !isLoading && (
-          <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 p-12 text-center">
+          <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
             {videos.length === 0 ? (
               <>
                 <Video className="h-12 w-12 text-slate-600 mx-auto mb-4" />
@@ -609,7 +609,7 @@ export default function HelpVideos() {
                     setUrlPreviewId(null);
                     setShowAddDialog(true);
                   }}
-                  className="bg-violet-600 hover:bg-violet-700 text-white"
+                  className="bg-white hover:bg-white/90 text-black"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add First Video
@@ -630,11 +630,11 @@ export default function HelpVideos() {
         )}
 
         {/* Quick Tip */}
-        <Card className="mt-8 bg-gradient-to-r from-violet-900/30 to-indigo-900/30 border-violet-500/20 p-5">
+        <Card className="mt-8 bg-white/[0.06] border-white/15 p-5">
           <div className="flex items-start gap-3">
-            <Shield className="h-5 w-5 text-violet-400 mt-0.5 flex-shrink-0" />
+            <Shield className="h-5 w-5 text-white/60 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-violet-300 font-medium text-sm">Quick Tip</p>
+              <p className="text-white/70 font-medium text-sm">Quick Tip</p>
               <p className="text-slate-400 text-sm mt-1">
                 Click &ldquo;Copy Link to Send&rdquo; on any video, then paste it
                 directly into your text or email to the client. Use the{" "}
@@ -648,7 +648,7 @@ export default function HelpVideos() {
 
       {/* ============ ADD VIDEO DIALOG ============ */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-slate-900 border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white">Add Tutorial Video</DialogTitle>
             <DialogDescription className="text-slate-400">
@@ -667,7 +667,7 @@ export default function HelpVideos() {
             <Button
               onClick={handleAdd}
               disabled={createMutation.isPending}
-              className="bg-violet-600 hover:bg-violet-700 text-white"
+              className="bg-white hover:bg-white/90 text-black"
             >
               {createMutation.isPending ? (
                 <>
@@ -687,7 +687,7 @@ export default function HelpVideos() {
 
       {/* ============ EDIT VIDEO DIALOG ============ */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="bg-slate-900 border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white">Edit Video</DialogTitle>
             <DialogDescription className="text-slate-400">
@@ -706,7 +706,7 @@ export default function HelpVideos() {
             <Button
               onClick={handleEdit}
               disabled={updateMutation.isPending}
-              className="bg-violet-600 hover:bg-violet-700 text-white"
+              className="bg-white hover:bg-white/90 text-black"
             >
               {updateMutation.isPending ? (
                 <>
@@ -723,7 +723,7 @@ export default function HelpVideos() {
 
       {/* ============ DELETE CONFIRMATION DIALOG ============ */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="bg-slate-900 border-white/10 text-white max-w-sm">
+        <DialogContent className="bg-neutral-950 border-white/10 text-white max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-white">Delete Video?</DialogTitle>
             <DialogDescription className="text-slate-400">

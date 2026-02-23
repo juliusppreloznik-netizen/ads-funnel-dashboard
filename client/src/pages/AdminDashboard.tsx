@@ -95,7 +95,7 @@ export default function AdminDashboard() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-neutral-950 to-black">
         <Loader2 className="h-8 w-8 animate-spin text-white" />
       </div>
     );
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
   const anyGenerating = generateVSL.isPending || generateAds.isPending;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="container mx-auto px-6 py-6">
@@ -219,17 +219,17 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-6 py-8">
         {/* Quick Links Bar */}
-        <Card className="mb-6 bg-gradient-to-r from-violet-900/20 to-indigo-900/20 border-violet-500/20 backdrop-blur-xl">
+        <Card className="mb-6 bg-white/[0.03] border-white/10 backdrop-blur-xl">
           <div className="p-4 flex flex-wrap items-center gap-4">
-            <span className="text-sm font-semibold text-violet-300 flex items-center gap-2">
+            <span className="text-sm font-semibold text-white flex items-center gap-2">
               <Link2 className="h-4 w-4" />
               Quick Links
             </span>
             <div className="h-6 w-px bg-white/10" />
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/5">
                 <span className="text-xs text-slate-400">Intake Form:</span>
-                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/</code>
+                <code className="text-xs text-white/70 font-mono">{window.location.origin}/</code>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -239,9 +239,9 @@ export default function AdminDashboard() {
                   <ClipboardCopy className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/5">
                 <span className="text-xs text-slate-400">Setup Guide:</span>
-                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/setup</code>
+                <code className="text-xs text-white/70 font-mono">{window.location.origin}/setup</code>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -259,9 +259,9 @@ export default function AdminDashboard() {
                   <ExternalLink className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+              <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/5">
                 <span className="text-xs text-slate-400">Help Videos:</span>
-                <code className="text-xs text-violet-300 font-mono">{window.location.origin}/help-videos</code>
+                <code className="text-xs text-white/70 font-mono">{window.location.origin}/help-videos</code>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -280,9 +280,9 @@ export default function AdminDashboard() {
                 </Button>
               </div>
               {selectedClient && (
-                <div className="flex items-center gap-2 bg-slate-900/60 rounded-lg px-3 py-2 border border-white/5">
+                <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/5">
                   <span className="text-xs text-slate-400">Onboarding:</span>
-                  <code className="text-xs text-violet-300 font-mono">{window.location.origin}/onboarding/{selectedClient.id}</code>
+                  <code className="text-xs text-white/70 font-mono">{window.location.origin}/onboarding/{selectedClient.id}</code>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
 
         {/* Generation Panel */}
         {selectedClient && (
-          <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">
+          <Card className="mb-8 bg-white/[0.04] border-white/10 backdrop-blur-xl shadow-2xl">
             <div className="p-8">
               <div className="flex items-start justify-between mb-6">
                 <div>
@@ -330,19 +330,19 @@ export default function AdminDashboard() {
                         Client Details
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/10 max-w-lg">
+                    <DialogContent className="bg-neutral-950 border-white/10 max-w-lg">
                       <DialogHeader>
                         <DialogTitle className="text-white">Client Intake Details</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 mt-2">
                         <ClientDetailRow
-                          icon={<User className="h-4 w-4 text-violet-400" />}
+                          icon={<User className="h-4 w-4 text-white/60" />}
                           label="Full Name"
                           value={selectedClient.name}
                           onCopy={handleCopyToClipboard}
                         />
                         <ClientDetailRow
-                          icon={<Mail className="h-4 w-4 text-blue-400" />}
+                          icon={<Mail className="h-4 w-4 text-white/60" />}
                           label="Email Address"
                           value={selectedClient.email}
                           onCopy={handleCopyToClipboard}
@@ -401,7 +401,7 @@ export default function AdminDashboard() {
                         Admin Fields
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/10">
+                    <DialogContent className="bg-neutral-950 border-white/10">
                       <DialogHeader>
                         <DialogTitle className="text-white">Admin-Only Fields</DialogTitle>
                       </DialogHeader>
@@ -444,7 +444,7 @@ export default function AdminDashboard() {
                         </div>
                         <Button
                           onClick={handleUpdateAdminFields}
-                          className="w-full bg-gradient-to-r from-violet-600 to-indigo-600"
+                          className="w-full bg-white text-black hover:bg-white/90"
                           disabled={updateClientMutation.isPending}
                         >
                           {updateClientMutation.isPending ? (
@@ -491,7 +491,7 @@ export default function AdminDashboard() {
                     onClick={handleGenerateVSL}
                     disabled={generateVSL.isPending || anyGenerating}
                     size="lg"
-                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white border-0 h-16"
+                    className="bg-white hover:bg-white/90 text-black border-0 h-16"
                   >
                     {generateVSL.isPending ? (
                       <>
@@ -510,7 +510,7 @@ export default function AdminDashboard() {
                     onClick={handleGenerateAds}
                     disabled={generateAds.isPending || anyGenerating}
                     size="lg"
-                    className="bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white border-0 h-16"
+                    className="bg-neutral-800 hover:bg-neutral-700 text-white border border-white/10 h-16"
                   >
                     {generateAds.isPending ? (
                       <>
@@ -534,11 +534,11 @@ export default function AdminDashboard() {
 
         {/* Asset Viewer Tabs - shown when client is selected and has assets */}
         {selectedClient && assets && assets.length > 0 && (
-          <Card className="mb-8 bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">
+          <Card className="mb-8 bg-white/[0.04] border-white/10 backdrop-blur-xl shadow-2xl">
             <div className="p-8">
               <h2 className="text-xl font-bold text-white mb-4">Generated Assets</h2>
               <Tabs defaultValue="vsl" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-slate-800/50 h-auto">
+                <TabsList className="grid w-full grid-cols-2 bg-white/5 h-auto">
                   <TabsTrigger value="vsl" className="text-xs sm:text-sm py-2">VSL Script</TabsTrigger>
                   <TabsTrigger value="ads" className="text-xs sm:text-sm py-2">Ad Scripts</TabsTrigger>
                 </TabsList>
@@ -576,7 +576,7 @@ export default function AdminDashboard() {
         )}
 
         {/* Client List */}
-        <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border-white/10 backdrop-blur-xl shadow-2xl">
+        <Card className="bg-white/[0.04] border-white/10 backdrop-blur-xl shadow-2xl">
           <div className="p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white">Client Submissions</h2>
@@ -632,7 +632,7 @@ export default function AdminDashboard() {
                             size="sm"
                             className={
                               selectedClientId === client.id
-                                ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0"
+                                ? "bg-white text-black border-0"
                                 : "border-white/20 text-white hover:bg-white/10"
                             }
                           >
@@ -719,7 +719,7 @@ function AssetDisplay({
           </Button>
         </div>
       </div>
-      <div className="bg-slate-950/50 p-4 rounded-lg max-h-80 overflow-y-auto">
+      <div className="bg-black/40 p-4 rounded-lg max-h-80 overflow-y-auto">
         <pre className="text-white text-xs whitespace-pre-wrap font-mono">{asset.content}</pre>
       </div>
     </div>
