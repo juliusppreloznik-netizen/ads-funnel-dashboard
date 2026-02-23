@@ -300,3 +300,6 @@
 - [x] CR#60001: Change the email on the Facebook details section in /setup to duffyjamir@gmail.com
 - [x] CR#30001: Change the email on the Facebook help video to duffyjamir@gmail.com
 - [x] Mark both change requests as done in database
+
+## Video Replacement
+- [x] Replace the video on the "Add Agency Admin" onboarding step with https://youtu.be/m3MOW1xstbg

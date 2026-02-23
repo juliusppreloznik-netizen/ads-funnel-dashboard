@@ -30,7 +30,7 @@ const ONBOARDING_STEPS = [
     subtitle: "Give our team access to your GHL account so we can set everything up",
     description:
       "Now that your GHL account is ready, you need to add us as an agency admin. This lets our team access your account to build your funnels, automations, and workflows. Watch the video below and follow the quick steps.",
-    videoId: "njgC28VeUEc",
+    videoId: "m3MOW1xstbg",
     videoStart: 0,
     instructions: [
       "Log into your GoHighLevel account",
