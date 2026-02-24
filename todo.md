@@ -327,3 +327,10 @@
 
 ## Fix Video Unavailable on Agency Admin Step
 - [x] Replace iframe embed for m3MOW1xstbg with clickable YouTube thumbnail (embedding disabled by video owner)
+
+## Update Agency Admin Help Video Details
+- [x] Change email and name on the Agency Admin help video page to duffyjamir@gmail.com and Catalyst Marketing
+
+## Notepad Updates
+- [x] Rename "Internal Notes" to "Client Notes"
+- [x] Add a separate "General Notes" notepad (not tied to a client)

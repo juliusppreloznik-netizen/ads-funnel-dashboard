@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore, StickyNote, X, ChevronRight } from "lucide-react";
+import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore, StickyNote, X, ChevronRight, Notebook } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface Task {
@@ -29,9 +29,12 @@ export default function ClientManagement() {
   const [newTaskName, setNewTaskName] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "in_progress" | "completed" | "archived">("all");
   const [notepadOpen, setNotepadOpen] = useState(true);
+  const [notepadTab, setNotepadTab] = useState<'general' | 'client'>('general');
   const [notepadClientId, setNotepadClientId] = useState<number | null>(null);
   const [notepadText, setNotepadText] = useState("");
   const notepadDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [generalNotesText, setGeneralNotesText] = useState("");
+  const generalNotesDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [createFormData, setCreateFormData] = useState({
     name: "",
     email: "",
@@ -666,18 +669,68 @@ export default function ClientManagement() {
             )}
           </div>
 
-          {/* Internal Notepad Sidebar */}
+          {/* Notepad Sidebar */}
           {notepadOpen ? (
             <div className="w-80 flex-shrink-0">
-              <NotepadPanel
-                clients={clients || []}
-                notepadClientId={notepadClientId}
-                setNotepadClientId={setNotepadClientId}
-                notepadText={notepadText}
-                setNotepadText={setNotepadText}
-                notepadDebounceRef={notepadDebounceRef}
-                onClose={() => setNotepadOpen(false)}
-              />
+              <Card className="bg-neutral-950/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
+                {/* Header with close */}
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <StickyNote className="h-4 w-4 text-white/60" />
+                    <h3 className="text-sm font-semibold text-white">Notes</h3>
+                  </div>
+                  <button
+                    onClick={() => setNotepadOpen(false)}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-white/10">
+                  <button
+                    onClick={() => setNotepadTab('general')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all ${
+                      notepadTab === 'general'
+                        ? 'text-white border-b-2 border-white bg-white/5'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Notebook className="h-3.5 w-3.5" />
+                    General
+                  </button>
+                  <button
+                    onClick={() => setNotepadTab('client')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all ${
+                      notepadTab === 'client'
+                        ? 'text-white border-b-2 border-white bg-white/5'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <StickyNote className="h-3.5 w-3.5" />
+                    Client Notes
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                {notepadTab === 'general' ? (
+                  <GeneralNotepad
+                    generalNotesText={generalNotesText}
+                    setGeneralNotesText={setGeneralNotesText}
+                    generalNotesDebounceRef={generalNotesDebounceRef}
+                  />
+                ) : (
+                  <ClientNotepad
+                    clients={clients || []}
+                    notepadClientId={notepadClientId}
+                    setNotepadClientId={setNotepadClientId}
+                    notepadText={notepadText}
+                    setNotepadText={setNotepadText}
+                    notepadDebounceRef={notepadDebounceRef}
+                  />
+                )}
+              </Card>
             </div>
           ) : (
             <button
@@ -694,15 +747,69 @@ export default function ClientManagement() {
   );
 }
 
-// Notepad Panel Component
-function NotepadPanel({
+// General Notepad Component
+function GeneralNotepad({
+  generalNotesText,
+  setGeneralNotesText,
+  generalNotesDebounceRef,
+}: {
+  generalNotesText: string;
+  setGeneralNotesText: (text: string) => void;
+  generalNotesDebounceRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const { data: notesData } = trpc.generalNotes.get.useQuery();
+
+  const updateMutation = trpc.generalNotes.update.useMutation({
+    onError: (error) => {
+      toast.error("Failed to save notes: " + error.message);
+    },
+  });
+
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => {
+    if (notesData && !initialized) {
+      setGeneralNotesText(notesData.notes || "");
+      setInitialized(true);
+    }
+  }, [notesData, initialized, setGeneralNotesText]);
+
+  const handleChange = useCallback((value: string) => {
+    setGeneralNotesText(value);
+    if (generalNotesDebounceRef.current) {
+      clearTimeout(generalNotesDebounceRef.current);
+    }
+    generalNotesDebounceRef.current = setTimeout(() => {
+      updateMutation.mutate({ notes: value });
+    }, 800);
+  }, [setGeneralNotesText, generalNotesDebounceRef, updateMutation]);
+
+  return (
+    <>
+      <div className="flex-1 p-3 overflow-hidden">
+        <textarea
+          value={generalNotesText}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="General notes, reminders, to-dos..."
+          className="w-full h-full bg-transparent text-white text-sm placeholder:text-slate-500 resize-none outline-none leading-relaxed"
+        />
+      </div>
+      <div className="px-4 py-2 border-t border-white/10">
+        <p className="text-xs text-slate-500">
+          {updateMutation.isPending ? "Saving..." : "Auto-saves as you type"}
+        </p>
+      </div>
+    </>
+  );
+}
+
+// Client Notepad Component
+function ClientNotepad({
   clients,
   notepadClientId,
   setNotepadClientId,
   notepadText,
   setNotepadText,
   notepadDebounceRef,
-  onClose,
 }: {
   clients: any[];
   notepadClientId: number | null;
@@ -710,24 +817,18 @@ function NotepadPanel({
   notepadText: string;
   setNotepadText: (text: string) => void;
   notepadDebounceRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
-  onClose: () => void;
 }) {
-  // Fetch notes for selected client
   const { data: notesData } = trpc.clients.getAdminNotes.useQuery(
     { clientId: notepadClientId! },
     { enabled: !!notepadClientId }
   );
 
   const updateNotesMutation = trpc.clients.updateAdminNotes.useMutation({
-    onSuccess: () => {
-      // silent save
-    },
     onError: (error) => {
       toast.error("Failed to save notes: " + error.message);
     },
   });
 
-  // Sync notes when client changes or data loads
   const prevClientIdRef = useRef<number | null>(null);
   useEffect(() => {
     if (notepadClientId !== prevClientIdRef.current) {
@@ -736,7 +837,6 @@ function NotepadPanel({
     }
   }, [notepadClientId, notesData, setNotepadText]);
 
-  // Also sync when notesData first loads for the current client
   const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     if (notesData && !initialized) {
@@ -745,7 +845,6 @@ function NotepadPanel({
     }
   }, [notesData, initialized, setNotepadText]);
 
-  // Reset initialized when client changes
   useEffect(() => {
     setInitialized(false);
   }, [notepadClientId]);
@@ -765,22 +864,8 @@ function NotepadPanel({
   const activeClients = clients.filter(c => c.archived === 0);
 
   return (
-    <Card className="bg-neutral-950/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <StickyNote className="h-4 w-4 text-white/60" />
-          <h3 className="text-sm font-semibold text-white">Internal Notes</h3>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-slate-400 hover:text-white transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Client Selector - Vertical Scroll */}
+    <>
+      {/* Client Selector */}
       <div className="border-b border-white/10 overflow-y-auto max-h-36" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
         {activeClients.map((client) => {
           const isActive = notepadClientId === client.id;
@@ -825,6 +910,6 @@ function NotepadPanel({
           </p>
         </div>
       )}
-    </Card>
+    </>
   );
 }

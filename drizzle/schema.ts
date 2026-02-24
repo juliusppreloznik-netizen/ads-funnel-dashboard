@@ -155,3 +155,17 @@ export const helpVideos = mysqlTable("helpVideos", {
 
 export type HelpVideo = typeof helpVideos.$inferSelect;
 export type InsertHelpVideo = typeof helpVideos.$inferInsert;
+
+/**
+ * App Settings table - stores key-value settings like general notes
+ */
+export const appSettings = mysqlTable("appSettings", {
+  id: int("id").autoincrement().primaryKey(),
+  settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
+  settingValue: text("settingValue"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+export type InsertAppSetting = typeof appSettings.$inferInsert;

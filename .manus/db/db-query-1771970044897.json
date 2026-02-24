@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE helpVideos SET description = 'How to add our team as an agency admin in your GoHighLevel account. Use email: duffyjamir@gmail.com and name: Catalyst Marketing. Required for building funnels, automations, and workflows.', updatedAt = NOW() WHERE id = 2;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute UPDATE helpVideos SET description = 'How to add our team as an agency admin in your GoHighLevel account. Use email: duffyjamir@gmail.com and name: Catalyst Marketing. Required for building funnels, automations, and workflows.', updatedAt = NOW() WHERE id = 2;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 361
+}

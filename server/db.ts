@@ -1,6 +1,6 @@
 import { eq, desc, and, asc, or, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, helpVideos, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel, InsertHelpVideo, HelpVideo } from "../drizzle/schema";
+import { InsertUser, users, clients, generatedAssets, clientTasks, funnels, onboardingProgress, changeRequests, helpVideos, appSettings, InsertClient, InsertGeneratedAsset, InsertClientTask, Funnel, InsertFunnel, InsertHelpVideo, HelpVideo } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import * as bcrypt from 'bcryptjs';
 
@@ -691,4 +691,40 @@ export async function getHelpVideoCategories(): Promise<string[]> {
   const videos = await db.select({ category: helpVideos.category }).from(helpVideos);
   const categories = Array.from(new Set(videos.map(v => v.category)));
   return categories.sort();
+}
+
+// ============================================================================
+// APP SETTINGS / GENERAL NOTES HELPERS
+// ============================================================================
+
+export async function getGeneralNotes(): Promise<string> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select({ settingValue: appSettings.settingValue })
+    .from(appSettings)
+    .where(eq(appSettings.settingKey, 'general_notes'))
+    .limit(1);
+  
+  return result.length > 0 ? (result[0].settingValue || '') : '';
+}
+
+export async function updateGeneralNotes(notes: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await db.select().from(appSettings)
+    .where(eq(appSettings.settingKey, 'general_notes'))
+    .limit(1);
+  
+  if (existing.length > 0) {
+    await db.update(appSettings)
+      .set({ settingValue: notes, updatedAt: new Date() })
+      .where(eq(appSettings.settingKey, 'general_notes'));
+  } else {
+    await db.insert(appSettings).values({
+      settingKey: 'general_notes',
+      settingValue: notes,
+    });
+  }
 }

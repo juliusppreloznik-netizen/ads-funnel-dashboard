@@ -814,6 +814,21 @@ Please modify the HTML according to the instruction. Return ONLY the complete mo
         return { success: true };
       }),
   }),
+
+  // General Notes (not tied to any client)
+  generalNotes: router({
+    get: protectedProcedure.query(async () => {
+      const notes = await db.getGeneralNotes();
+      return { notes };
+    }),
+
+    update: protectedProcedure
+      .input(z.object({ notes: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.updateGeneralNotes(input.notes);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

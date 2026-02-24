@@ -78,6 +78,13 @@
       "when": 1771312142612,
       "tag": "0010_stiff_patriot",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1771970739759,
+      "tag": "0011_far_solo",
+      "breakpoints": true
     }
   ]
 }
