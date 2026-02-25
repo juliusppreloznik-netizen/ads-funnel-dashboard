@@ -1,9 +1,0 @@
-{
-  "query": "DELETE t1 FROM clientTasks t1\nINNER JOIN clientTasks t2 \nWHERE t1.clientId = t2.clientId \n  AND t1.taskName = t2.taskName \n  AND t1.id > t2.id;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute DELETE t1 FROM clientTasks t1\nINNER JOIN clientTasks t2 \nWHERE t1.clientId = t2.clientId \n  AND t1.taskName = t2.taskName \n  AND t1.id > t2.id;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 66
-}

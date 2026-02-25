@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO clientTasks (clientId, taskName, taskOrder, status, createdAt, updatedAt)\nSELECT c.id, t.taskName, t.taskOrder, 'not_started', NOW(), NOW()\nFROM clients c\nCROSS JOIN (\n  SELECT taskName, taskOrder \n  FROM clientTasks \n  WHERE clientId = (SELECT MIN(id) FROM clients)\n) t\nWHERE c.name IN ('Alante', 'Apoleen', 'Ashton', 'Christian', 'Josh', 'Lee', 'Tae');",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute INSERT INTO clientTasks (clientId, taskName, taskOrder, status, createdAt, updatedAt)\nSELECT c.id, t.taskName, t.taskOrder, 'not_started', NOW(), NOW()\nFROM clients c\nCROSS JOIN (\n  SELECT taskName, taskOrder \n  FROM clientTasks \n  WHERE clientId = (SELECT MIN(id) FROM clients)\n) t\nWHERE c.name IN ('Alante', 'Apoleen', 'Ashton', 'Christian', 'Josh', 'Lee', 'Tae');",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 85
-}

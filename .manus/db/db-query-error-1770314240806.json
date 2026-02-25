@@ -1,8 +1,0 @@
-{
-  "query": "INSERT INTO client (name, email, businessName, ghlEmail, ghlPassword, googleDriveLink, createdAt) VALUES\n('Alante', 'alante@placeholder.com', 'Alante Business', '', '', '', NOW()),\n('Apoleen', 'apoleen@placeholder.com', 'Apoleen Business', '', '', '', NOW()),\n('Ashton', 'ashton@placeholder.com', 'Ashton Business', '', '', '', NOW()),\n('Christian', 'christian@placeholder.com', 'Christian Business', '', '', '', NOW()),\n('Josh', 'josh@placeholder.com', 'Josh Business', '', '', '', NOW()),\n('Lee', 'lee@placeholder.com', 'Lee Business', '', '', '', NOW()),\n('Tae', 'tae@placeholder.com', 'Tae Business', '', '', '', NOW());",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute INSERT INTO client (name, email, businessName, ghlEmail, ghlPassword, googleDriveLink, createdAt) VALUES\n('Alante', 'alante@placeholder.com', 'Alante Business', '', '', '', NOW()),\n('Apoleen', 'apoleen@placeholder.com', 'Apoleen Business', '', '', '', NOW()),\n('Ashton', 'ashton@placeholder.com', 'Ashton Business', '', '', '', NOW()),\n('Christian', 'christian@placeholder.com', 'Christian Business', '', '', '', NOW()),\n('Josh', 'josh@placeholder.com', 'Josh Business', '', '', '', NOW()),\n('Lee', 'lee@placeholder.com', 'Lee Business', '', '', '', NOW()),\n('Tae', 'tae@placeholder.com', 'Tae Business', '', '', '', NOW());",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1146 (42S02) at line 1: Table 'ddljqn8avgrs9fksajp3wb.client' doesn't exist"
-  ]
-}
