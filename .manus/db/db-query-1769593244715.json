@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `clients` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`email` varchar(320) NOT NULL,\n\t`businessName` text NOT NULL,\n\t`ghlEmail` varchar(320),\n\t`ghlPassword` text,\n\t`driveLink` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `clients_id` PRIMARY KEY(`id`)\n);\n\nCREATE TABLE `generatedAssets` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`clientId` int NOT NULL,\n\t`assetType` enum('vsl','ads','landing_page') NOT NULL,\n\t`content` text NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `generatedAssets_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute CREATE TABLE `clients` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` text NOT NULL,\n\t`email` varchar(320) NOT NULL,\n\t`businessName` text NOT NULL,\n\t`ghlEmail` varchar(320),\n\t`ghlPassword` text,\n\t`driveLink` text,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `clients_id` PRIMARY KEY(`id`)\n);\n\nCREATE TABLE `generatedAssets` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`clientId` int NOT NULL,\n\t`assetType` enum('vsl','ads','landing_page') NOT NULL,\n\t`content` text NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `generatedAssets_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 874
+}

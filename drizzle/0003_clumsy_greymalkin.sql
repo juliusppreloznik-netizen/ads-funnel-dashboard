@@ -1,0 +1,1 @@
+ALTER TABLE `clients` ADD `archived` int DEFAULT 0 NOT NULL;

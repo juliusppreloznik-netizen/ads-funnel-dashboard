@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, description, priority, status, page FROM changeRequests WHERE status = 'pending' ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, description, priority, status, page FROM changeRequests WHERE status = 'pending' ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "9",
+      "description": "On the Facebook business access page, add the same email for the ghl admin, but put in give full access",
+      "priority": "high",
+      "status": "pending",
+      "page": "/onboarding/600007"
+    },
+    {
+      "id": "8",
+      "description": "remove google druve link field",
+      "priority": "medium",
+      "status": "pending",
+      "page": "/"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdescription\tpriority\tstatus\tpage\n9\tOn the Facebook business access page, add the same email for the ghl admin, but put in give full access\thigh\tpending\t/onboarding/600007\n8\tremove google druve link field\tmedium\tpending\t/\n",
+  "stderr": "",
+  "execution_time_ms": 358
+}

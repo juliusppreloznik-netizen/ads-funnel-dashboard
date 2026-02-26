@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `clients` ADD `archived` int DEFAULT 0 NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute ALTER TABLE `clients` ADD `archived` int DEFAULT 0 NOT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 630
+}

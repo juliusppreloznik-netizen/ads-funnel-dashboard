@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `generatedAssets` MODIFY COLUMN `assetType` enum('vsl','ads','landing_page','landing_page_html','thankyou_page_html','survey_css') NOT NULL;\nALTER TABLE `clients` ADD `ghlApiToken` text;\nALTER TABLE `clients` ADD `ghlLocationId` varchar(255);\nALTER TABLE `clients` ADD `funnelAccentColor` varchar(50);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute ALTER TABLE `generatedAssets` MODIFY COLUMN `assetType` enum('vsl','ads','landing_page','landing_page_html','thankyou_page_html','survey_css') NOT NULL;\nALTER TABLE `clients` ADD `ghlApiToken` text;\nALTER TABLE `clients` ADD `ghlLocationId` varchar(255);\nALTER TABLE `clients` ADD `funnelAccentColor` varchar(50);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1911
+}

@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, name, businessName FROM clients ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, name, businessName FROM clients ORDER BY id;",
+  "rows": [
+    {
+      "id": "90001",
+      "name": "Christian ",
+      "businessName": "Advance Revival"
+    },
+    {
+      "id": "90002",
+      "name": "Ashton",
+      "businessName": "Alc Consulting Agency"
+    },
+    {
+      "id": "120001",
+      "name": "Alante",
+      "businessName": "Boundless Financial Group"
+    },
+    {
+      "id": "150001",
+      "name": "Trent Kus",
+      "businessName": "Tk Capital Solutions"
+    },
+    {
+      "id": "180001",
+      "name": "Christopher Cotton",
+      "businessName": "Fix Bros Consulting Group LLC"
+    },
+    {
+      "id": "210002",
+      "name": "Apoleen",
+      "businessName": "Apoleen Business"
+    },
+    {
+      "id": "210004",
+      "name": "Christian",
+      "businessName": "Christian Business"
+    },
+    {
+      "id": "210005",
+      "name": "Josh",
+      "businessName": "Josh Business"
+    },
+    {
+      "id": "210006",
+      "name": "Lee",
+      "businessName": "Lee Business"
+    },
+    {
+      "id": "210007",
+      "name": "Tae",
+      "businessName": "Tae Business"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tbusinessName\n90001\tChristian \tAdvance Revival\n90002\tAshton\tAlc Consulting Agency\n120001\tAlante\tBoundless Financial Group\n150001\tTrent Kus\tTk Capital Solutions\n180001\tChristopher Cotton\tFix Bros Consulting Group LLC\n210002\tApoleen\tApoleen Business\n210004\tChristian\tChristian Business\n210005\tJosh\tJosh Business\n210006\tLee\tLee Business\n210007\tTae\tTae Business\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name FROM clients WHERE name IN ('Alante', 'Apoleen', 'Ashton', 'Christian', 'Josh', 'Lee', 'Tae') ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT id, name FROM clients WHERE name IN ('Alante', 'Apoleen', 'Ashton', 'Christian', 'Josh', 'Lee', 'Tae') ORDER BY id;",
+  "rows": [
+    {
+      "id": "90001",
+      "name": "Christian "
+    },
+    {
+      "id": "90002",
+      "name": "Ashton"
+    },
+    {
+      "id": "120001",
+      "name": "Alante"
+    },
+    {
+      "id": "210002",
+      "name": "Apoleen"
+    },
+    {
+      "id": "210003",
+      "name": "Ashton"
+    },
+    {
+      "id": "210004",
+      "name": "Christian"
+    },
+    {
+      "id": "210005",
+      "name": "Josh"
+    },
+    {
+      "id": "210006",
+      "name": "Lee"
+    },
+    {
+      "id": "210007",
+      "name": "Tae"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n90001\tChristian \n90002\tAshton\n120001\tAlante\n210002\tApoleen\n210003\tAshton\n210004\tChristian\n210005\tJosh\n210006\tLee\n210007\tTae\n",
+  "stderr": "",
+  "execution_time_ms": 76
+}

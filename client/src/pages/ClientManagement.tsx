@@ -1,0 +1,915 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { UserPlus, ArrowLeft, CheckCircle2, Circle, Clock, Key, Trash2, Plus, Archive, ArchiveRestore, StickyNote, X, ChevronRight, Notebook } from "lucide-react";
+import { useLocation } from "wouter";
+
+interface Task {
+  id: number;
+  taskName: string;
+  taskOrder: number;
+  status: "not_started" | "in_progress" | "done";
+  internalNotes: string | null;
+  completedAt: Date | string | null;
+}
+
+export default function ClientManagement() {
+  const [, setLocation] = useLocation();
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [newTaskName, setNewTaskName] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "in_progress" | "completed" | "archived">("all");
+  const [notepadOpen, setNotepadOpen] = useState(true);
+  const [notepadTab, setNotepadTab] = useState<'general' | 'client'>('general');
+  const [notepadClientId, setNotepadClientId] = useState<number | null>(null);
+  const [notepadText, setNotepadText] = useState("");
+  const notepadDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [generalNotesText, setGeneralNotesText] = useState("");
+  const generalNotesDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [createFormData, setCreateFormData] = useState({
+    name: "",
+    email: "",
+    businessName: "",
+    password: "",
+    ghlEmail: "",
+    ghlPassword: "",
+    driveLink: "",
+  });
+
+  const { data: clients, refetch: refetchClients } = trpc.clients.list.useQuery();
+  const { data: selectedClient } = trpc.clients.getById.useQuery(
+    { id: selectedClientId! },
+    { enabled: !!selectedClientId }
+  );
+  const { data: tasks, refetch: refetchTasks } = trpc.tasks.getByClientId.useQuery(
+    { clientId: selectedClientId! },
+    { enabled: !!selectedClientId }
+  );
+  const { data: progress } = trpc.tasks.getProgress.useQuery(
+    { clientId: selectedClientId! },
+    { enabled: !!selectedClientId }
+  );
+
+  const { data: onboardingProgressMap } = trpc.onboarding.getAllProgress.useQuery();
+
+  const createClientMutation = trpc.clients.createManual.useMutation({
+    onSuccess: () => {
+      toast.success("Client created successfully!");
+      setIsCreateDialogOpen(false);
+      setCreateFormData({
+        name: "",
+        email: "",
+        businessName: "",
+        password: "",
+        ghlEmail: "",
+        ghlPassword: "",
+        driveLink: "",
+      });
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to create client: " + error.message);
+    },
+  });
+
+  const updateTaskStatusMutation = trpc.tasks.updateStatus.useMutation({
+    onSuccess: () => {
+      toast.success("Task updated!");
+      refetchTasks();
+    },
+    onError: (error) => {
+      toast.error("Failed to update task: " + error.message);
+    },
+  });
+
+  // Local notes state so typing doesn't trigger API calls on every keystroke
+  const [localNotes, setLocalNotes] = useState<Record<number, string>>({});
+  const debounceTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  // Sync local notes when tasks load or change
+  useEffect(() => {
+    if (tasks) {
+      setLocalNotes((prev) => {
+        const next: Record<number, string> = {};
+        for (const task of tasks as Task[]) {
+          // Only set from server if we don't have a local edit in progress
+          next[task.id] = prev[task.id] !== undefined ? prev[task.id] : (task.internalNotes || "");
+        }
+        return next;
+      });
+    }
+  }, [tasks]);
+
+  const updateTaskNotesMutation = trpc.tasks.updateNotes.useMutation({
+    onSuccess: () => {
+      toast.success("Notes saved!");
+    },
+    onError: (error) => {
+      toast.error("Failed to save notes: " + error.message);
+    },
+  });
+
+  const debouncedSaveNotes = useCallback((taskId: number, notes: string) => {
+    if (debounceTimers.current[taskId]) {
+      clearTimeout(debounceTimers.current[taskId]);
+    }
+    debounceTimers.current[taskId] = setTimeout(() => {
+      updateTaskNotesMutation.mutate({ taskId, notes });
+    }, 800);
+  }, [updateTaskNotesMutation]);
+
+  const resetPasswordMutation = trpc.clients.resetPassword.useMutation({
+    onSuccess: () => {
+      toast.success("Password reset successfully!");
+      setIsResetPasswordOpen(false);
+      setNewPassword("");
+    },
+    onError: (error) => {
+      toast.error("Failed to reset password: " + error.message);
+    },
+  });
+
+  const deleteClientMutation = trpc.clients.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Client deleted successfully!");
+      setSelectedClientId(null);
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete client: " + error.message);
+    },
+  });
+
+  const createTasksMutation = trpc.clients.createTasksForClient.useMutation({
+    onSuccess: () => {
+      toast.success("Tasks created successfully!");
+      refetchTasks();
+    },
+    onError: (error) => {
+      toast.error("Failed to create tasks: " + error.message);
+    },
+  });
+
+  const createCustomTaskMutation = trpc.tasks.createCustomTask.useMutation({
+    onSuccess: () => {
+      toast.success("Task created successfully!");
+      setNewTaskName("");
+      refetchTasks();
+    },
+    onError: (error) => {
+      toast.error("Failed to create task: " + error.message);
+    },
+  });
+
+  const archiveClientMutation = trpc.clients.archive.useMutation({
+    onSuccess: () => {
+      toast.success("Client archived successfully!");
+      setSelectedClientId(null);
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to archive client: " + error.message);
+    },
+  });
+
+  const unarchiveClientMutation = trpc.clients.unarchive.useMutation({
+    onSuccess: () => {
+      toast.success("Client unarchived successfully!");
+      refetchClients();
+    },
+    onError: (error) => {
+      toast.error("Failed to unarchive client: " + error.message);
+    },
+  });
+
+  const handleCreateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    createClientMutation.mutate(createFormData);
+  };
+
+  const handleResetPassword = () => {
+    if (!selectedClientId || !newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
+    resetPasswordMutation.mutate({ clientId: selectedClientId, newPassword });
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "done":
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case "in_progress":
+        return <Clock className="h-5 w-5 text-yellow-500" />;
+      default:
+        return <Circle className="h-5 w-5 text-slate-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "done":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "in_progress":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      default:
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30";
+    }
+  };
+
+  if (selectedClientId && selectedClient) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                onClick={() => setSelectedClientId(null)}
+                variant="outline"
+                className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Clients
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-white">{selectedClient.name}</h1>
+                <p className="text-slate-400">{selectedClient.businessName}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+                    <Key className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </Button>
+                </DialogTrigger>
+              <DialogContent className="bg-neutral-950 border-white/10">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Reset Client Password</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">New Password</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-white/5 border-white/10 text-white"
+                      placeholder="Enter new password"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleResetPassword}
+                    className="w-full bg-white text-black"
+                  >
+                    Reset Password
+                  </Button>
+                </div>
+              </DialogContent>
+              </Dialog>
+              {selectedClient.archived === 0 && progress?.percentage === 100 && (
+                <Button
+                  onClick={() => archiveClientMutation.mutate({ clientId: selectedClientId })}
+                  variant="outline"
+                  className="bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive Client
+                </Button>
+              )}
+              {selectedClient.archived === 1 && (
+                <Button
+                  onClick={() => unarchiveClientMutation.mutate({ clientId: selectedClientId })}
+                  variant="outline"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/15"
+                >
+                  <ArchiveRestore className="h-4 w-4 mr-2" />
+                  Unarchive
+                </Button>
+              )}
+              <Button
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${selectedClient.name}? This will also delete all their tasks and assets.`)) {
+                    deleteClientMutation.mutate({ clientId: selectedClientId });
+                  }
+                }}
+                variant="outline"
+                className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Client
+              </Button>
+            </div>
+          </div>
+
+          {/* Progress Card */}
+          {progress && (
+            <Card className="bg-white/[0.04] border-white/10 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Overall Progress</h2>
+                <span className="text-2xl font-bold text-white">
+                  {progress.percentage}%
+                </span>
+              </div>
+              <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-white text-black transition-all duration-500"
+                  style={{ width: `${progress.percentage}%` }}
+                />
+              </div>
+              <p className="text-slate-400 text-sm mt-2">
+                {progress.completedTasks} of {progress.totalTasks} tasks completed
+              </p>
+            </Card>
+          )}
+
+          {/* Tasks List */}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Tasks</h2>
+            {tasks && tasks.length > 0 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-white text-black">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Task
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-neutral-950 border-white/10">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Create New Task</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="taskName" className="text-white">Task Name</Label>
+                      <Input
+                        id="taskName"
+                        placeholder="Enter task name"
+                        className="bg-white/5 border-white/10 text-white"
+                        onChange={(e) => setNewTaskName(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      onClick={() => {
+                        if (newTaskName.trim() && selectedClientId) {
+                          createCustomTaskMutation.mutate({
+                            clientId: selectedClientId,
+                            taskName: newTaskName,
+                          });
+                        }
+                      }}
+                      className="w-full bg-white text-black"
+                    >
+                      Create Task
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+          <div className="space-y-4">
+            {tasks && tasks.length === 0 && (
+              <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
+                <p className="text-slate-400 mb-4">No tasks found for this client.</p>
+                <Button
+                  onClick={() => createTasksMutation.mutate({ clientId: selectedClientId })}
+                  className="bg-white text-black"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Default Tasks
+                </Button>
+              </Card>
+            )}
+            {tasks?.map((task: Task) => (
+              <Card key={task.id} className="bg-white/[0.04] border-white/10 p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(task.status)}
+                      <h3 className="text-lg font-semibold text-white">{task.taskName}</h3>
+                    </div>
+                    <Select
+                      value={task.status}
+                      onValueChange={(value: "not_started" | "in_progress" | "done") => {
+                        updateTaskStatusMutation.mutate({
+                          taskId: task.id,
+                          status: value,
+                        });
+                      }}
+                    >
+                      <SelectTrigger className={`w-40 ${getStatusColor(task.status)} border`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not_started">Not Started</SelectItem>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
+                        <SelectItem value="done">Done</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {task.completedAt && (
+                    <p className="text-sm text-slate-400">
+                      Completed on {new Date(task.completedAt).toLocaleDateString()}
+                    </p>
+                  )}
+
+                  <div>
+                    <Label className="text-white text-sm">Internal Notes</Label>
+                    <Textarea
+                      value={localNotes[task.id] ?? task.internalNotes ?? ""}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setLocalNotes((prev) => ({ ...prev, [task.id]: newValue }));
+                        debouncedSaveNotes(task.id, newValue);
+                      }}
+                      placeholder="Add internal notes (not visible to client)"
+                      className="mt-2 bg-white/5 border-white/10 text-white placeholder:text-slate-500 resize-y min-h-[80px]"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-neutral-950 to-black p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setLocation('/admin')}
+              variant="outline"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Client Management</h1>
+              <p className="text-slate-400">Manage clients and track project progress</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
+              <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-neutral-950 border-white/10">
+                <SelectItem value="all" className="text-white">All Clients</SelectItem>
+                <SelectItem value="in_progress" className="text-white">In Progress</SelectItem>
+                <SelectItem value="completed" className="text-white">Completed</SelectItem>
+                <SelectItem value="archived" className="text-white">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-white text-black">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Client
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-neutral-950 border-white/10 max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-white">Create New Client</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateClient} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-white">Full Name *</Label>
+                    <Input
+                      value={createFormData.name}
+                      onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Email *</Label>
+                    <Input
+                      type="email"
+                      value={createFormData.email}
+                      onChange={(e) => setCreateFormData({ ...createFormData, email: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-white">Business Name *</Label>
+                  <Input
+                    value={createFormData.businessName}
+                    onChange={(e) => setCreateFormData({ ...createFormData, businessName: e.target.value })}
+                    className="bg-white/5 border-white/10 text-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="text-white">Portal Password *</Label>
+                  <Input
+                    type="password"
+                    value={createFormData.password}
+                    onChange={(e) => setCreateFormData({ ...createFormData, password: e.target.value })}
+                    className="bg-white/5 border-white/10 text-white"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-white">GHL Email</Label>
+                    <Input
+                      value={createFormData.ghlEmail}
+                      onChange={(e) => setCreateFormData({ ...createFormData, ghlEmail: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">GHL Password</Label>
+                    <Input
+                      type="password"
+                      value={createFormData.ghlPassword}
+                      onChange={(e) => setCreateFormData({ ...createFormData, ghlPassword: e.target.value })}
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-white">Google Drive Link</Label>
+                  <Input
+                    value={createFormData.driveLink}
+                    onChange={(e) => setCreateFormData({ ...createFormData, driveLink: e.target.value })}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={createClientMutation.isPending}
+                  className="w-full bg-white text-black"
+                >
+                  {createClientMutation.isPending ? "Creating..." : "Create Client"}
+                </Button>
+              </form>
+            </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {/* Main content area with notepad sidebar */}
+        <div className="flex gap-4">
+          {/* Clients Grid */}
+          <div className={`transition-all duration-300 ${notepadOpen ? 'flex-1' : 'w-full'}`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients?.filter((client) => {
+                if (filterStatus === "all") return client.archived === 0;
+                if (filterStatus === "in_progress") return client.archived === 0 && client.progress?.percentage !== 100;
+                if (filterStatus === "completed") return client.archived === 0 && client.progress?.percentage === 100;
+                if (filterStatus === "archived") return client.archived === 1;
+                return true;
+              }).map((client) => {
+                const isComplete = client.progress?.percentage === 100;
+                const isArchived = client.archived === 1;
+                return (
+                  <Card
+                    key={client.id}
+                    className={`p-6 cursor-pointer transition-all ${
+                      isArchived
+                        ? 'bg-white/[0.02] border-white/5 hover:border-white/10 opacity-75'
+                        : isComplete
+                        ? 'bg-gradient-to-br from-green-900/40 to-green-800/30 border-green-500/30 hover:border-green-500/50'
+                        : 'bg-white/[0.04] border-white/10 hover:border-white/30'
+                    }`}
+                    onClick={() => setSelectedClientId(client.id)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-white mb-1">{client.name}</h3>
+                        <p className="text-slate-400 text-sm">{client.businessName}</p>
+                      </div>
+                      {isArchived && (
+                        <Archive className="h-5 w-5 text-slate-400 flex-shrink-0" />
+                      )}
+                      {!isArchived && isComplete && (
+                        <CheckCircle2 className="h-5 w-5 text-green-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-slate-500 text-xs mb-3">{client.email}</p>
+                    {/* Onboarding Progress Badge */}
+                    {(() => {
+                      const ob = onboardingProgressMap?.[client.id];
+                      const completed = ob?.completed ?? 0;
+                      const total = ob?.total ?? 5;
+                      const isOnboardingDone = completed === total;
+                      const hasStarted = completed > 0;
+                      return (
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            isOnboardingDone
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : hasStarted
+                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              : 'bg-white/5 text-slate-400 border border-white/10'
+                          }`}>
+                            {isOnboardingDone ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : hasStarted ? (
+                              <Clock className="h-3 w-3" />
+                            ) : (
+                              <Circle className="h-3 w-3" />
+                            )}
+                            Onboarding: {completed}/{total}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {client.progress && (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={isComplete ? 'text-green-400' : 'text-slate-400'}>
+                            Progress
+                          </span>
+                          <span className={`font-semibold ${isComplete ? 'text-green-400' : 'text-white'}`}>
+                            {client.progress.percentage}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              isComplete ? 'bg-green-500' : 'bg-white text-black'
+                            }`}
+                            style={{ width: `${client.progress.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+
+            {clients?.length === 0 && (
+              <Card className="bg-white/[0.04] border-white/10 p-12 text-center">
+                <p className="text-slate-400">No clients yet. Create your first client to get started.</p>
+              </Card>
+            )}
+          </div>
+
+          {/* Notepad Sidebar */}
+          {notepadOpen ? (
+            <div className="w-80 flex-shrink-0">
+              <Card className="bg-neutral-950/95 border-white/10 h-[calc(100vh-180px)] sticky top-24 flex flex-col">
+                {/* Header with close */}
+                <div className="flex items-center justify-between p-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <StickyNote className="h-4 w-4 text-white/60" />
+                    <h3 className="text-sm font-semibold text-white">Notes</h3>
+                  </div>
+                  <button
+                    onClick={() => setNotepadOpen(false)}
+                    className="text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-white/10">
+                  <button
+                    onClick={() => setNotepadTab('general')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all ${
+                      notepadTab === 'general'
+                        ? 'text-white border-b-2 border-white bg-white/5'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Notebook className="h-3.5 w-3.5" />
+                    General
+                  </button>
+                  <button
+                    onClick={() => setNotepadTab('client')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-all ${
+                      notepadTab === 'client'
+                        ? 'text-white border-b-2 border-white bg-white/5'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <StickyNote className="h-3.5 w-3.5" />
+                    Client Notes
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                {notepadTab === 'general' ? (
+                  <GeneralNotepad
+                    generalNotesText={generalNotesText}
+                    setGeneralNotesText={setGeneralNotesText}
+                    generalNotesDebounceRef={generalNotesDebounceRef}
+                  />
+                ) : (
+                  <ClientNotepad
+                    clients={clients || []}
+                    notepadClientId={notepadClientId}
+                    setNotepadClientId={setNotepadClientId}
+                    notepadText={notepadText}
+                    setNotepadText={setNotepadText}
+                    notepadDebounceRef={notepadDebounceRef}
+                  />
+                )}
+              </Card>
+            </div>
+          ) : (
+            <button
+              onClick={() => setNotepadOpen(true)}
+              className="fixed right-4 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-l-lg shadow-lg hover:bg-white/90 transition-all z-10"
+              title="Open Notepad"
+            >
+              <StickyNote className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// General Notepad Component
+function GeneralNotepad({
+  generalNotesText,
+  setGeneralNotesText,
+  generalNotesDebounceRef,
+}: {
+  generalNotesText: string;
+  setGeneralNotesText: (text: string) => void;
+  generalNotesDebounceRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const { data: notesData } = trpc.generalNotes.get.useQuery();
+
+  const updateMutation = trpc.generalNotes.update.useMutation({
+    onError: (error) => {
+      toast.error("Failed to save notes: " + error.message);
+    },
+  });
+
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => {
+    if (notesData && !initialized) {
+      setGeneralNotesText(notesData.notes || "");
+      setInitialized(true);
+    }
+  }, [notesData, initialized, setGeneralNotesText]);
+
+  const handleChange = useCallback((value: string) => {
+    setGeneralNotesText(value);
+    if (generalNotesDebounceRef.current) {
+      clearTimeout(generalNotesDebounceRef.current);
+    }
+    generalNotesDebounceRef.current = setTimeout(() => {
+      updateMutation.mutate({ notes: value });
+    }, 800);
+  }, [setGeneralNotesText, generalNotesDebounceRef, updateMutation]);
+
+  return (
+    <>
+      <div className="flex-1 p-3 overflow-hidden">
+        <textarea
+          value={generalNotesText}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder="General notes, reminders, to-dos..."
+          className="w-full h-full bg-transparent text-white text-sm placeholder:text-slate-500 resize-none outline-none leading-relaxed"
+        />
+      </div>
+      <div className="px-4 py-2 border-t border-white/10">
+        <p className="text-xs text-slate-500">
+          {updateMutation.isPending ? "Saving..." : "Auto-saves as you type"}
+        </p>
+      </div>
+    </>
+  );
+}
+
+// Client Notepad Component
+function ClientNotepad({
+  clients,
+  notepadClientId,
+  setNotepadClientId,
+  notepadText,
+  setNotepadText,
+  notepadDebounceRef,
+}: {
+  clients: any[];
+  notepadClientId: number | null;
+  setNotepadClientId: (id: number | null) => void;
+  notepadText: string;
+  setNotepadText: (text: string) => void;
+  notepadDebounceRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const { data: notesData } = trpc.clients.getAdminNotes.useQuery(
+    { clientId: notepadClientId! },
+    { enabled: !!notepadClientId }
+  );
+
+  const updateNotesMutation = trpc.clients.updateAdminNotes.useMutation({
+    onError: (error) => {
+      toast.error("Failed to save notes: " + error.message);
+    },
+  });
+
+  const prevClientIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (notepadClientId !== prevClientIdRef.current) {
+      prevClientIdRef.current = notepadClientId;
+      setNotepadText(notesData?.notes || "");
+    }
+  }, [notepadClientId, notesData, setNotepadText]);
+
+  const [initialized, setInitialized] = useState(false);
+  useEffect(() => {
+    if (notesData && !initialized) {
+      setNotepadText(notesData.notes || "");
+      setInitialized(true);
+    }
+  }, [notesData, initialized, setNotepadText]);
+
+  useEffect(() => {
+    setInitialized(false);
+  }, [notepadClientId]);
+
+  const handleNoteChange = useCallback((value: string) => {
+    setNotepadText(value);
+    if (notepadClientId) {
+      if (notepadDebounceRef.current) {
+        clearTimeout(notepadDebounceRef.current);
+      }
+      notepadDebounceRef.current = setTimeout(() => {
+        updateNotesMutation.mutate({ clientId: notepadClientId, notes: value });
+      }, 800);
+    }
+  }, [notepadClientId, setNotepadText, notepadDebounceRef, updateNotesMutation]);
+
+  const activeClients = clients.filter(c => c.archived === 0);
+
+  return (
+    <>
+      {/* Client Selector */}
+      <div className="border-b border-white/10 overflow-y-auto max-h-36" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+        {activeClients.map((client) => {
+          const isActive = notepadClientId === client.id;
+          return (
+            <button
+              key={client.id}
+              onClick={() => setNotepadClientId(client.id)}
+              className={`w-full text-left px-4 py-2 text-xs font-medium transition-all border-l-2 ${
+                isActive
+                  ? "bg-white/10 text-white border-l-white/50"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white border-l-transparent"
+              }`}
+            >
+              {client.name || 'Client'}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Notes Area */}
+      <div className="flex-1 p-3 overflow-hidden">
+        {notepadClientId ? (
+          <textarea
+            value={notepadText}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            placeholder="Type your notes here..."
+            className="w-full h-full bg-transparent text-white text-sm placeholder:text-slate-500 resize-none outline-none leading-relaxed"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <StickyNote className="h-8 w-8 text-slate-600 mb-3" />
+            <p className="text-slate-500 text-sm">Select a client to view or add notes</p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {notepadClientId && (
+        <div className="px-4 py-2 border-t border-white/10">
+          <p className="text-xs text-slate-500">
+            {updateNotesMutation.isPending ? "Saving..." : "Auto-saves as you type"}
+          </p>
+        </div>
+      )}
+    </>
+  );
+}

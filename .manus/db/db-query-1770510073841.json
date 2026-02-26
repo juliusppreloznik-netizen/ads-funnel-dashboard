@@ -1,0 +1,42 @@
+{
+  "query": "SELECT DISTINCT taskName, taskOrder FROM clientTasks ORDER BY taskOrder;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2rf57goPWjFduX1.root --database dDLjqN8avGrS9FkSAJP3wb --execute SELECT DISTINCT taskName, taskOrder FROM clientTasks ORDER BY taskOrder;",
+  "rows": [
+    {
+      "taskName": "Assets imported into GHL",
+      "taskOrder": "1"
+    },
+    {
+      "taskName": "Funnel built",
+      "taskOrder": "2"
+    },
+    {
+      "taskName": "Automations built",
+      "taskOrder": "3"
+    },
+    {
+      "taskName": "VSL and ads scripted",
+      "taskOrder": "4"
+    },
+    {
+      "taskName": "Survey routing set up",
+      "taskOrder": "5"
+    },
+    {
+      "taskName": "Facebook CAPI and pixel set up",
+      "taskOrder": "6"
+    },
+    {
+      "taskName": "Pre Launch Check",
+      "taskOrder": "7"
+    },
+    {
+      "taskName": "Ads Launched",
+      "taskOrder": "8"
+    }
+  ],
+  "messages": [],
+  "stdout": "taskName\ttaskOrder\nAssets imported into GHL\t1\nFunnel built\t2\nAutomations built\t3\nVSL and ads scripted\t4\nSurvey routing set up\t5\nFacebook CAPI and pixel set up\t6\nPre Launch Check\t7\nAds Launched\t8\n",
+  "stderr": "",
+  "execution_time_ms": 384
+}
