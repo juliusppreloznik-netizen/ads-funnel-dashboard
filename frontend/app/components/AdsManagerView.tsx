@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   AdsManagerAd,
   getAdsManagerData,
@@ -17,6 +17,17 @@ interface AdsManagerViewProps {
   dateRange: DateRangeValue;
 }
 
+interface CampaignOption {
+  campaign_id: string;
+  campaign_name: string;
+}
+
+interface AdSetOption {
+  adset_id: string;
+  adset_name: string;
+  campaign_id: string;
+}
+
 export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
   const [ads, setAds] = useState<AdsManagerAd[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +36,17 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [previewAdId, setPreviewAdId] = useState<string | null>(null);
   const [previewAdName, setPreviewAdName] = useState<string>("");
+
+  // Filter state
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [selectedAdSets, setSelectedAdSets] = useState<string[]>([]);
+  const [campaignDropdownOpen, setCampaignDropdownOpen] = useState(false);
+  const [adSetDropdownOpen, setAdSetDropdownOpen] = useState(false);
+  const [campaignSearch, setCampaignSearch] = useState("");
+  const [adSetSearch, setAdSetSearch] = useState("");
+
+  const campaignDropdownRef = useRef<HTMLDivElement>(null);
+  const adSetDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -51,8 +73,121 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     void fetchData();
   }, [fetchData]);
 
-  // Sort ads
-  const sortedAds = [...ads].sort((a, b) => {
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (campaignDropdownRef.current && !campaignDropdownRef.current.contains(event.target as Node)) {
+        setCampaignDropdownOpen(false);
+      }
+      if (adSetDropdownRef.current && !adSetDropdownRef.current.contains(event.target as Node)) {
+        setAdSetDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Extract unique campaigns from ads
+  const uniqueCampaigns = useMemo<CampaignOption[]>(() => {
+    const campaignMap = new Map<string, CampaignOption>();
+    ads.forEach((ad) => {
+      if (ad.campaign_id && ad.campaign_name) {
+        campaignMap.set(ad.campaign_id, {
+          campaign_id: ad.campaign_id,
+          campaign_name: ad.campaign_name,
+        });
+      }
+    });
+    return Array.from(campaignMap.values()).sort((a, b) =>
+      a.campaign_name.localeCompare(b.campaign_name)
+    );
+  }, [ads]);
+
+  // Extract unique ad sets (filtered by selected campaigns if any)
+  const uniqueAdSets = useMemo<AdSetOption[]>(() => {
+    const adSetMap = new Map<string, AdSetOption>();
+    ads.forEach((ad) => {
+      if (ad.adset_id && ad.adset_name && ad.campaign_id) {
+        // If campaigns are selected, only show ad sets from those campaigns
+        if (selectedCampaigns.length === 0 || selectedCampaigns.includes(ad.campaign_id)) {
+          adSetMap.set(ad.adset_id, {
+            adset_id: ad.adset_id,
+            adset_name: ad.adset_name,
+            campaign_id: ad.campaign_id,
+          });
+        }
+      }
+    });
+    return Array.from(adSetMap.values()).sort((a, b) =>
+      a.adset_name.localeCompare(b.adset_name)
+    );
+  }, [ads, selectedCampaigns]);
+
+  // Filter campaigns by search
+  const filteredCampaigns = useMemo(() => {
+    if (!campaignSearch) return uniqueCampaigns;
+    return uniqueCampaigns.filter((c) =>
+      c.campaign_name.toLowerCase().includes(campaignSearch.toLowerCase())
+    );
+  }, [uniqueCampaigns, campaignSearch]);
+
+  // Filter ad sets by search
+  const filteredAdSets = useMemo(() => {
+    if (!adSetSearch) return uniqueAdSets;
+    return uniqueAdSets.filter((a) =>
+      a.adset_name.toLowerCase().includes(adSetSearch.toLowerCase())
+    );
+  }, [uniqueAdSets, adSetSearch]);
+
+  // Filter ads based on selected campaigns and ad sets
+  const filteredAds = useMemo(() => {
+    let result = ads;
+    if (selectedCampaigns.length > 0) {
+      result = result.filter((ad) => ad.campaign_id && selectedCampaigns.includes(ad.campaign_id));
+    }
+    if (selectedAdSets.length > 0) {
+      result = result.filter((ad) => ad.adset_id && selectedAdSets.includes(ad.adset_id));
+    }
+    return result;
+  }, [ads, selectedCampaigns, selectedAdSets]);
+
+  // Toggle campaign selection
+  const toggleCampaign = (campaignId: string) => {
+    setSelectedCampaigns((prev) => {
+      if (prev.includes(campaignId)) {
+        return prev.filter((id) => id !== campaignId);
+      } else {
+        return [...prev, campaignId];
+      }
+    });
+    // Clear ad set selections that no longer match
+    setSelectedAdSets([]);
+  };
+
+  // Toggle ad set selection
+  const toggleAdSet = (adSetId: string) => {
+    setSelectedAdSets((prev) => {
+      if (prev.includes(adSetId)) {
+        return prev.filter((id) => id !== adSetId);
+      } else {
+        return [...prev, adSetId];
+      }
+    });
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedCampaigns([]);
+    setSelectedAdSets([]);
+    setCampaignSearch("");
+    setAdSetSearch("");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = selectedCampaigns.length > 0 || selectedAdSets.length > 0;
+
+  // Sort ads (using filteredAds instead of ads)
+  const sortedAds = [...filteredAds].sort((a, b) => {
     const aVal = a[sortColumn];
     const bVal = b[sortColumn];
 
@@ -169,8 +304,9 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard
-          title="Total Ads"
-          value={ads.length.toString()}
+          title={hasActiveFilters ? "Filtered Ads" : "Total Ads"}
+          value={filteredAds.length.toString()}
+          subtitle={hasActiveFilters ? `of ${ads.length} total` : undefined}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -179,7 +315,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
         />
         <SummaryCard
           title="Total Spend"
-          value={formatCurrency(ads.reduce((sum, ad) => sum + ad.total_spend, 0))}
+          value={formatCurrency(filteredAds.reduce((sum, ad) => sum + ad.total_spend, 0))}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -188,7 +324,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
         />
         <SummaryCard
           title="Total Leads"
-          value={formatNumber(ads.reduce((sum, ad) => sum + ad.total_leads, 0))}
+          value={formatNumber(filteredAds.reduce((sum, ad) => sum + ad.total_leads, 0))}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -197,7 +333,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
         />
         <SummaryCard
           title="Total Revenue"
-          value={formatCurrency(ads.reduce((sum, ad) => sum + ad.revenue, 0))}
+          value={formatCurrency(filteredAds.reduce((sum, ad) => sum + ad.revenue, 0))}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -206,10 +342,219 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
         />
       </div>
 
+      {/* Filter Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Campaign Filter */}
+          <div ref={campaignDropdownRef} className="relative">
+            <button
+              onClick={() => {
+                setCampaignDropdownOpen(!campaignDropdownOpen);
+                setAdSetDropdownOpen(false);
+              }}
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                {selectedCampaigns.length > 0
+                  ? `Campaign (${selectedCampaigns.length})`
+                  : "All Campaigns"}
+              </span>
+              <svg className={`w-4 h-4 text-gray-500 transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {campaignDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-gray-200">
+                  <input
+                    type="text"
+                    placeholder="Search campaigns..."
+                    value={campaignSearch}
+                    onChange={(e) => setCampaignSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {filteredCampaigns.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-gray-500">No campaigns found</div>
+                  ) : (
+                    filteredCampaigns.map((campaign) => (
+                      <label
+                        key={campaign.campaign_id}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCampaigns.includes(campaign.campaign_id)}
+                          onChange={() => toggleCampaign(campaign.campaign_id)}
+                          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-sm text-gray-700 truncate">{campaign.campaign_name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                {selectedCampaigns.length > 0 && (
+                  <div className="p-2 border-t border-gray-200">
+                    <button
+                      onClick={() => setSelectedCampaigns([])}
+                      className="w-full px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+                    >
+                      Clear selection
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Ad Set Filter */}
+          <div ref={adSetDropdownRef} className="relative">
+            <button
+              onClick={() => {
+                setAdSetDropdownOpen(!adSetDropdownOpen);
+                setCampaignDropdownOpen(false);
+              }}
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                {selectedAdSets.length > 0
+                  ? `Ad Set (${selectedAdSets.length})`
+                  : "All Ad Sets"}
+              </span>
+              <svg className={`w-4 h-4 text-gray-500 transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {adSetDropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-gray-200">
+                  <input
+                    type="text"
+                    placeholder="Search ad sets..."
+                    value={adSetSearch}
+                    onChange={(e) => setAdSetSearch(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {filteredAdSets.length === 0 ? (
+                    <div className="px-4 py-3 text-sm text-gray-500">
+                      {selectedCampaigns.length > 0 ? "No ad sets in selected campaigns" : "No ad sets found"}
+                    </div>
+                  ) : (
+                    filteredAdSets.map((adSet) => (
+                      <label
+                        key={adSet.adset_id}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedAdSets.includes(adSet.adset_id)}
+                          onChange={() => toggleAdSet(adSet.adset_id)}
+                          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-sm text-gray-700 truncate">{adSet.adset_name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+                {selectedAdSets.length > 0 && (
+                  <div className="p-2 border-t border-gray-200">
+                    <button
+                      onClick={() => setSelectedAdSets([])}
+                      className="w-full px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+                    >
+                      Clear selection
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Clear All Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear Filters
+            </button>
+          )}
+
+          {/* Filter Summary */}
+          {hasActiveFilters && (
+            <div className="flex-1 flex items-center justify-end">
+              <span className="text-sm text-gray-500">
+                Showing {filteredAds.length} of {ads.length} ads
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Active Filter Tags */}
+        {hasActiveFilters && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+            {selectedCampaigns.map((campaignId) => {
+              const campaign = uniqueCampaigns.find((c) => c.campaign_id === campaignId);
+              return campaign ? (
+                <span
+                  key={campaignId}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full"
+                >
+                  {campaign.campaign_name}
+                  <button
+                    onClick={() => toggleCampaign(campaignId)}
+                    className="hover:text-orange-900"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ) : null;
+            })}
+            {selectedAdSets.map((adSetId) => {
+              const adSet = uniqueAdSets.find((a) => a.adset_id === adSetId);
+              return adSet ? (
+                <span
+                  key={adSetId}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full"
+                >
+                  {adSet.adset_name}
+                  <button
+                    onClick={() => toggleAdSet(adSetId)}
+                    className="hover:text-blue-900"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ) : null;
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Ads Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">All Ads</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {hasActiveFilters ? `Filtered Ads (${filteredAds.length})` : "All Ads"}
+          </h2>
           <p className="text-sm text-gray-500">Click &quot;Preview&quot; to view ad creative and transcript</p>
         </div>
 
@@ -387,10 +732,11 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
 interface SummaryCardProps {
   title: string;
   value: string;
+  subtitle?: string;
   icon: React.ReactNode;
 }
 
-function SummaryCard({ title, value, icon }: SummaryCardProps) {
+function SummaryCard({ title, value, subtitle, icon }: SummaryCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
       <div className="flex items-center gap-3">
@@ -399,7 +745,10 @@ function SummaryCard({ title, value, icon }: SummaryCardProps) {
         </div>
         <div>
           <p className="text-sm text-gray-500">{title}</p>
-          <p className="text-xl font-bold text-gray-900">{value}</p>
+          <div className="flex items-baseline gap-1.5">
+            <p className="text-xl font-bold text-gray-900">{value}</p>
+            {subtitle && <span className="text-xs text-gray-400">{subtitle}</span>}
+          </div>
         </div>
       </div>
     </div>
