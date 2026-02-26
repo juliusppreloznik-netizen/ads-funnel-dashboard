@@ -334,3 +334,7 @@
 ## Notepad Updates
 - [x] Rename "Internal Notes" to "Client Notes"
 - [x] Add a separate "General Notes" notepad (not tied to a client)
+
+## Email Update
+- [x] Change employee email from duffyjamir@gmail.com to employee@catalystmarketingco.net on Agency Admin step (Step 2)
+- [x] Change employee email from duffyjamir@gmail.com to employee@catalystmarketingco.net on Facebook Access step (Step 5)

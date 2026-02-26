@@ -85,6 +85,20 @@
       "when": 1771970739759,
       "tag": "0011_far_solo",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1772005475515,
+      "tag": "0012_messy_iron_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1772150210764,
+      "tag": "0013_premium_caretaker",
+      "breakpoints": true
     }
   ]
 }
