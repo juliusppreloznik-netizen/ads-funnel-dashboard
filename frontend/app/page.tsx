@@ -52,6 +52,9 @@ import { DebugPanel } from "./DebugPanel";
 // Import Ads Manager View
 import AdsManagerView from "./components/AdsManagerView";
 
+// Import Sales View
+import SalesView from "./components/SalesView";
+
 // Import dnd-kit for drag-and-drop
 import {
   DndContext,
@@ -75,7 +78,7 @@ import { CSS } from "@dnd-kit/utilities";
 // TYPES
 // ============================================================================
 
-type ViewType = "Dashboard" | "Leads Breakdown" | "Ads Manager" | "Report Builder" | "Contacts" | "Events Manager" | "Integrations";
+type ViewType = "Dashboard" | "Leads Breakdown" | "Ads Manager" | "Sales" | "Report Builder" | "Contacts" | "Events Manager" | "Integrations";
 
 interface NavItem {
   name: ViewType;
@@ -155,6 +158,11 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
   ),
+  Sales: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
 };
 
 // Navigation items configuration
@@ -162,6 +170,7 @@ const navItems: NavItem[] = [
   { name: "Dashboard", icon: Icons.Dashboard },
   { name: "Leads Breakdown", icon: Icons.LeadsBreakdown },
   { name: "Ads Manager", icon: Icons.AdsManager },
+  { name: "Sales", icon: Icons.Sales },
   { name: "Report Builder", icon: Icons.ReportBuilder },
   { name: "Contacts", icon: Icons.Contacts },
   { name: "Events Manager", icon: Icons.EventsManager },
@@ -2406,6 +2415,9 @@ export default function DashboardPage() {
           )}
           {currentView === "Ads Manager" && (
             <AdsManagerView dateRange={dateRange} />
+          )}
+          {currentView === "Sales" && (
+            <SalesView dateRange={dateRange} />
           )}
           {currentView === "Report Builder" && (
             <PlaceholderView title="Report Builder" />
