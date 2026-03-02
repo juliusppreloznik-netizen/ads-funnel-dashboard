@@ -233,31 +233,35 @@ export default function AdPreviewModal({
                   <div>video_url: {transcript.video_url ? "YES" : "NO"}</div>
                   <div>Keys: {Object.keys(transcript).join(", ")}</div>
                 </div>
-                {(() => {
-                  // Debug: log which branch we're taking
-                  if (transcript.media_type === "video" && transcript.video_url) {
-                    console.log("[Render] Branch: VideoPlayer");
-                    return <VideoPlayer videoUrl={transcript.video_url} thumbnailUrl={transcript.thumbnail_url} />;
-                  }
-                  if (transcript.media_type === "video" && transcript.facebook_video_id) {
-                    console.log("[Render] Branch: FacebookVideoEmbed");
-                    return <FacebookVideoEmbed videoId={transcript.facebook_video_id} thumbnailUrl={transcript.thumbnail_url} />;
-                  }
-                  if (transcript.media_type === "video" && transcript.thumbnail_url) {
-                    console.log("[Render] Branch: VideoThumbnailFallback");
-                    return <VideoThumbnailFallback thumbnailUrl={transcript.thumbnail_url} errorMessage={transcript.error_message} />;
-                  }
-                  if (transcript.image_url) {
-                    console.log("[Render] Branch: ImageViewer with image_url:", transcript.image_url.substring(0, 50));
-                    return <ImageViewer imageUrl={transcript.image_url} alt={adName} />;
-                  }
-                  if (transcript.thumbnail_url) {
-                    console.log("[Render] Branch: ImageViewer with thumbnail_url");
-                    return <ImageViewer imageUrl={transcript.thumbnail_url} alt={adName} />;
-                  }
-                  console.log("[Render] Branch: NoMediaState");
-                  return <NoMediaState />;
-                })()}
+                {/* Render the appropriate media component */}
+                {transcript.media_type === "video" && transcript.video_url ? (
+                  <VideoPlayer videoUrl={transcript.video_url} thumbnailUrl={transcript.thumbnail_url} />
+                ) : transcript.media_type === "video" && transcript.facebook_video_id ? (
+                  <FacebookVideoEmbed videoId={transcript.facebook_video_id} thumbnailUrl={transcript.thumbnail_url} />
+                ) : transcript.media_type === "video" && transcript.thumbnail_url ? (
+                  <VideoThumbnailFallback thumbnailUrl={transcript.thumbnail_url} errorMessage={transcript.error_message} />
+                ) : transcript.image_url ? (
+                  <>
+                    <div className="absolute bottom-2 left-2 z-50 text-xs text-green-400 bg-black/70 px-2 py-1 rounded">
+                      RENDERING: ImageViewer
+                    </div>
+                    <ImageViewer imageUrl={transcript.image_url} alt={adName} />
+                  </>
+                ) : transcript.thumbnail_url ? (
+                  <>
+                    <div className="absolute bottom-2 left-2 z-50 text-xs text-yellow-400 bg-black/70 px-2 py-1 rounded">
+                      RENDERING: ImageViewer (thumbnail)
+                    </div>
+                    <ImageViewer imageUrl={transcript.thumbnail_url} alt={adName} />
+                  </>
+                ) : (
+                  <>
+                    <div className="absolute bottom-2 left-2 z-50 text-xs text-red-400 bg-black/70 px-2 py-1 rounded">
+                      RENDERING: NoMediaState
+                    </div>
+                    <NoMediaState />
+                  </>
+                )}
               </div>
 
               {/* Right Panel - Transcript/Ad Copy (40%) */}
