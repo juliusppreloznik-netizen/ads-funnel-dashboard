@@ -233,36 +233,31 @@ export default function AdPreviewModal({
                   <div>video_url: {transcript.video_url ? "YES" : "NO"}</div>
                   <div>Keys: {Object.keys(transcript).join(", ")}</div>
                 </div>
-                {transcript.media_type === "video" && transcript.video_url ? (
-                  <VideoPlayer
-                    videoUrl={transcript.video_url}
-                    thumbnailUrl={transcript.thumbnail_url}
-                  />
-                ) : transcript.media_type === "video" && transcript.facebook_video_id ? (
-                  // Video ad with facebook_video_id - use Facebook embed
-                  <FacebookVideoEmbed
-                    videoId={transcript.facebook_video_id}
-                    thumbnailUrl={transcript.thumbnail_url}
-                  />
-                ) : transcript.media_type === "video" && transcript.thumbnail_url ? (
-                  // Video ad without video_url or facebook_video_id - show thumbnail with overlay message
-                  <VideoThumbnailFallback
-                    thumbnailUrl={transcript.thumbnail_url}
-                    errorMessage={transcript.error_message}
-                  />
-                ) : transcript.image_url ? (
-                  <ImageViewer
-                    imageUrl={transcript.image_url}
-                    alt={adName}
-                  />
-                ) : transcript.thumbnail_url ? (
-                  <ImageViewer
-                    imageUrl={transcript.thumbnail_url}
-                    alt={adName}
-                  />
-                ) : (
-                  <NoMediaState />
-                )}
+                {(() => {
+                  // Debug: log which branch we're taking
+                  if (transcript.media_type === "video" && transcript.video_url) {
+                    console.log("[Render] Branch: VideoPlayer");
+                    return <VideoPlayer videoUrl={transcript.video_url} thumbnailUrl={transcript.thumbnail_url} />;
+                  }
+                  if (transcript.media_type === "video" && transcript.facebook_video_id) {
+                    console.log("[Render] Branch: FacebookVideoEmbed");
+                    return <FacebookVideoEmbed videoId={transcript.facebook_video_id} thumbnailUrl={transcript.thumbnail_url} />;
+                  }
+                  if (transcript.media_type === "video" && transcript.thumbnail_url) {
+                    console.log("[Render] Branch: VideoThumbnailFallback");
+                    return <VideoThumbnailFallback thumbnailUrl={transcript.thumbnail_url} errorMessage={transcript.error_message} />;
+                  }
+                  if (transcript.image_url) {
+                    console.log("[Render] Branch: ImageViewer with image_url:", transcript.image_url.substring(0, 50));
+                    return <ImageViewer imageUrl={transcript.image_url} alt={adName} />;
+                  }
+                  if (transcript.thumbnail_url) {
+                    console.log("[Render] Branch: ImageViewer with thumbnail_url");
+                    return <ImageViewer imageUrl={transcript.thumbnail_url} alt={adName} />;
+                  }
+                  console.log("[Render] Branch: NoMediaState");
+                  return <NoMediaState />;
+                })()}
               </div>
 
               {/* Right Panel - Transcript/Ad Copy (40%) */}
