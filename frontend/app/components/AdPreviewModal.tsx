@@ -36,17 +36,25 @@ export default function AdPreviewModal({
     setError(null);
 
     try {
-      // First try to get existing transcript
+      // First try to get existing transcript from database
       if (!forceRegenerate) {
         const { data: existing } = await getAdTranscript(adId);
-        if (existing && existing.status === "completed") {
+        console.log("[AdPreviewModal] getAdTranscript result:", existing);
+        // Accept completed or failed status (failed still has useful thumbnail/metadata)
+        if (existing && (existing.status === "completed" || existing.status === "failed")) {
+          console.log("[AdPreviewModal] Using cached transcript:", {
+            media_type: existing.media_type,
+            image_url: existing.image_url ? "present" : "null",
+            thumbnail_url: existing.thumbnail_url ? "present" : "null",
+            video_url: existing.video_url ? "present" : "null",
+          });
           setTranscript(existing);
           setLoading(false);
           return;
         }
       }
 
-      // Generate new transcript
+      // Generate new transcript via Edge Function
       setGenerating(true);
       const { data, error: genError } = await generateAdTranscript(
         adId,
@@ -56,6 +64,12 @@ export default function AdPreviewModal({
       if (genError) {
         setError(genError.message);
       } else if (data) {
+        console.log("[AdPreviewModal] generateAdTranscript result:", {
+          media_type: data.media_type,
+          image_url: data.image_url ? "present" : "null",
+          thumbnail_url: data.thumbnail_url ? "present" : "null",
+          video_url: data.video_url ? "present" : "null",
+        });
         setTranscript(data);
       }
     } catch (err) {
@@ -211,10 +225,31 @@ export default function AdPreviewModal({
             <>
               {/* Left Panel - Media Preview (60%) */}
               <div className="w-[60%] bg-neutral-900 relative flex items-center justify-center">
+                {/* Debug info - remove after fixing */}
+                {process.env.NODE_ENV === "development" && (
+                  <div className="absolute top-2 left-2 z-50 text-xs text-white bg-black/70 p-2 rounded max-w-xs">
+                    <div>media_type: {transcript.media_type || "null"}</div>
+                    <div>image_url: {transcript.image_url ? "present" : "null"}</div>
+                    <div>thumbnail_url: {transcript.thumbnail_url ? "present" : "null"}</div>
+                    <div>video_url: {transcript.video_url ? "present" : "null"}</div>
+                  </div>
+                )}
                 {transcript.media_type === "video" && transcript.video_url ? (
                   <VideoPlayer
                     videoUrl={transcript.video_url}
                     thumbnailUrl={transcript.thumbnail_url}
+                  />
+                ) : transcript.media_type === "video" && transcript.facebook_video_id ? (
+                  // Video ad with facebook_video_id - use Facebook embed
+                  <FacebookVideoEmbed
+                    videoId={transcript.facebook_video_id}
+                    thumbnailUrl={transcript.thumbnail_url}
+                  />
+                ) : transcript.media_type === "video" && transcript.thumbnail_url ? (
+                  // Video ad without video_url or facebook_video_id - show thumbnail with overlay message
+                  <VideoThumbnailFallback
+                    thumbnailUrl={transcript.thumbnail_url}
+                    errorMessage={transcript.error_message}
                   />
                 ) : transcript.image_url ? (
                   <ImageViewer
@@ -305,19 +340,158 @@ function NoMediaState() {
   );
 }
 
-// Video Player Component - fills the container
+// Video Player Component - fills the container with full playback controls
 function VideoPlayer({ videoUrl, thumbnailUrl }: { videoUrl: string; thumbnailUrl?: string | null }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center p-4">
       <video
         className="w-full h-full object-contain"
         controls
+        autoPlay
+        loop
+        playsInline
         poster={thumbnailUrl || undefined}
-        preload="metadata"
+        preload="auto"
       >
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
+    </div>
+  );
+}
+
+// Facebook Video Embed Component - embeds video using Facebook Video Player (fallback when direct URL unavailable)
+function FacebookVideoEmbed({ videoId, thumbnailUrl }: { videoId: string; thumbnailUrl?: string | null }) {
+  const [loaded, setLoaded] = useState(false);
+  const [showEmbed, setShowEmbed] = useState(false);
+
+  // Construct Facebook video embed URL
+  const embedUrl = `https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D${videoId}&show_text=false&width=800&height=450&autoplay=true`;
+  const publicVideoUrl = `https://www.facebook.com/watch/?v=${videoId}`;
+
+  if (!showEmbed) {
+    // Show thumbnail with play button and permission notice
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-black">
+        {/* Thumbnail as background */}
+        {thumbnailUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={thumbnailUrl}
+            alt="Video thumbnail"
+            className="absolute inset-0 w-full h-full object-contain opacity-40"
+          />
+        )}
+
+        {/* Overlay with play button and info */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-8">
+          <button
+            onClick={() => setShowEmbed(true)}
+            className="w-20 h-20 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center transition-all transform hover:scale-105 shadow-2xl mb-6"
+          >
+            <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+
+          <p className="text-white text-lg font-medium mb-2">Video Ad Preview</p>
+          <p className="text-gray-400 text-sm max-w-md mb-4">
+            Direct video URL not available. Click to play via Facebook embed.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowEmbed(true)}
+              className="px-4 py-2 bg-white text-gray-900 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            >
+              Play Video
+            </button>
+            <a
+              href={publicVideoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
+            >
+              Open on Facebook
+            </a>
+          </div>
+
+          <p className="text-gray-500 text-xs mt-6 max-w-sm">
+            To enable direct video playback, update the Facebook access token with &apos;pages_read_engagement&apos; permission.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-black">
+      {/* Show thumbnail while loading */}
+      {!loaded && thumbnailUrl && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={thumbnailUrl}
+            alt="Video thumbnail"
+            className="w-full h-full object-contain opacity-50"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-14 h-14 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+          </div>
+        </div>
+      )}
+
+      {/* Facebook Video Embed iframe */}
+      <iframe
+        src={embedUrl}
+        className={`w-full h-full ${loaded ? "opacity-100" : "opacity-0"}`}
+        style={{ border: "none", overflow: "hidden" }}
+        scrolling="no"
+        frameBorder="0"
+        allowFullScreen={true}
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        onLoad={() => setLoaded(true)}
+      />
+
+      {/* Back button */}
+      <button
+        onClick={() => setShowEmbed(false)}
+        className="absolute top-4 left-4 z-20 px-3 py-1.5 bg-black/60 text-white text-sm rounded-lg hover:bg-black/80 transition-colors"
+      >
+        ← Back
+      </button>
+    </div>
+  );
+}
+
+// Video Thumbnail Fallback Component - shows thumbnail with message when video_url unavailable
+function VideoThumbnailFallback({ thumbnailUrl, errorMessage }: { thumbnailUrl: string; errorMessage?: string | null }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center">
+      {/* Thumbnail as background */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={thumbnailUrl}
+        alt="Video thumbnail"
+        className="w-full h-full object-contain opacity-60"
+      />
+      {/* Overlay message */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+        <div className="bg-black/70 rounded-xl p-6 max-w-md text-center">
+          <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-white font-medium mb-2">Video Ad</p>
+          <p className="text-gray-300 text-sm">
+            {errorMessage || "Video playback not available"}
+          </p>
+          <p className="text-gray-400 text-xs mt-3">
+            View this ad directly on Facebook Ads Manager for full video playback
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
