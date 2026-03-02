@@ -39,15 +39,8 @@ export default function AdPreviewModal({
       // First try to get existing transcript from database
       if (!forceRegenerate) {
         const { data: existing } = await getAdTranscript(adId);
-        console.log("[AdPreviewModal] getAdTranscript result:", existing);
         // Accept completed or failed status (failed still has useful thumbnail/metadata)
         if (existing && (existing.status === "completed" || existing.status === "failed")) {
-          console.log("[AdPreviewModal] Using cached transcript:", {
-            media_type: existing.media_type,
-            image_url: existing.image_url ? "present" : "null",
-            thumbnail_url: existing.thumbnail_url ? "present" : "null",
-            video_url: existing.video_url ? "present" : "null",
-          });
           setTranscript(existing);
           setLoading(false);
           return;
@@ -64,12 +57,6 @@ export default function AdPreviewModal({
       if (genError) {
         setError(genError.message);
       } else if (data) {
-        console.log("[AdPreviewModal] generateAdTranscript result:", {
-          media_type: data.media_type,
-          image_url: data.image_url ? "present" : "null",
-          thumbnail_url: data.thumbnail_url ? "present" : "null",
-          video_url: data.video_url ? "present" : "null",
-        });
         setTranscript(data);
       }
     } catch (err) {
@@ -225,14 +212,6 @@ export default function AdPreviewModal({
             <>
               {/* Left Panel - Media Preview (60%) */}
               <div className="w-[60%] bg-neutral-900 relative flex items-center justify-center">
-                {/* Debug info - always show for now */}
-                <div className="absolute top-2 left-2 z-50 text-xs text-white bg-black/70 p-2 rounded max-w-xs">
-                  <div>media_type: {String(transcript.media_type)}</div>
-                  <div>image_url: {transcript.image_url ? "YES" : "NO"}</div>
-                  <div>thumbnail_url: {transcript.thumbnail_url ? "YES" : "NO"}</div>
-                  <div>video_url: {transcript.video_url ? "YES" : "NO"}</div>
-                  <div>Keys: {Object.keys(transcript).join(", ")}</div>
-                </div>
                 {/* Render the appropriate media component */}
                 {transcript.media_type === "video" && transcript.video_url ? (
                   <VideoPlayer videoUrl={transcript.video_url} thumbnailUrl={transcript.thumbnail_url} />
@@ -241,26 +220,20 @@ export default function AdPreviewModal({
                 ) : transcript.media_type === "video" && transcript.thumbnail_url ? (
                   <VideoThumbnailFallback thumbnailUrl={transcript.thumbnail_url} errorMessage={transcript.error_message} />
                 ) : transcript.image_url ? (
-                  <>
-                    <div className="absolute bottom-2 left-2 z-50 text-xs text-green-400 bg-black/70 px-2 py-1 rounded">
-                      RENDERING: ImageViewer
-                    </div>
-                    <ImageViewer imageUrl={transcript.image_url} alt={adName} />
-                  </>
+                  <ImageViewer
+                    imageUrl={transcript.image_url}
+                    fallbackUrl={transcript.thumbnail_url || undefined}
+                    alt={adName}
+                    adId={adId}
+                  />
                 ) : transcript.thumbnail_url ? (
-                  <>
-                    <div className="absolute bottom-2 left-2 z-50 text-xs text-yellow-400 bg-black/70 px-2 py-1 rounded">
-                      RENDERING: ImageViewer (thumbnail)
-                    </div>
-                    <ImageViewer imageUrl={transcript.thumbnail_url} alt={adName} />
-                  </>
+                  <ImageViewer
+                    imageUrl={transcript.thumbnail_url}
+                    alt={adName}
+                    adId={adId}
+                  />
                 ) : (
-                  <>
-                    <div className="absolute bottom-2 left-2 z-50 text-xs text-red-400 bg-black/70 px-2 py-1 rounded">
-                      RENDERING: NoMediaState
-                    </div>
-                    <NoMediaState />
-                  </>
+                  <NoMediaState />
                 )}
               </div>
 
@@ -495,13 +468,26 @@ function VideoThumbnailFallback({ thumbnailUrl, errorMessage }: { thumbnailUrl: 
 }
 
 // Image Viewer Component - fills the container with zoom controls
-function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
+function ImageViewer({ imageUrl, fallbackUrl, alt, adId }: { imageUrl: string; fallbackUrl?: string; alt: string; adId?: string }) {
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [imageStatus, setImageStatus] = useState<"loading" | "loaded" | "error">("loading");
+  const [useFallback, setUseFallback] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const currentUrl = useFallback && fallbackUrl ? fallbackUrl : imageUrl;
+
+  const handleImageError = () => {
+    if (!useFallback && fallbackUrl) {
+      // Try fallback URL
+      setUseFallback(true);
+      setImageStatus("loading");
+    } else {
+      setImageStatus("error");
+    }
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (zoom > 1) {
@@ -589,17 +575,32 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
         </div>
       )}
 
-      {/* Image status indicator */}
-      <div className="absolute top-12 left-2 z-50 text-xs text-white bg-black/70 px-2 py-1 rounded">
-        Status: {imageStatus} | URL length: {imageUrl?.length || 0}
-      </div>
-
       {/* Error message if image failed to load */}
       {imageStatus === "error" && (
-        <div className="absolute inset-0 flex items-center justify-center z-30">
-          <div className="bg-red-900/80 text-white p-4 rounded-lg max-w-md text-center">
-            <p className="font-bold mb-2">Image failed to load</p>
-            <p className="text-xs break-all">{imageUrl?.substring(0, 100)}...</p>
+        <div className="absolute inset-0 flex items-center justify-center z-30 bg-neutral-900">
+          <div className="text-white p-6 rounded-lg max-w-md text-center">
+            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="font-medium mb-2">Image preview unavailable</p>
+            <p className="text-sm text-gray-400 mb-4">
+              The Facebook CDN link has expired. View this ad directly in Facebook Ads Manager.
+            </p>
+            {adId && (
+              <a
+                href={`https://www.facebook.com/ads/manager/creative/${adId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                View on Facebook
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -621,7 +622,7 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={imageUrl}
+          src={currentUrl}
           alt={alt}
           className="w-full h-full object-contain select-none"
           style={{
@@ -631,7 +632,7 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
           }}
           draggable={false}
           onLoad={() => setImageStatus("loaded")}
-          onError={() => setImageStatus("error")}
+          onError={handleImageError}
         />
       </div>
     </div>
