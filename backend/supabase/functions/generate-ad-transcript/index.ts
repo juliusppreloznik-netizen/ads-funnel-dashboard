@@ -7,53 +7,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 declare const Deno: any;
 
-const FACEBOOK_API_VERSION = "v19.0";
+// Use v18.0 as specified
+const FACEBOOK_API_VERSION = "v18.0";
 const FACEBOOK_GRAPH_URL = `https://graph.facebook.com/${FACEBOOK_API_VERSION}`;
-
-interface AdCreative {
-  id: string;
-  video_id?: string;
-  image_url?: string;
-  thumbnail_url?: string;
-  object_story_spec?: {
-    link_data?: {
-      message?: string;
-      name?: string;
-      description?: string;
-      call_to_action?: {
-        type: string;
-        value?: {
-          link?: string;
-        };
-      };
-      image_hash?: string;
-      picture?: string;
-    };
-    video_data?: {
-      video_id?: string;
-      image_url?: string;
-      title?: string;
-      message?: string;
-      call_to_action?: {
-        type: string;
-      };
-    };
-  };
-  effective_object_story_id?: string;
-}
-
-interface VideoDetails {
-  id: string;
-  source?: string;
-  title?: string;
-  description?: string;
-  length?: number;
-  picture?: string;
-}
 
 interface AdTranscriptRecord {
   ad_id: string;
   creative_id?: string;
+  facebook_video_id?: string;
   video_url?: string;
   thumbnail_url?: string;
   image_url?: string;
@@ -88,6 +49,7 @@ Deno.serve(async (req: Request) => {
   try {
     // Get environment variables
     const facebookAccessToken = Deno.env.get("FACEBOOK_ACCESS_TOKEN");
+    const facebookPageAccessToken = Deno.env.get("FACEBOOK_PAGE_ACCESS_TOKEN");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -118,7 +80,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log(`Processing ad: ${adId}`);
+    console.log(`[generate-ad-transcript] Processing ad: ${adId}`);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -131,47 +93,217 @@ Deno.serve(async (req: Request) => {
         .eq("ad_id", adId)
         .single();
 
-      // Return cached if completed or pending (video URL already fetched)
-      if (existing && (existing.status === "completed" || existing.status === "pending")) {
-        console.log(`Returning cached record for ad: ${adId} (status: ${existing.status})`);
+      // Return cached if completed or pending with video_url
+      if (existing && existing.status === "completed") {
+        console.log(`[generate-ad-transcript] Returning cached result for ${adId}`);
         return new Response(
-          JSON.stringify({
-            success: true,
-            cached: true,
-            ...existing,
-          }),
+          JSON.stringify({ success: true, cached: true, ...existing }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (existing && existing.status === "pending" && existing.video_url) {
+        console.log(`[generate-ad-transcript] Returning pending result with video_url for ${adId}`);
+        return new Response(
+          JSON.stringify({ success: true, cached: true, ...existing }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
 
     // Create or update record as processing
-    const { error: upsertError } = await supabase
+    await supabase
       .from("ad_transcripts")
       .upsert(
         { ad_id: adId, status: "processing", updated_at: new Date().toISOString() },
         { onConflict: "ad_id" }
       );
 
-    if (upsertError) {
-      console.error("Failed to create processing record:", upsertError);
+    // Step 1: Fetch ad with creative info using Ad Account token
+    console.log(`[generate-ad-transcript] Fetching ad creative for ${adId}`);
+    const adResponse = await fetch(
+      `${FACEBOOK_GRAPH_URL}/${adId}?fields=id,creative{id,video_id,object_story_id,effective_object_story_id,object_story_spec,thumbnail_url,image_url,object_type,asset_feed_spec,source_instagram_media_id}&access_token=${facebookAccessToken}`
+    );
+    const adData = await adResponse.json();
+
+    if (adData.error) {
+      throw new Error(`Facebook API error: ${adData.error.message}`);
     }
 
-    // Fetch ad creative from Facebook
-    const creative = await fetchAdCreative(adId, facebookAccessToken);
-    console.log(`Fetched creative for ad: ${adId}`, JSON.stringify(creative).substring(0, 200));
+    console.log(`[generate-ad-transcript] Ad data:`, JSON.stringify(adData, null, 2));
 
-    // Determine media type and extract data
-    const record = await processCreative(creative, adId, facebookAccessToken);
+    const creative = adData.creative;
+    if (!creative) {
+      throw new Error("No creative found for this ad");
+    }
+
+    // Extract video ID from various possible locations
+    let videoId = creative.video_id ||
+                  creative.object_story_spec?.video_data?.video_id ||
+                  creative.asset_feed_spec?.videos?.[0]?.video_id;
+
+    console.log(`[generate-ad-transcript] Initial video_id check: ${videoId || 'none'}`);
+    console.log(`[generate-ad-transcript] thumbnail_url: ${creative.thumbnail_url || 'none'}`);
+    console.log(`[generate-ad-transcript] object_story_id: ${creative.object_story_id || 'none'}`);
+    console.log(`[generate-ad-transcript] effective_object_story_id: ${creative.effective_object_story_id || 'none'}`);
+
+    // Check if thumbnail URL suggests this is a video (Facebook video thumbnails have specific patterns)
+    const isVideoThumbnail = creative.thumbnail_url?.includes("t15.5256-10");
+
+    // If no video_id but thumbnail suggests video, try to get video_id from page post
+    if (!videoId && isVideoThumbnail) {
+      const storyId = creative.effective_object_story_id || creative.object_story_id;
+      if (storyId) {
+        console.log(`[generate-ad-transcript] Thumbnail suggests video, fetching from page post: ${storyId}`);
+        try {
+          const postResponse = await fetch(
+            `${FACEBOOK_GRAPH_URL}/${storyId}?fields=attachments{media_type,target},source&access_token=${facebookAccessToken}`
+          );
+          const postData = await postResponse.json();
+          console.log(`[generate-ad-transcript] Page post data:`, JSON.stringify(postData, null, 2));
+
+          // Check for video in attachments
+          const attachments = postData.attachments?.data || [];
+          for (const att of attachments) {
+            if (att.media_type === "video" && att.target?.id) {
+              videoId = att.target.id;
+              console.log(`[generate-ad-transcript] Found video_id from page post: ${videoId}`);
+              break;
+            }
+          }
+        } catch (e) {
+          console.error(`[generate-ad-transcript] Failed to fetch page post:`, e);
+        }
+      }
+    }
+
+    console.log(`[generate-ad-transcript] Final detected video_id: ${videoId || 'none'}`);
+
+    // Prepare the record
+    const record: AdTranscriptRecord = {
+      ad_id: adId,
+      creative_id: creative.id,
+      status: "completed",
+      generated_at: new Date().toISOString(),
+      media_type: videoId ? "video" : "image",
+    };
+
+    if (videoId) {
+      // VIDEO AD - fetch the source URL using Page Access Token
+      record.media_type = "video";
+      record.facebook_video_id = videoId;
+
+      // Use Page Access Token if available, otherwise fall back to Ad Account token
+      const tokenForVideo = facebookPageAccessToken || facebookAccessToken;
+
+      console.log(`[generate-ad-transcript] Fetching video source URL for video_id: ${videoId}`);
+      console.log(`[generate-ad-transcript] Using ${facebookPageAccessToken ? 'Page Access Token' : 'Ad Account Token'}`);
+
+      try {
+        const videoResponse = await fetch(
+          `${FACEBOOK_GRAPH_URL}/${videoId}?fields=source,format,length,picture&access_token=${tokenForVideo}`
+        );
+
+        if (!videoResponse.ok) {
+          const errorData = await videoResponse.json();
+          console.error(`[generate-ad-transcript] Failed to fetch video source:`, errorData);
+          throw new Error(`Facebook API error: ${JSON.stringify(errorData)}`);
+        }
+
+        const videoData = await videoResponse.json();
+        console.log(`[generate-ad-transcript] Video API response:`, JSON.stringify(videoData, null, 2));
+
+        // Extract the direct video source URL
+        if (videoData.source) {
+          record.video_url = videoData.source;
+          record.status = "pending"; // Pending transcription
+          console.log(`✅ [generate-ad-transcript] Got playable video source: ${videoData.source.substring(0, 100)}...`);
+        } else {
+          console.warn(`⚠️ [generate-ad-transcript] No source field in video data`);
+          record.status = "pending";
+          record.error_message = "Video source URL not returned by API";
+        }
+
+        // Get duration if available
+        if (videoData.length) {
+          record.duration_seconds = Math.round(videoData.length);
+        }
+
+        // Use picture from video data or creative thumbnail
+        record.thumbnail_url = videoData.picture || creative.thumbnail_url;
+
+      } catch (error) {
+        console.error(`[generate-ad-transcript] Error fetching video source:`, error);
+        record.status = "pending";
+        record.error_message = error instanceof Error ? error.message : "Failed to fetch video source";
+        record.thumbnail_url = creative.thumbnail_url;
+      }
+
+      // Extract ad copy from video_data
+      const videoSpec = creative.object_story_spec?.video_data;
+      if (videoSpec) {
+        record.ad_copy = {
+          headline: videoSpec.title,
+          body: videoSpec.message,
+          cta: videoSpec.call_to_action?.type?.replace(/_/g, " "),
+        };
+      }
+
+    } else {
+      // IMAGE AD
+      record.media_type = "image";
+      record.status = "completed";
+
+      // Try to get the full-resolution image URL
+      let fullResImageUrl = creative.image_url || creative.object_story_spec?.link_data?.picture;
+
+      // If no image_url, try fetching from the creative API with image_url field
+      if (!fullResImageUrl && creative.id) {
+        try {
+          console.log(`[generate-ad-transcript] Fetching full-res image for creative ${creative.id}`);
+          const creativeResponse = await fetch(
+            `${FACEBOOK_GRAPH_URL}/${creative.id}?fields=image_url,thumbnail_url,object_story_spec&access_token=${facebookAccessToken}`
+          );
+          const creativeData = await creativeResponse.json();
+          if (creativeData.image_url) {
+            fullResImageUrl = creativeData.image_url;
+            console.log(`[generate-ad-transcript] Got full-res image from creative API: ${fullResImageUrl?.substring(0, 100)}...`);
+          }
+        } catch (e) {
+          console.error(`[generate-ad-transcript] Failed to fetch creative image:`, e);
+        }
+      }
+
+      // Clean up low-res thumbnail URL if we have to use it as fallback
+      const cleanImageUrl = (url: string | undefined): string | undefined => {
+        if (!url) return url;
+        // Remove the stp parameter that forces low resolution
+        let cleaned = url.replace(/[&?]stp=[^&]+/, '');
+        // Replace small size constraints with larger ones
+        cleaned = cleaned.replace(/p\d+x\d+/, 'p1080x1080');
+        return cleaned;
+      };
+
+      record.image_url = fullResImageUrl || cleanImageUrl(creative.thumbnail_url);
+      record.thumbnail_url = creative.thumbnail_url;
+
+      console.log(`[generate-ad-transcript] Image ad - image_url: ${record.image_url?.substring(0, 100)}...`);
+
+      const linkData = creative.object_story_spec?.link_data;
+      if (linkData) {
+        record.ad_copy = {
+          headline: linkData.name,
+          body: linkData.message,
+          description: linkData.description,
+          cta: linkData.call_to_action?.type?.replace(/_/g, " "),
+        };
+      }
+    }
 
     // Save to database
     const { data: saved, error: saveError } = await supabase
       .from("ad_transcripts")
       .upsert(
-        {
-          ...record,
-          updated_at: new Date().toISOString(),
-        },
+        { ...record, updated_at: new Date().toISOString() },
         { onConflict: "ad_id" }
       )
       .select()
@@ -181,20 +313,15 @@ Deno.serve(async (req: Request) => {
       throw new Error(`Failed to save record: ${saveError.message}`);
     }
 
-    console.log(`Successfully processed ad: ${adId} (status: ${saved.status})`);
+    console.log(`✅ [generate-ad-transcript] SUCCESS: ${adId} - media_type: ${saved.media_type}, video_url: ${saved.video_url ? 'YES' : 'NO'}`);
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        cached: false,
-        ...saved,
-      }),
+      JSON.stringify({ success: true, cached: false, ...saved }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error processing ad:", error);
-
+    console.error("[generate-ad-transcript] Error:", error);
     return new Response(
       JSON.stringify({
         success: false,
@@ -204,154 +331,3 @@ Deno.serve(async (req: Request) => {
     );
   }
 });
-
-// Fetch ad creative from Facebook API
-async function fetchAdCreative(adId: string, accessToken: string): Promise<AdCreative> {
-  // Request comprehensive fields to properly detect video vs image ads
-  const fields = [
-    "creative{",
-    "id,",
-    "video_id,",
-    "image_url,",
-    "thumbnail_url,",
-    "effective_object_story_id,",
-    "object_story_spec{",
-    "video_data{video_id,image_url,title,message,call_to_action},",
-    "link_data{message,name,description,call_to_action,image_hash,picture}",
-    "}",
-    "}"
-  ].join("");
-
-  const url = `${FACEBOOK_GRAPH_URL}/${adId}?fields=${fields}&access_token=${accessToken}`;
-  console.log(`Fetching ad creative from: ${FACEBOOK_GRAPH_URL}/${adId}`);
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  console.log(`Facebook API response for ad ${adId}:`, JSON.stringify(data, null, 2));
-
-  if (data.error) {
-    throw new Error(`Facebook API error: ${data.error.message}`);
-  }
-
-  if (!data.creative) {
-    throw new Error("No creative found for this ad");
-  }
-
-  return data.creative;
-}
-
-// Fetch video details from Facebook API
-async function fetchVideoDetails(videoId: string, accessToken: string): Promise<VideoDetails> {
-  // Request source URL and other video metadata
-  const fields = "id,source,title,description,length,picture,thumbnails";
-  const url = `${FACEBOOK_GRAPH_URL}/${videoId}?fields=${fields}&access_token=${accessToken}`;
-
-  console.log(`Fetching video details from: ${FACEBOOK_GRAPH_URL}/${videoId}`);
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  console.log(`Facebook Video API response for ${videoId}:`, JSON.stringify(data, null, 2));
-
-  if (data.error) {
-    throw new Error(`Facebook API error fetching video: ${data.error.message}`);
-  }
-
-  // If source is missing, the video may have access restrictions
-  if (!data.source) {
-    console.warn(`No source URL in video response. Video may have access restrictions or be unavailable.`);
-    console.warn(`Available fields in response: ${Object.keys(data).join(", ")}`);
-  }
-
-  return data;
-}
-
-// Process creative and extract relevant data
-// For video ads: stores video URL with status='pending' (transcript generated by local worker)
-// For image ads: extracts ad copy with status='completed'
-async function processCreative(
-  creative: AdCreative,
-  adId: string,
-  accessToken: string
-): Promise<AdTranscriptRecord> {
-  const record: AdTranscriptRecord = {
-    ad_id: adId,
-    creative_id: creative.id,
-    status: "completed",
-    generated_at: new Date().toISOString(),
-    media_type: "image", // Default, will be updated if video detected
-  };
-
-  // Check for video ID in multiple possible locations
-  const videoId = creative.video_id || creative.object_story_spec?.video_data?.video_id;
-
-  console.log(`Processing creative for ad ${adId}:`);
-  console.log(`  - creative.video_id: ${creative.video_id}`);
-  console.log(`  - object_story_spec.video_data.video_id: ${creative.object_story_spec?.video_data?.video_id}`);
-  console.log(`  - Detected videoId: ${videoId}`);
-
-  if (videoId) {
-    console.log(`Video ad detected for ${adId}, fetching video details for video_id: ${videoId}`);
-    record.media_type = "video";
-    // Video ads start as 'pending' - local worker will generate transcript
-    record.status = "pending";
-
-    try {
-      const videoDetails = await fetchVideoDetails(videoId, accessToken);
-      console.log(`Video details for ${videoId}:`, JSON.stringify(videoDetails, null, 2));
-
-      record.video_url = videoDetails.source;
-      record.thumbnail_url = videoDetails.picture || creative.thumbnail_url;
-      record.duration_seconds = videoDetails.length ? Math.round(videoDetails.length) : undefined;
-
-      if (!videoDetails.source) {
-        console.warn(`WARNING: No video source URL returned for video_id ${videoId}`);
-        record.error_message = "No video source URL available from Facebook API";
-        record.status = "failed";
-      } else {
-        console.log(`Successfully fetched video source URL for ad ${adId}: ${videoDetails.source.substring(0, 100)}...`);
-      }
-
-      // Extract video ad copy
-      const videoData = creative.object_story_spec?.video_data;
-      if (videoData) {
-        record.ad_copy = {
-          headline: videoData.title,
-          body: videoData.message,
-          cta: videoData.call_to_action?.type?.replace(/_/g, " "),
-        };
-      }
-
-    } catch (videoError) {
-      console.error(`Failed to fetch video details for video_id ${videoId}:`, videoError);
-      record.thumbnail_url = creative.thumbnail_url;
-      record.status = "failed";
-      record.error_message = videoError instanceof Error ? videoError.message : "Failed to fetch video";
-    }
-  } else {
-    // Image ad - no transcript needed, mark as completed
-    console.log(`Image ad detected for ${adId} (no video_id found)`);
-    record.media_type = "image";
-    record.status = "completed";
-    record.image_url = creative.image_url || creative.object_story_spec?.link_data?.picture;
-    record.thumbnail_url = creative.thumbnail_url;
-
-    console.log(`  - image_url: ${record.image_url}`);
-    console.log(`  - thumbnail_url: ${record.thumbnail_url}`);
-
-    // Extract image ad copy
-    const linkData = creative.object_story_spec?.link_data;
-    if (linkData) {
-      record.ad_copy = {
-        headline: linkData.name,
-        body: linkData.message,
-        description: linkData.description,
-        cta: linkData.call_to_action?.type?.replace(/_/g, " "),
-      };
-    }
-  }
-
-  console.log(`Final record for ad ${adId}: media_type=${record.media_type}, status=${record.status}, has_video_url=${!!record.video_url}`);
-  return record;
-}

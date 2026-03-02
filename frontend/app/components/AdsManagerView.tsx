@@ -609,6 +609,20 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                 </th>
                 <th
                   className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  onClick={() => handleSort("cost_per_booked")}
+                  title="Total spend divided by total calls booked (qualified + unqualified)"
+                >
+                  Cost/Booked <SortIndicator column="cost_per_booked" />
+                </th>
+                <th
+                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  onClick={() => handleSort("cost_per_qualified")}
+                  title="Total spend divided by qualified calls booked only"
+                >
+                  Cost/Qual. <SortIndicator column="cost_per_qualified" />
+                </th>
+                <th
+                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
                   onClick={() => handleSort("shows")}
                 >
                   Shows <SortIndicator column="shows" />
@@ -695,6 +709,12 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                   </td>
                   <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
                     {ad.calls_booked}
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                    {ad.cost_per_booked !== null ? formatCurrency(ad.cost_per_booked) : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                    {ad.cost_per_qualified !== null ? formatCurrency(ad.cost_per_qualified) : "—"}
                   </td>
                   <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
                     {ad.shows}

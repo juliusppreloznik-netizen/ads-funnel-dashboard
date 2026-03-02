@@ -1948,6 +1948,7 @@ export interface AdTranscript {
   id: string;
   ad_id: string;
   creative_id: string | null;
+  facebook_video_id: string | null;
   video_url: string | null;
   thumbnail_url: string | null;
   image_url: string | null;
@@ -1980,12 +1981,16 @@ export interface AdsManagerAd {
   avg_cpm: number;
   avg_cpc: number;
   avg_ctr: number;
-  // Funnel metrics
+  // Funnel metrics (from CRM contacts table)
   total_leads: number;
   calls_booked: number;
+  qualified_calls_booked: number;
   shows: number;
   closes: number;
   revenue: number;
+  // Cost metrics
+  cost_per_booked: number | null;
+  cost_per_qualified: number | null;
   // Has transcript/creative data
   has_transcript: boolean;
   transcript_status: string | null;
@@ -2021,10 +2026,10 @@ export async function getAdsManagerData(
       throw adsError;
     }
 
-    // Build date filter for contacts table
+    // Build date filter for contacts table - use ad_name for joining (more reliable than ad_id)
     let contactsQuery = supabase
       .from("contacts")
-      .select("ad_id, form_submitted_at, call_booked_at, showed_up_at, deal_closed_at, final_deal_value, is_qualified");
+      .select("ad_name, form_submitted_at, call_booked_at, showed_up_at, deal_closed_at, final_deal_value, is_qualified");
 
     if (dateRange?.from) {
       const startDate = formatDateForQuery(dateRange.from, "start");
@@ -2070,7 +2075,7 @@ export async function getAdsManagerData(
     };
 
     type ContactRow = {
-      ad_id: string | null;
+      ad_name: string | null;
       form_submitted_at: string | null;
       call_booked_at: string | null;
       showed_up_at: string | null;
@@ -2106,9 +2111,12 @@ export async function getAdsManagerData(
           avg_ctr: 0,
           total_leads: 0,
           calls_booked: 0,
+          qualified_calls_booked: 0,
           shows: 0,
           closes: 0,
           revenue: 0,
+          cost_per_booked: null,
+          cost_per_qualified: null,
           has_transcript: false,
           transcript_status: null,
           media_type: null,
@@ -2116,13 +2124,24 @@ export async function getAdsManagerData(
       }
     });
 
-    // Add funnel metrics from contacts
+    // Build a lookup from ad_name to ad_id for joining contacts
+    const adNameToAdMap = new Map<string, AdsManagerAd>();
+    for (const ad of adsMap.values()) {
+      adNameToAdMap.set(ad.ad_name, ad);
+    }
+
+    // Add funnel metrics from contacts (using ad_name for more reliable matching)
     (contactsData || []).forEach((contact: ContactRow) => {
-      if (!contact.ad_id) return;
-      const ad = adsMap.get(contact.ad_id);
+      if (!contact.ad_name) return;
+      const ad = adNameToAdMap.get(contact.ad_name);
       if (ad) {
         ad.total_leads += 1;
-        if (contact.call_booked_at) ad.calls_booked += 1;
+        if (contact.call_booked_at) {
+          ad.calls_booked += 1;
+          if (contact.is_qualified === true) {
+            ad.qualified_calls_booked += 1;
+          }
+        }
         if (contact.showed_up_at) ad.shows += 1;
         if (contact.deal_closed_at) {
           ad.closes += 1;
@@ -2131,11 +2150,14 @@ export async function getAdsManagerData(
       }
     });
 
-    // Calculate averages and add transcript status
+    // Calculate averages, cost metrics, and add transcript status
     const result: AdsManagerAd[] = Array.from(adsMap.values()).map((ad) => {
       ad.avg_cpm = ad.total_impressions > 0 ? (ad.total_spend / ad.total_impressions) * 1000 : 0;
       ad.avg_cpc = ad.total_clicks > 0 ? ad.total_spend / ad.total_clicks : 0;
       ad.avg_ctr = ad.total_impressions > 0 ? (ad.total_clicks / ad.total_impressions) * 100 : 0;
+      // Cost per booked/qualified calculations
+      ad.cost_per_booked = ad.calls_booked > 0 ? ad.total_spend / ad.calls_booked : null;
+      ad.cost_per_qualified = ad.qualified_calls_booked > 0 ? ad.total_spend / ad.qualified_calls_booked : null;
       const transcriptInfo = transcriptMap.get(ad.ad_id);
       ad.transcript_status = transcriptInfo?.status || null;
       ad.media_type = (transcriptInfo?.media_type as "video" | "image" | "carousel" | null) || null;
