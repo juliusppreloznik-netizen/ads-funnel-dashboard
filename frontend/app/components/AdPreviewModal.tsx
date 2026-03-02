@@ -225,15 +225,14 @@ export default function AdPreviewModal({
             <>
               {/* Left Panel - Media Preview (60%) */}
               <div className="w-[60%] bg-neutral-900 relative flex items-center justify-center">
-                {/* Debug info - remove after fixing */}
-                {process.env.NODE_ENV === "development" && (
-                  <div className="absolute top-2 left-2 z-50 text-xs text-white bg-black/70 p-2 rounded max-w-xs">
-                    <div>media_type: {transcript.media_type || "null"}</div>
-                    <div>image_url: {transcript.image_url ? "present" : "null"}</div>
-                    <div>thumbnail_url: {transcript.thumbnail_url ? "present" : "null"}</div>
-                    <div>video_url: {transcript.video_url ? "present" : "null"}</div>
-                  </div>
-                )}
+                {/* Debug info - always show for now */}
+                <div className="absolute top-2 left-2 z-50 text-xs text-white bg-black/70 p-2 rounded max-w-xs">
+                  <div>media_type: {String(transcript.media_type)}</div>
+                  <div>image_url: {transcript.image_url ? "YES" : "NO"}</div>
+                  <div>thumbnail_url: {transcript.thumbnail_url ? "YES" : "NO"}</div>
+                  <div>video_url: {transcript.video_url ? "YES" : "NO"}</div>
+                  <div>Keys: {Object.keys(transcript).join(", ")}</div>
+                </div>
                 {transcript.media_type === "video" && transcript.video_url ? (
                   <VideoPlayer
                     videoUrl={transcript.video_url}
