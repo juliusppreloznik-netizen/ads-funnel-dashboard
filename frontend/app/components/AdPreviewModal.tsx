@@ -500,6 +500,7 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [imageStatus, setImageStatus] = useState<"loading" | "loaded" | "error">("loading");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -588,6 +589,28 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
         </div>
       )}
 
+      {/* Image status indicator */}
+      <div className="absolute top-12 left-2 z-50 text-xs text-white bg-black/70 px-2 py-1 rounded">
+        Status: {imageStatus} | URL length: {imageUrl?.length || 0}
+      </div>
+
+      {/* Error message if image failed to load */}
+      {imageStatus === "error" && (
+        <div className="absolute inset-0 flex items-center justify-center z-30">
+          <div className="bg-red-900/80 text-white p-4 rounded-lg max-w-md text-center">
+            <p className="font-bold mb-2">Image failed to load</p>
+            <p className="text-xs break-all">{imageUrl?.substring(0, 100)}...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator */}
+      {imageStatus === "loading" && (
+        <div className="absolute inset-0 flex items-center justify-center z-30">
+          <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin" />
+        </div>
+      )}
+
       {/* Image container - fills the panel */}
       <div
         className={`absolute inset-0 ${zoom > 1 ? "cursor-grab" : ""} ${isDragging ? "cursor-grabbing" : ""}`}
@@ -607,6 +630,8 @@ function ImageViewer({ imageUrl, alt }: { imageUrl: string; alt: string }) {
             transition: isDragging ? "none" : "transform 0.2s ease-out",
           }}
           draggable={false}
+          onLoad={() => setImageStatus("loaded")}
+          onError={() => setImageStatus("error")}
         />
       </div>
     </div>
