@@ -93,13 +93,14 @@ const ONBOARDING_STEPS = [
       "Click the gear icon (Settings) in the bottom left",
       "In the left menu, click 'People' under Users",
       "Click 'Invite People' (or 'Add People') in the top right",
-      "Enter our email: employee@catalystmarketingco.net",
+      "Enter our emails: duffyjamir@gmail.com and Sharifcmt182@gmail.com",
       "Toggle on Full Access (give full access to all assets)",
       "Click 'Next', then assign all relevant assets (Ad Account, Pages, etc.)",
       "Click 'Send Invite' — we'll accept and get started",
     ],
     extraInfo: {
-      email: "employee@catalystmarketingco.net",
+      email: "duffyjamir@gmail.com",
+      email2: "Sharifcmt182@gmail.com",
       name: "Catalyst Marketing",
       note: "Give full access",
     },
@@ -276,11 +277,19 @@ export default function Onboarding() {
                   <h4 className="text-white font-semibold mb-1">Details to Enter</h4>
                   <div className="space-y-1 text-sm">
                     <p className="text-slate-300">
-                      <span className="text-slate-400">Email:</span>{" "}
+                      <span className="text-slate-400">{(step as any).extraInfo.email2 ? "Email 1:" : "Email:"}</span>{" "}
                       <span className="text-white font-mono select-all">
                         {(step as any).extraInfo.email}
                       </span>
                     </p>
+                    {(step as any).extraInfo.email2 && (
+                      <p className="text-slate-300">
+                        <span className="text-slate-400">Email 2:</span>{" "}
+                        <span className="text-white font-mono select-all">
+                          {(step as any).extraInfo.email2}
+                        </span>
+                      </p>
+                    )}
                     <p className="text-slate-300">
                       <span className="text-slate-400">Name:</span>{" "}
                       <span className="text-white font-mono select-all">

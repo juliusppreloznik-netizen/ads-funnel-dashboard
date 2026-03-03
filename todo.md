@@ -338,3 +338,7 @@
 ## Email Update
 - [x] Change employee email from duffyjamir@gmail.com to employee@catalystmarketingco.net on Agency Admin step (Step 2)
 - [x] Change employee email from duffyjamir@gmail.com to employee@catalystmarketingco.net on Facebook Access step (Step 5)
+
+## Email Update - Step 5 Facebook Access (Two Emails)
+- [x] Change email back to duffyjamir@gmail.com on Step 5 (Facebook Business Access)
+- [x] Add second email Sharifcmt182@gmail.com on Step 5 (Facebook Business Access)
