@@ -22,6 +22,7 @@ import { createClient } from '@supabase/supabase-js';
 const CUSTOM_FIELD_IDS = {
   INVESTMENT_ABILITY: "ETAW8IMRzdAyiinOFxIJ",
   SCALING_CHALLENGE: "Y9IfkX9MB5dSDErJyJsd",
+  REVENUE: "xXg3qy4Ttn477cdFlSJj",
 };
 
 // Get environment variables
@@ -102,7 +103,7 @@ async function fetchGHLContactDetails(contactId) {
 /**
  * Update contact in Supabase with custom fields
  */
-async function updateContactInSupabase(ghlContactId, investmentAbility, scalingChallenge) {
+async function updateContactInSupabase(ghlContactId, investmentAbility, scalingChallenge, revenue) {
   const updateData = {
     updated_at: new Date().toISOString(),
   };
@@ -113,6 +114,10 @@ async function updateContactInSupabase(ghlContactId, investmentAbility, scalingC
 
   if (scalingChallenge) {
     updateData.scaling_challenge = scalingChallenge;
+  }
+
+  if (revenue !== null && revenue !== undefined) {
+    updateData.revenue = revenue;
   }
 
   // Only update if there's something to update
@@ -145,17 +150,18 @@ function sleep(ms) {
  */
 async function backfillCustomFields() {
   console.log("=".repeat(60));
-  console.log("Starting backfill of investment_ability and scaling_challenge");
+  console.log("Starting backfill of investment_ability, scaling_challenge, and revenue");
   console.log("Using GHL Custom Field IDs:");
   console.log(`  investment_ability: ${CUSTOM_FIELD_IDS.INVESTMENT_ABILITY}`);
   console.log(`  scaling_challenge:  ${CUSTOM_FIELD_IDS.SCALING_CHALLENGE}`);
+  console.log(`  revenue:            ${CUSTOM_FIELD_IDS.REVENUE}`);
   console.log("=".repeat(60));
 
   // First, get all contacts from Supabase that are missing these fields
   const { data: contactsToUpdate, error: fetchError } = await supabase
     .from("contacts")
-    .select("ghl_contact_id, email, investment_ability, scaling_challenge")
-    .or("investment_ability.is.null,scaling_challenge.is.null");
+    .select("ghl_contact_id, email, investment_ability, scaling_challenge, revenue")
+    .or("investment_ability.is.null,scaling_challenge.is.null,revenue.is.null");
 
   if (fetchError) {
     console.error("Failed to fetch contacts from Supabase:", fetchError.message);
@@ -178,8 +184,8 @@ async function backfillCustomFields() {
       console.log(`Progress: ${i + 1}/${contactsToUpdate.length} contacts processed...`);
     }
 
-    // Skip if both fields already have values
-    if (contact.investment_ability && contact.scaling_challenge) {
+    // Skip if all fields already have values
+    if (contact.investment_ability && contact.scaling_challenge && contact.revenue !== null) {
       skipped++;
       continue;
     }
@@ -201,20 +207,36 @@ async function backfillCustomFields() {
     const scalingChallenge = contact.scaling_challenge ||
       extractCustomFieldById(customFields, CUSTOM_FIELD_IDS.SCALING_CHALLENGE);
 
+    // Extract revenue - convert to number
+    let revenue = contact.revenue;
+    if (revenue === null || revenue === undefined) {
+      const revenueStr = extractCustomFieldById(customFields, CUSTOM_FIELD_IDS.REVENUE);
+      if (revenueStr) {
+        // Parse revenue string to number (remove $ and commas if present)
+        const cleanedRevenue = revenueStr.replace(/[$,]/g, '');
+        const parsed = parseFloat(cleanedRevenue);
+        if (!isNaN(parsed)) {
+          revenue = parsed;
+        }
+      }
+    }
+
     // Update if we found new values
     if (
       (investmentAbility && !contact.investment_ability) ||
-      (scalingChallenge && !contact.scaling_challenge)
+      (scalingChallenge && !contact.scaling_challenge) ||
+      (revenue !== null && revenue !== undefined && contact.revenue === null)
     ) {
       const success = await updateContactInSupabase(
         ghlContactId,
         investmentAbility,
-        scalingChallenge
+        scalingChallenge,
+        revenue
       );
 
       if (success) {
         updated++;
-        console.log(`✅ Updated ${ghlContactId}: investment_ability="${investmentAbility || 'null'}", scaling_challenge="${scalingChallenge ? scalingChallenge.substring(0, 50) + '...' : 'null'}"`);
+        console.log(`✅ Updated ${ghlContactId}: investment_ability="${investmentAbility || 'null'}", scaling_challenge="${scalingChallenge ? scalingChallenge.substring(0, 50) + '...' : 'null'}", revenue=${revenue !== null ? revenue : 'null'}`);
       } else {
         failed++;
       }
