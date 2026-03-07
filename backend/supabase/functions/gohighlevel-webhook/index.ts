@@ -173,7 +173,7 @@ interface ContactRecord {
   fbclid?: string | null;
   // Custom fields
   revenue?: number | null;
-  investment_ability?: number | null;
+  investment_ability?: string | null;
   deal_value?: number | null;
   cash_collected?: number | null;
   scaling_challenge?: string | null;
@@ -554,10 +554,10 @@ function extractContactData(payload: GHLWebhookPayload): Partial<ContactRecord> 
     fbclid: getValue(["fbclid"]),
     // Custom fields
     revenue: getNumericValue(["revenue"]),
-    investment_ability: getNumericValue(["investment_ability", "investmentAbility"]),
+    investment_ability: getValue(["investment_ability", "investmentAbility"]),
     deal_value: dealValue,
     cash_collected: cashCollected,
-    scaling_challenge: getValue(["scaling_challenge", "scalingChallenge"]),
+    scaling_challenge: getValue(["scaling_challenge", "scalingChallenge", "whats_holding_back", "whatsHoldingBack"]),
   };
 }
 

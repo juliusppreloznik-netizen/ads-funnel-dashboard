@@ -55,6 +55,9 @@ import AdsManagerView from "./components/AdsManagerView";
 // Import Sales View
 import SalesView from "./components/SalesView";
 
+// Import Leads Breakdown View (V2 - uses contact table fields directly)
+import LeadsBreakdownViewV2 from "./components/LeadsBreakdownView";
+
 // Import dnd-kit for drag-and-drop
 import {
   DndContext,
@@ -2411,7 +2414,7 @@ export default function DashboardPage() {
             />
           )}
           {currentView === "Leads Breakdown" && (
-            <LeadsBreakdownView dateRange={dateRange} />
+            <LeadsBreakdownViewV2 dateRange={dateRange} />
           )}
           {currentView === "Ads Manager" && (
             <AdsManagerView dateRange={dateRange} />

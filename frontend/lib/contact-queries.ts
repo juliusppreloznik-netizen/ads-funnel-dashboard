@@ -54,7 +54,7 @@ export interface Contact {
   fbclid: string | null;
   // Custom fields
   revenue: number | null;
-  investment_ability: number | null;
+  investment_ability: string | null;
   deal_value: number | null;
   cash_collected: number | null;
   scaling_challenge: string | null;
@@ -2240,6 +2240,269 @@ export async function generateAdTranscript(
     return { data: result as AdTranscript, error: null };
   } catch (err) {
     console.error("Error in generateAdTranscript:", err);
+    return {
+      data: null,
+      error: err instanceof Error ? err : new Error("Unknown error"),
+    };
+  }
+}
+
+// ============================================================================
+// LEADS BREAKDOWN QUERIES (Custom Fields: revenue, investment_ability, scaling_challenge)
+// ============================================================================
+
+/** Revenue tier for distribution */
+export interface RevenueTierData {
+  label: string;
+  count: number;
+  percentage: number;
+  qualified: number;
+  qualificationRate: number;
+}
+
+/** Investment ability tier */
+export interface InvestmentAbilityData {
+  value: string;
+  count: number;
+  percentage: number;
+  qualified: number;
+  qualificationRate: number;
+}
+
+/** Scaling challenge with ranking */
+export interface ScalingChallengeData {
+  challenge: string;
+  count: number;
+  percentage: number;
+  qualified: number;
+  qualificationRate: number;
+}
+
+/** Lead card data */
+export interface LeadCardData {
+  id: string;
+  ghl_contact_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  ad_name: string | null;
+  campaign_name: string | null;
+  revenue: number | null;
+  investment_ability: string | null;
+  scaling_challenge: string | null;
+  is_qualified: boolean | null;
+  showed_up: boolean;
+  closed_deal: boolean;
+  deal_value: number | null;
+  form_submitted_at: string | null;
+  current_stage: string | null;
+}
+
+/** Complete leads breakdown data v2 (using contact table fields) */
+export interface LeadsBreakdownDataV2 {
+  // Revenue distribution (from contact.revenue)
+  revenueDistribution: RevenueTierData[];
+  // Investment ability distribution
+  investmentAbilityDistribution: InvestmentAbilityData[];
+  // Top scaling challenges
+  scalingChallenges: ScalingChallengeData[];
+  // Individual leads
+  leads: LeadCardData[];
+  // Summary stats
+  totalLeads: number;
+  totalQualified: number;
+  totalShown: number;
+  totalClosed: number;
+  qualificationRate: number;
+  showRate: number;
+  closeRate: number;
+}
+
+/**
+ * Get revenue tier label from numeric value
+ */
+function getRevenueTierFromNumber(revenue: number | null): string {
+  if (revenue === null || revenue === undefined) return "Unknown";
+  if (revenue < 5000) return "Under $5k/month";
+  if (revenue < 10000) return "$5k-$10k/month";
+  if (revenue < 25000) return "$10k-$25k/month";
+  return "$25k+/month";
+}
+
+/**
+ * Get leads breakdown data using contact table fields
+ * Uses revenue (numeric), investment_ability (text), scaling_challenge (text)
+ */
+export async function getLeadsBreakdownDataV2(
+  dateRange?: DateRangeFilter
+): Promise<QueryResult<LeadsBreakdownDataV2>> {
+  try {
+    const supabase = getSupabase();
+
+    // Fetch all contacts in date range with custom fields
+    let query = supabase
+      .from("contacts")
+      .select(`
+        id,
+        ghl_contact_id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        ad_name,
+        campaign_name,
+        revenue,
+        investment_ability,
+        scaling_challenge,
+        is_qualified,
+        showed_up_at,
+        deal_closed_at,
+        final_deal_value,
+        form_submitted_at,
+        current_stage
+      `)
+      .order("form_submitted_at", { ascending: false });
+
+    if (dateRange?.from) {
+      query = query.gte("form_submitted_at", formatDateForQuery(dateRange.from, "start"));
+    }
+    if (dateRange?.to) {
+      query = query.lte("form_submitted_at", formatDateForQuery(dateRange.to, "end"));
+    }
+
+    const { data: rawContacts, error } = await query;
+
+    if (error) {
+      console.error("Error fetching contacts for leads breakdown:", error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    const contacts = rawContacts || [];
+
+    // Calculate totals
+    const totalLeads = contacts.length;
+    const qualified = contacts.filter((c) => c.is_qualified === true);
+    const shown = contacts.filter((c) => c.showed_up_at);
+    const closed = contacts.filter((c) => c.deal_closed_at);
+
+    const totalQualified = qualified.length;
+    const totalShown = shown.length;
+    const totalClosed = closed.length;
+
+    // Calculate rates
+    const qualificationRate = totalLeads > 0 ? (totalQualified / totalLeads) * 100 : 0;
+    const showRate = totalQualified > 0 ? (totalShown / totalQualified) * 100 : 0;
+    const closeRate = totalShown > 0 ? (totalClosed / totalShown) * 100 : 0;
+
+    // Revenue distribution
+    const revenueTiers = ["Under $5k/month", "$5k-$10k/month", "$10k-$25k/month", "$25k+/month", "Unknown"];
+    const revenueMap = new Map<string, { count: number; qualified: number }>();
+    revenueTiers.forEach((tier) => revenueMap.set(tier, { count: 0, qualified: 0 }));
+
+    contacts.forEach((c) => {
+      const tier = getRevenueTierFromNumber(c.revenue);
+      const entry = revenueMap.get(tier) || { count: 0, qualified: 0 };
+      entry.count++;
+      if (c.is_qualified === true) entry.qualified++;
+      revenueMap.set(tier, entry);
+    });
+
+    const revenueDistribution: RevenueTierData[] = revenueTiers.map((label) => {
+      const data = revenueMap.get(label) || { count: 0, qualified: 0 };
+      return {
+        label,
+        count: data.count,
+        percentage: totalLeads > 0 ? (data.count / totalLeads) * 100 : 0,
+        qualified: data.qualified,
+        qualificationRate: data.count > 0 ? (data.qualified / data.count) * 100 : 0,
+      };
+    });
+
+    // Investment ability distribution
+    const investmentMap = new Map<string, { count: number; qualified: number }>();
+
+    contacts.forEach((c) => {
+      const value = c.investment_ability || "Unknown";
+      const entry = investmentMap.get(value) || { count: 0, qualified: 0 };
+      entry.count++;
+      if (c.is_qualified === true) entry.qualified++;
+      investmentMap.set(value, entry);
+    });
+
+    const investmentAbilityDistribution: InvestmentAbilityData[] = Array.from(
+      investmentMap.entries()
+    )
+      .map(([value, data]) => ({
+        value,
+        count: data.count,
+        percentage: totalLeads > 0 ? (data.count / totalLeads) * 100 : 0,
+        qualified: data.qualified,
+        qualificationRate: data.count > 0 ? (data.qualified / data.count) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Scaling challenges distribution
+    const challengeMap = new Map<string, { count: number; qualified: number }>();
+
+    contacts.forEach((c) => {
+      const challenge = c.scaling_challenge || "Unknown";
+      const entry = challengeMap.get(challenge) || { count: 0, qualified: 0 };
+      entry.count++;
+      if (c.is_qualified === true) entry.qualified++;
+      challengeMap.set(challenge, entry);
+    });
+
+    const scalingChallenges: ScalingChallengeData[] = Array.from(
+      challengeMap.entries()
+    )
+      .map(([challenge, data]) => ({
+        challenge,
+        count: data.count,
+        percentage: totalLeads > 0 ? (data.count / totalLeads) * 100 : 0,
+        qualified: data.qualified,
+        qualificationRate: data.count > 0 ? (data.qualified / data.count) * 100 : 0,
+      }))
+      .filter((c) => c.challenge !== "Unknown") // Filter out unknown for display
+      .sort((a, b) => b.count - a.count);
+
+    // Individual lead cards
+    const leads: LeadCardData[] = contacts.map((c) => ({
+      id: c.id,
+      ghl_contact_id: c.ghl_contact_id,
+      name: [c.first_name, c.last_name].filter(Boolean).join(" ") || "Unknown",
+      email: c.email,
+      phone: c.phone,
+      ad_name: c.ad_name,
+      campaign_name: c.campaign_name,
+      revenue: c.revenue,
+      investment_ability: c.investment_ability,
+      scaling_challenge: c.scaling_challenge,
+      is_qualified: c.is_qualified,
+      showed_up: !!c.showed_up_at,
+      closed_deal: !!c.deal_closed_at,
+      deal_value: c.final_deal_value,
+      form_submitted_at: c.form_submitted_at,
+      current_stage: c.current_stage,
+    }));
+
+    return {
+      data: {
+        revenueDistribution,
+        investmentAbilityDistribution,
+        scalingChallenges,
+        leads,
+        totalLeads,
+        totalQualified,
+        totalShown,
+        totalClosed,
+        qualificationRate,
+        showRate,
+        closeRate,
+      },
+      error: null,
+    };
+  } catch (err) {
+    console.error("Error in getLeadsBreakdownDataV2:", err);
     return {
       data: null,
       error: err instanceof Error ? err : new Error("Unknown error"),

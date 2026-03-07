@@ -253,40 +253,62 @@ Deno.serve(async (req: Request) => {
       record.media_type = "image";
       record.status = "completed";
 
-      // Try to get the full-resolution image URL
-      let fullResImageUrl = creative.image_url || creative.object_story_spec?.link_data?.picture;
+      // Try to get the full-resolution image URL from multiple sources
+      let fullResImageUrl: string | undefined;
 
-      // If no image_url, try fetching from the creative API with image_url field
+      // Source 1: Direct image_url from creative
+      fullResImageUrl = creative.image_url;
+
+      // Source 2: Link data picture
+      if (!fullResImageUrl) {
+        fullResImageUrl = creative.object_story_spec?.link_data?.picture;
+      }
+
+      // Source 3: Fetch from creative API with additional fields
       if (!fullResImageUrl && creative.id) {
         try {
           console.log(`[generate-ad-transcript] Fetching full-res image for creative ${creative.id}`);
           const creativeResponse = await fetch(
-            `${FACEBOOK_GRAPH_URL}/${creative.id}?fields=image_url,thumbnail_url,object_story_spec&access_token=${facebookAccessToken}`
+            `${FACEBOOK_GRAPH_URL}/${creative.id}?fields=image_url,object_story_spec,image_hash&access_token=${facebookAccessToken}`
           );
           const creativeData = await creativeResponse.json();
+          console.log(`[generate-ad-transcript] Creative API response:`, JSON.stringify(creativeData, null, 2));
+
           if (creativeData.image_url) {
             fullResImageUrl = creativeData.image_url;
-            console.log(`[generate-ad-transcript] Got full-res image from creative API: ${fullResImageUrl?.substring(0, 100)}...`);
+            console.log(`[generate-ad-transcript] Got image_url from creative API`);
+          } else if (creativeData.object_story_spec?.link_data?.image_hash) {
+            // Try to get image from ad account images using image_hash
+            const imageHash = creativeData.object_story_spec.link_data.image_hash;
+            const adAccountId = Deno.env.get("FACEBOOK_AD_ACCOUNT_ID");
+            if (adAccountId) {
+              const accountId = adAccountId.startsWith("act_") ? adAccountId : `act_${adAccountId}`;
+              const imageResponse = await fetch(
+                `${FACEBOOK_GRAPH_URL}/${accountId}/adimages?hashes=${imageHash}&fields=url,url_128,permalink_url&access_token=${facebookAccessToken}`
+              );
+              const imageData = await imageResponse.json();
+              console.log(`[generate-ad-transcript] AdImages API response:`, JSON.stringify(imageData, null, 2));
+
+              if (imageData.data?.[0]?.url) {
+                fullResImageUrl = imageData.data[0].url;
+                console.log(`[generate-ad-transcript] Got full-res image from AdImages API`);
+              } else if (imageData.data?.[0]?.permalink_url) {
+                fullResImageUrl = imageData.data[0].permalink_url;
+                console.log(`[generate-ad-transcript] Got permalink from AdImages API`);
+              }
+            }
           }
         } catch (e) {
           console.error(`[generate-ad-transcript] Failed to fetch creative image:`, e);
         }
       }
 
-      // Clean up low-res thumbnail URL if we have to use it as fallback
-      const cleanImageUrl = (url: string | undefined): string | undefined => {
-        if (!url) return url;
-        // Remove the stp parameter that forces low resolution
-        let cleaned = url.replace(/[&?]stp=[^&]+/, '');
-        // Replace small size constraints with larger ones
-        cleaned = cleaned.replace(/p\d+x\d+/, 'p1080x1080');
-        return cleaned;
-      };
-
-      record.image_url = fullResImageUrl || cleanImageUrl(creative.thumbnail_url);
+      // Use full-res URL if available, otherwise use thumbnail as-is (don't modify it to preserve hash)
+      record.image_url = fullResImageUrl || creative.thumbnail_url;
       record.thumbnail_url = creative.thumbnail_url;
 
       console.log(`[generate-ad-transcript] Image ad - image_url: ${record.image_url?.substring(0, 100)}...`);
+      console.log(`[generate-ad-transcript] Using ${fullResImageUrl ? 'full-res' : 'thumbnail'} URL`);
 
       const linkData = creative.object_story_spec?.link_data;
       if (linkData) {

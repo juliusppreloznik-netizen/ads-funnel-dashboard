@@ -38,7 +38,11 @@
       "Bash(/Users/julius/Desktop/ads-funnel-dashboard/backend/regenerate-video-ads.sh:*)",
       "Bash(/tmp/sync-ads.sh)",
       "Bash(npx eslint:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(deno run:*)",
+      "Bash(node scripts/backfill-custom-fields.js:*)",
+      "Bash(GHL_API_KEY=\"pit-cfa40321-fec1-4fbf-bb86-8e5c8d602068\" GHL_LOCATION_ID=\"xL9tBqCRdWhItIZIBuhY\" npx tsx:*)",
+      "Bash(GHL_API_KEY=\"pit-cfa40321-fec1-4fbf-bb86-8e5c8d602068\" GHL_LOCATION_ID=\"xL9tBqCRdWhItIZIBuhY\" node:*)"
     ]
   },
   "enabledMcpjsonServers": [
