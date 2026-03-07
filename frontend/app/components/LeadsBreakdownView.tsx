@@ -254,6 +254,8 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
               title="Total Leads"
               value={data.totalLeads}
               icon={LeadsIcons.Users}
+              trendLabel={`${data.allTimeTotal} all time`}
+              trend="neutral"
             />
             <KpiCard
               title="Qualified"

@@ -2316,16 +2316,20 @@ export interface LeadsBreakdownDataV2 {
   qualificationRate: number;
   showRate: number;
   closeRate: number;
+  // All-time total (ignoring date filter)
+  allTimeTotal: number;
 }
 
 /**
  * Get revenue tier label from numeric value
+ * Revenue values are stored as: 0 = just starting, 5 = under $5k, 10 = $5k-$10k, 25 = $10k-$25k, 50 = $25k+
  */
 function getRevenueTierFromNumber(revenue: number | null): string {
-  if (revenue === null || revenue === undefined) return "Unknown";
-  if (revenue < 5000) return "Under $5k/month";
-  if (revenue < 10000) return "$5k-$10k/month";
-  if (revenue < 25000) return "$10k-$25k/month";
+  if (revenue === null || revenue === undefined) return "Not Provided";
+  if (revenue === 0) return "Just Starting";
+  if (revenue <= 5) return "Under $5k/month";
+  if (revenue <= 10) return "$5k-$10k/month";
+  if (revenue <= 25) return "$10k-$25k/month";
   return "$25k+/month";
 }
 
@@ -2379,6 +2383,17 @@ export async function getLeadsBreakdownDataV2(
 
     const contacts = rawContacts || [];
 
+    // Get all-time total count (without date filter)
+    const { count: allTimeCount, error: countError } = await supabase
+      .from("contacts")
+      .select("id", { count: "exact", head: true });
+
+    if (countError) {
+      console.error("Error fetching all-time count:", countError);
+    }
+
+    const allTimeTotal = allTimeCount || 0;
+
     // Calculate totals
     const totalLeads = contacts.length;
     const qualified = contacts.filter((c) => c.is_qualified === true);
@@ -2395,7 +2410,7 @@ export async function getLeadsBreakdownDataV2(
     const closeRate = totalShown > 0 ? (totalClosed / totalShown) * 100 : 0;
 
     // Revenue distribution
-    const revenueTiers = ["Under $5k/month", "$5k-$10k/month", "$10k-$25k/month", "$25k+/month", "Unknown"];
+    const revenueTiers = ["Just Starting", "Under $5k/month", "$5k-$10k/month", "$10k-$25k/month", "$25k+/month", "Not Provided"];
     const revenueMap = new Map<string, { count: number; qualified: number }>();
     revenueTiers.forEach((tier) => revenueMap.set(tier, { count: 0, qualified: 0 }));
 
@@ -2498,6 +2513,7 @@ export async function getLeadsBreakdownDataV2(
         qualificationRate,
         showRate,
         closeRate,
+        allTimeTotal,
       },
       error: null,
     };
