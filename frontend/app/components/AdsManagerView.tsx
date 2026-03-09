@@ -241,10 +241,10 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
   // Sort indicator
   const SortIndicator = ({ column }: { column: keyof AdsManagerAd }) => {
     if (sortColumn !== column) {
-      return <span className="text-gray-300 ml-1">↕</span>;
+      return <span className="text-zinc-500 ml-1">↕</span>;
     }
     return (
-      <span className="text-orange-500 ml-1">
+      <span className="text-cyan-400 ml-1">
         {sortDirection === "asc" ? "↑" : "↓"}
       </span>
     );
@@ -254,8 +254,8 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading ads data...</p>
+          <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-zinc-400">Loading ads data...</p>
         </div>
       </div>
     );
@@ -265,16 +265,16 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Error loading data</h3>
-          <p className="text-sm text-gray-500 mt-1">{error}</p>
+          <h3 className="text-lg font-semibold text-zinc-100">Error loading data</h3>
+          <p className="text-sm text-zinc-500 mt-1">{error}</p>
           <button
             onClick={fetchData}
-            className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-cyan-500/100 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             Retry
           </button>
@@ -287,13 +287,13 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-obsidian-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">No ads found</h3>
-          <p className="text-sm text-gray-500 mt-1">Try adjusting your date range</p>
+          <h3 className="text-lg font-semibold text-zinc-100">No ads found</h3>
+          <p className="text-sm text-zinc-500 mt-1">Try adjusting your date range</p>
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-obsidian-900 rounded-xl shadow-lg shadow-black/20 border border-white/10 p-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Campaign Filter */}
           <div ref={campaignDropdownRef} className="relative">
@@ -352,57 +352,57 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                 setCampaignDropdownOpen(!campaignDropdownOpen);
                 setAdSetDropdownOpen(false);
               }}
-              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-zinc-300 bg-obsidian-900 border border-white/10 rounded-lg hover:bg-obsidian-850 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
             >
               <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
                 {selectedCampaigns.length > 0
                   ? `Campaign (${selectedCampaigns.length})`
                   : "All Campaigns"}
               </span>
-              <svg className={`w-4 h-4 text-gray-500 transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 text-zinc-500 transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {campaignDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <div className="p-2 border-b border-gray-200">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-obsidian-900 border border-white/10 rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-white/10">
                   <input
                     type="text"
                     placeholder="Search campaigns..."
                     value={campaignSearch}
                     onChange={(e) => setCampaignSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm border border-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {filteredCampaigns.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-gray-500">No campaigns found</div>
+                    <div className="px-4 py-3 text-sm text-zinc-500">No campaigns found</div>
                   ) : (
                     filteredCampaigns.map((campaign) => (
                       <label
                         key={campaign.campaign_id}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-obsidian-850 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedCampaigns.includes(campaign.campaign_id)}
                           onChange={() => toggleCampaign(campaign.campaign_id)}
-                          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                          className="w-4 h-4 text-cyan-400 border-white/10 rounded focus:ring-orange-500"
                         />
-                        <span className="text-sm text-gray-700 truncate">{campaign.campaign_name}</span>
+                        <span className="text-sm text-zinc-300 truncate">{campaign.campaign_name}</span>
                       </label>
                     ))
                   )}
                 </div>
                 {selectedCampaigns.length > 0 && (
-                  <div className="p-2 border-t border-gray-200">
+                  <div className="p-2 border-t border-white/10">
                     <button
                       onClick={() => setSelectedCampaigns([])}
-                      className="w-full px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+                      className="w-full px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-obsidian-800 rounded"
                     >
                       Clear selection
                     </button>
@@ -419,59 +419,59 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                 setAdSetDropdownOpen(!adSetDropdownOpen);
                 setCampaignDropdownOpen(false);
               }}
-              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-zinc-300 bg-obsidian-900 border border-white/10 rounded-lg hover:bg-obsidian-850 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
             >
               <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 {selectedAdSets.length > 0
                   ? `Ad Set (${selectedAdSets.length})`
                   : "All Ad Sets"}
               </span>
-              <svg className={`w-4 h-4 text-gray-500 transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 text-zinc-500 transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {adSetDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <div className="p-2 border-b border-gray-200">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-obsidian-900 border border-white/10 rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-white/10">
                   <input
                     type="text"
                     placeholder="Search ad sets..."
                     value={adSetSearch}
                     onChange={(e) => setAdSetSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm border border-white/10 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {filteredAdSets.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-gray-500">
+                    <div className="px-4 py-3 text-sm text-zinc-500">
                       {selectedCampaigns.length > 0 ? "No ad sets in selected campaigns" : "No ad sets found"}
                     </div>
                   ) : (
                     filteredAdSets.map((adSet) => (
                       <label
                         key={adSet.adset_id}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-obsidian-850 cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedAdSets.includes(adSet.adset_id)}
                           onChange={() => toggleAdSet(adSet.adset_id)}
-                          className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                          className="w-4 h-4 text-cyan-400 border-white/10 rounded focus:ring-orange-500"
                         />
-                        <span className="text-sm text-gray-700 truncate">{adSet.adset_name}</span>
+                        <span className="text-sm text-zinc-300 truncate">{adSet.adset_name}</span>
                       </label>
                     ))
                   )}
                 </div>
                 {selectedAdSets.length > 0 && (
-                  <div className="p-2 border-t border-gray-200">
+                  <div className="p-2 border-t border-white/10">
                     <button
                       onClick={() => setSelectedAdSets([])}
-                      className="w-full px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+                      className="w-full px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-obsidian-800 rounded"
                     >
                       Clear selection
                     </button>
@@ -485,7 +485,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-500/15 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -497,7 +497,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
           {/* Filter Summary */}
           {hasActiveFilters && (
             <div className="flex-1 flex items-center justify-end">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-zinc-500">
                 Showing {filteredAds.length} of {ads.length} ads
               </span>
             </div>
@@ -506,13 +506,13 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
 
         {/* Active Filter Tags */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-white/5">
             {selectedCampaigns.map((campaignId) => {
               const campaign = uniqueCampaigns.find((c) => c.campaign_id === campaignId);
               return campaign ? (
                 <span
                   key={campaignId}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-cyan-500/15 text-orange-700 rounded-full"
                 >
                   {campaign.campaign_name}
                   <button
@@ -531,7 +531,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
               return adSet ? (
                 <span
                   key={adSetId}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-blue-500/15 text-blue-400 rounded-full"
                 >
                   {adSet.adset_name}
                   <button
@@ -550,104 +550,104 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Ads Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-obsidian-900 rounded-xl shadow-lg shadow-black/20 border border-white/10 overflow-hidden">
+        <div className="px-6 py-4 border-b border-white/10">
+          <h2 className="text-lg font-semibold text-zinc-100">
             {hasActiveFilters ? `Filtered Ads (${filteredAds.length})` : "All Ads"}
           </h2>
-          <p className="text-sm text-gray-500">Click &quot;Preview&quot; to view ad creative and transcript</p>
+          <p className="text-sm text-zinc-500">Click &quot;Preview&quot; to view ad creative and transcript</p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-obsidian-850">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                   Actions
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("ad_name")}
                 >
                   Ad Name <SortIndicator column="ad_name" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("total_spend")}
                 >
                   Spend <SortIndicator column="total_spend" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("total_impressions")}
                 >
                   Impr. <SortIndicator column="total_impressions" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("total_clicks")}
                 >
                   Clicks <SortIndicator column="total_clicks" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("avg_ctr")}
                 >
                   CTR <SortIndicator column="avg_ctr" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("total_leads")}
                 >
                   Leads <SortIndicator column="total_leads" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("calls_booked")}
                 >
                   Booked <SortIndicator column="calls_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("cost_per_booked")}
                   title="Total spend divided by total calls booked (qualified + unqualified)"
                 >
                   Cost/Booked <SortIndicator column="cost_per_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("cost_per_qualified")}
                   title="Total spend divided by qualified calls booked only"
                 >
                   Cost/Qual. <SortIndicator column="cost_per_qualified" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("shows")}
                 >
                   Shows <SortIndicator column="shows" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("closes")}
                 >
                   Closes <SortIndicator column="closes" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
+                  className="px-4 py-3 text-right text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-300"
                   onClick={() => handleSort("revenue")}
                 >
                   Revenue <SortIndicator column="revenue" />
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-obsidian-900 divide-y divide-gray-200">
               {sortedAds.map((ad) => (
-                <tr key={ad.ad_id} className="hover:bg-gray-50 transition-colors">
+                <tr key={ad.ad_id} className="hover:bg-obsidian-850 transition-colors">
                   <td className="px-4 py-3 whitespace-nowrap">
                     <button
                       onClick={() => handlePreview(ad)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-cyan-500 bg-cyan-500/10 rounded-lg hover:bg-cyan-500/15 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -656,7 +656,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                       Preview
                     </button>
                     {ad.media_type === "video" && ad.has_transcript && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/15 text-green-800">
                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -664,7 +664,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                       </span>
                     )}
                     {ad.media_type === "video" && !ad.has_transcript && ad.transcript_status && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-500/15 text-yellow-800">
                         <svg className="w-3 h-3 mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
@@ -672,7 +672,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                       </span>
                     )}
                     {ad.media_type === "image" && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-500/15 text-blue-800">
                         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -682,44 +682,44 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                      <span className="text-sm font-medium text-zinc-100 truncate max-w-xs">
                         {ad.ad_name}
                       </span>
                       {ad.campaign_name && (
-                        <span className="text-xs text-gray-500 truncate max-w-xs">
+                        <span className="text-xs text-zinc-500 truncate max-w-xs">
                           {ad.campaign_name}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-gray-900 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm font-medium text-zinc-100 whitespace-nowrap">
                     {formatCurrency(ad.total_spend)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {formatNumber(ad.total_impressions)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {formatNumber(ad.total_clicks)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {formatPercent(ad.avg_ctr)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.total_leads}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.calls_booked}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.cost_per_booked !== null ? formatCurrency(ad.cost_per_booked) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.cost_per_qualified !== null ? formatCurrency(ad.cost_per_qualified) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.shows}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-zinc-400 whitespace-nowrap">
                     {ad.closes}
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-medium text-green-600 whitespace-nowrap">
@@ -758,16 +758,16 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, value, subtitle, icon }: SummaryCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+    <div className="bg-obsidian-900 rounded-xl shadow-lg shadow-black/20 border border-white/10 p-4">
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600">
+        <div className="flex-shrink-0 w-10 h-10 bg-cyan-500/15 rounded-lg flex items-center justify-center text-cyan-500">
           {icon}
         </div>
         <div>
-          <p className="text-sm text-gray-500">{title}</p>
+          <p className="text-sm text-zinc-500">{title}</p>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-xl font-bold text-gray-900">{value}</p>
-            {subtitle && <span className="text-xs text-gray-400">{subtitle}</span>}
+            <p className="text-xl font-bold text-zinc-100">{value}</p>
+            {subtitle && <span className="text-xs text-zinc-500">{subtitle}</span>}
           </div>
         </div>
       </div>

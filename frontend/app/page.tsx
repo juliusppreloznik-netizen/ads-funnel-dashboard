@@ -372,13 +372,13 @@ function Sidebar({
     <aside
       className={`${
         isCollapsed ? "w-16" : "w-64"
-      } bg-gray-900 text-white flex flex-col transition-all duration-300 ease-in-out`}
+      } bg-obsidian-950 text-white flex flex-col transition-all duration-300 ease-in-out`}
     >
       {/* Logo */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -388,7 +388,7 @@ function Sidebar({
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 rounded-lg hover:bg-gray-800 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-obsidian-800 transition-colors"
         >
           {isCollapsed ? Icons.ChevronRight : Icons.ChevronLeft}
         </button>
@@ -404,8 +404,8 @@ function Sidebar({
               onClick={() => setView(item.name)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive
-                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/30"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                  ? "bg-cyan-500/100 text-white shadow-lg shadow-orange-500/30"
+                  : "text-zinc-500 hover:bg-obsidian-800 hover:text-white"
               }`}
             >
               <span className={isActive ? "text-white" : ""}>{item.icon}</span>
@@ -421,12 +421,12 @@ function Sidebar({
       {!isCollapsed && (
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-medium">
+            <div className="w-8 h-8 bg-obsidian-700 rounded-full flex items-center justify-center text-sm font-medium">
               CM
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">Catalyst Marketing</p>
-              <p className="text-xs text-gray-500 truncate">Pro Plan</p>
+              <p className="text-xs text-zinc-500 truncate">Pro Plan</p>
             </div>
           </div>
         </div>
@@ -449,20 +449,20 @@ function Header({
   setDateRange: (range: DateRangeValue) => void;
 }) {
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 relative z-50">
+    <header className="h-16 bg-obsidian-900 border-b border-white/10 flex items-center justify-between px-6 relative z-50">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">{title}</h1>
-        <p className="text-sm text-gray-500">Contact-level attribution analytics</p>
+        <h1 className="text-xl font-bold text-zinc-100">{title}</h1>
+        <p className="text-sm text-zinc-500">Contact-level attribution analytics</p>
       </div>
 
       <div className="flex items-center gap-4 relative z-50">
         {/* Live Indicator */}
         <div className="flex items-center gap-2 text-green-600 text-sm">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
           </span>
-          <span className="text-gray-600 font-medium">Live</span>
+          <span className="text-zinc-400 font-medium">Live</span>
         </div>
 
         {/* Custom Date Range Picker */}
@@ -695,10 +695,10 @@ function MetricCard({
   }, [trendData, chartType, chartColor, subtitle, valueType]);
 
   return (
-    <div className="bg-white px-4 pt-3 pb-5 border border-solid border-gray-200 rounded-lg shadow-sm w-full relative h-full min-h-[280px]">
+    <div className="bg-obsidian-900 px-4 pt-3 pb-5 border border-solid border-white/10 rounded-lg shadow-lg shadow-black/20 w-full relative h-full min-h-[280px]">
       {/* Header */}
       <div className="flex flex-row items-center justify-between h-10">
-        <span className="text-sm font-semibold text-gray-800">{title}</span>
+        <span className="text-sm font-semibold text-zinc-100">{title}</span>
       </div>
 
       {/* Values Section */}
@@ -712,13 +712,13 @@ function MetricCard({
             >
               {mainValue}
             </div>
-            <div className="font-normal cursor-default leading-tight text-gray-400 text-sm">
+            <div className="font-normal cursor-default leading-tight text-zinc-500 text-sm">
               {previousValue}
             </div>
           </div>
 
           {/* Subtitle and Percentage Change */}
-          <div className="font-medium text-gray-500 flex gap-x-2 items-center text-xs mt-1">
+          <div className="font-medium text-zinc-500 flex gap-x-2 items-center text-xs mt-1">
             {subtitle}
             <div
               className={`border border-solid rounded-full py-0.5 px-1.5 flex flex-row items-center gap-x-0.5 ${
@@ -729,7 +729,7 @@ function MetricCard({
             >
               <span
                 className={`font-medium text-xs ${
-                  isPositiveChange ? "text-emerald-700" : "text-red-700"
+                  isPositiveChange ? "text-emerald-400" : "text-red-400"
                 }`}
               >
                 {percentageChange}
@@ -771,7 +771,7 @@ function MetricCard({
       {/* Chart Section */}
       <div className="relative w-full" style={{ height: "150px" }}>
         {trendData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-gray-300 text-xs">
+          <div className="h-full flex items-center justify-center text-zinc-500 text-xs">
             No data available
           </div>
         ) : (
@@ -821,31 +821,31 @@ interface SourceKPITotals {
 
 // Badge components for styled numbers
 const PurpleBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 min-w-[32px]">
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/15 text-purple-400 min-w-[32px]">
     {value}
   </span>
 );
 
 const GreenBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 min-w-[32px]">
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 min-w-[32px]">
     {value}
   </span>
 );
 
 const RedBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 min-w-[32px]">
+  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/15 text-red-400 min-w-[32px]">
     {value}
   </span>
 );
 
 const PercentageText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-medium ${value === 0 ? "text-red-500" : "text-gray-700"}`}>
+  <span className={`text-sm font-medium ${value === 0 ? "text-red-500" : "text-zinc-300"}`}>
     {value.toFixed(1)}%
   </span>
 );
 
 const RoasText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-semibold ${value === 0 ? "text-red-500" : "text-gray-700"}`}>
+  <span className={`text-sm font-semibold ${value === 0 ? "text-red-500" : "text-zinc-300"}`}>
     {value.toFixed(2)}x
   </span>
 );
@@ -883,11 +883,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     width: "200px",
     render: (row) => (
       <div className="min-w-[180px]">
-        <div className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={row.source}>
+        <div className="text-sm font-medium text-zinc-100 truncate max-w-[200px]" title={row.source}>
           {row.source}
         </div>
         {row.sourceId && (
-          <div className="text-xs text-gray-400 truncate max-w-[200px]" title={row.sourceId}>
+          <div className="text-xs text-zinc-500 truncate max-w-[200px]" title={row.sourceId}>
             {row.sourceId}
           </div>
         )}
@@ -895,7 +895,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     ),
     getValue: (row) => row.source,
     renderTotal: () => (
-      <div className="text-sm font-semibold text-gray-900">All Sources</div>
+      <div className="text-sm font-semibold text-zinc-100">All Sources</div>
     ),
   },
   spend: {
@@ -903,11 +903,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "SPEND",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-gray-700">${formatNumber(Math.round(row.spend))}</span>
+      <span className="text-sm text-zinc-300">${formatNumber(Math.round(row.spend))}</span>
     ),
     getValue: (row) => row.spend,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-gray-900">${formatNumber(Math.round(totals.spend))}</span>
+      <span className="text-sm font-semibold text-zinc-100">${formatNumber(Math.round(totals.spend))}</span>
     ),
   },
   applications: {
@@ -940,9 +940,9 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     id: "shown",
     label: "SHOWS",
     align: "center",
-    render: (row) => <span className="text-sm text-gray-700">{row.shown}</span>,
+    render: (row) => <span className="text-sm text-zinc-300">{row.shown}</span>,
     getValue: (row) => row.shown,
-    renderTotal: (totals) => <span className="text-sm font-semibold text-gray-900">{totals.shown}</span>,
+    renderTotal: (totals) => <span className="text-sm font-semibold text-zinc-100">{totals.shown}</span>,
   },
   showRate: {
     id: "showRate",
@@ -1015,11 +1015,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "COST/LEAD",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-gray-700">${row.costPerLead.toFixed(2)}</span>
+      <span className="text-sm text-zinc-300">${row.costPerLead.toFixed(2)}</span>
     ),
     getValue: (row) => row.costPerLead,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-gray-900">${totals.costPerLead.toFixed(2)}</span>
+      <span className="text-sm font-semibold text-zinc-100">${totals.costPerLead.toFixed(2)}</span>
     ),
   },
   roas: {
@@ -1065,9 +1065,9 @@ function SortableHeaderCell({
     <th
       ref={setNodeRef}
       style={style}
-      className={`px-3 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap select-none
+      className={`px-3 py-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider whitespace-nowrap select-none
         ${column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"}
-        ${isDragging ? "bg-orange-100 z-20" : "bg-gray-50"}
+        ${isDragging ? "bg-orange-100 z-20" : "bg-obsidian-850"}
       `}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : "justify-start"}`}>
@@ -1075,7 +1075,7 @@ function SortableHeaderCell({
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600"
+          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-obsidian-700 text-zinc-500 hover:text-zinc-400"
           title="Drag to reorder"
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1086,21 +1086,21 @@ function SortableHeaderCell({
         {/* Sort button */}
         <button
           onClick={() => onSort(column.id)}
-          className="flex items-center gap-1 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-1 hover:text-zinc-100 transition-colors"
         >
           <span>{column.shortLabel || column.label}</span>
           {isActive ? (
             sortDirection === "asc" ? (
-              <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
             ) : (
-              <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             )
           ) : (
-            <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
           )}
@@ -1234,22 +1234,22 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
     .filter(Boolean);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-obsidian-900 border border-white/10 rounded-xl shadow-lg shadow-black/20 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 bg-obsidian-850/50">
         <div className="flex items-center gap-4">
-          <h3 className="text-base font-semibold text-gray-900">KPI per Source</h3>
+          <h3 className="text-base font-semibold text-zinc-100">KPI per Source</h3>
 
           {/* Redesigned Breakdown Dropdown */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-obsidian-900 border border-white/10 rounded-lg shadow-lg shadow-black/20">
+            <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            <span className="text-sm text-gray-600 font-medium">Breakdown by:</span>
+            <span className="text-sm text-zinc-400 font-medium">Breakdown by:</span>
             <select
               value={breakdownLevel}
               onChange={(e) => onBreakdownChange(e.target.value as BreakdownLevel)}
-              className="text-sm font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-6 -mr-2"
+              className="text-sm font-semibold text-zinc-100 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-6 -mr-2"
             >
               {breakdownOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -1260,7 +1260,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
           </div>
         </div>
 
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-zinc-500">
           Drag column headers to reorder
         </div>
       </div>
@@ -1278,7 +1278,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 items={columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
-                <tr className="border-b border-gray-200">
+                <tr className="border-b border-white/10">
                   {orderedColumns.map((column) => (
                     <SortableHeaderCell
                       key={column.id}
@@ -1293,7 +1293,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
             </thead>
             <tbody>
               {/* Summary Row */}
-              <tr className="bg-orange-50/70 border-b border-orange-100">
+              <tr className="bg-cyan-500/10/70 border-b border-cyan-500/20">
                 {orderedColumns.map((column) => (
                   <td
                     key={column.id}
@@ -1309,7 +1309,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
               {/* Data Rows */}
               {sortedData.length === 0 ? (
                 <tr>
-                  <td colSpan={orderedColumns.length} className="px-4 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={orderedColumns.length} className="px-4 py-12 text-center text-sm text-zinc-500">
                     No data available for the selected date range.
                   </td>
                 </tr>
@@ -1317,8 +1317,8 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 sortedData.map((row, index) => (
                   <tr
                     key={`${row.source}-${index}`}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                    className={`border-b border-white/5 hover:bg-obsidian-850 transition-colors ${
+                      index % 2 === 0 ? "bg-obsidian-900" : "bg-obsidian-850/30"
                     }`}
                   >
                     {orderedColumns.map((column) => (
@@ -1376,7 +1376,7 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-500">Loading dashboard data...</p>
+          <p className="mt-4 text-sm text-zinc-500">Loading dashboard data...</p>
         </div>
       </div>
     );
@@ -1388,8 +1388,8 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-gray-500">No data available for the selected date range.</p>
-          <p className="text-sm text-gray-400 mt-2">Try selecting a different date range or check your data source.</p>
+          <p className="text-zinc-500">No data available for the selected date range.</p>
+          <p className="text-sm text-zinc-500 mt-2">Try selecting a different date range or check your data source.</p>
         </div>
       </div>
     );
@@ -1667,7 +1667,7 @@ const KPI_TEXT_COLORS: Record<KpiColor, string> = {
   blue: "text-blue-600",
   green: "text-emerald-600",
   purple: "text-purple-600",
-  orange: "text-orange-500",
+  orange: "text-cyan-400",
   red: "text-red-600",
   teal: "text-teal-600",
   indigo: "text-indigo-600",
@@ -1694,8 +1694,8 @@ function TremorKpiCard({
       : `${value.toFixed(1)}%`;
 
   return (
-    <Card className="p-5 shadow-sm border border-gray-200 rounded-xl">
-      <p className="text-sm font-semibold text-gray-700">{title}</p>
+    <Card className="p-5 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <p className="text-sm font-semibold text-zinc-300">{title}</p>
       <p className={`text-3xl font-bold mt-2 ${KPI_TEXT_COLORS[color]}`}>
         {formattedValue}
       </p>
@@ -1730,9 +1730,9 @@ function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: 
   const chartData = hasData ? realChartData : placeholderData;
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Revenue Distribution by Funnel Stage</h3>
-      <p className="text-sm text-gray-500 mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Revenue Distribution by Funnel Stage</h3>
+      <p className="text-sm text-zinc-500 mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
 
       <BarChart
         data={chartData}
@@ -1771,8 +1771,8 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
   const legendColors = ["rgb(16, 185, 129)", "rgb(249, 115, 22)", "rgb(156, 163, 175)"];
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <h4 className="text-sm font-semibold text-gray-900 text-center mb-3">{stageTitle}</h4>
+    <div className="bg-obsidian-850 rounded-lg p-4">
+      <h4 className="text-sm font-semibold text-zinc-100 text-center mb-3">{stageTitle}</h4>
       <TremorDonutChart
         data={chartData}
         category="value"
@@ -1790,9 +1790,9 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: legendColors[i] || "#9CA3AF" }}
               />
-              <span className="text-gray-700 font-medium">{tier.label}</span>
+              <span className="text-zinc-300 font-medium">{tier.label}</span>
             </span>
-            <span className="font-bold text-gray-900">{tier.percentage.toFixed(1)}%</span>
+            <span className="font-bold text-zinc-100">{tier.percentage.toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -1816,9 +1816,9 @@ function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] })
   const displayData = hasData ? data : placeholderData;
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Investment Ability Breakdown</h3>
-      <p className="text-sm text-gray-500 mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Investment Ability Breakdown</h3>
+      <p className="text-sm text-zinc-500 mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {displayData.map((stage) => (
@@ -1854,9 +1854,9 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
   const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.totalRevenue), 1) : 1;
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Revenue Funnel</h3>
-      <p className="text-sm text-gray-500 mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Revenue Funnel</h3>
+      <p className="text-sm text-zinc-500 mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
 
       <div className="space-y-5 mt-6">
         {displayData.map((stage, index) => {
@@ -1872,23 +1872,23 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
           return (
             <div key={stage.stage}>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-bold text-gray-900">{stage.stage}</div>
-                <div className="text-sm text-gray-600">
-                  <span className="font-semibold text-gray-800">{stage.count}</span> leads &bull;{" "}
+                <div className="text-sm font-bold text-zinc-100">{stage.stage}</div>
+                <div className="text-sm text-zinc-400">
+                  <span className="font-semibold text-zinc-100">{stage.count}</span> leads &bull;{" "}
                   <span className="font-bold" style={{ color: colors.from }}>
                     ${stage.totalRevenue.toLocaleString()}
                   </span>
                 </div>
               </div>
-              <div className="relative h-14 bg-gray-100 rounded-lg overflow-hidden shadow-inner">
+              <div className="relative h-14 bg-obsidian-800 rounded-lg overflow-hidden shadow-inner shadow-black/30">
                 <div
-                  className="absolute h-full transition-all duration-500 rounded-lg shadow-sm"
+                  className="absolute h-full transition-all duration-500 rounded-lg shadow-lg shadow-black/20"
                   style={{
                     width: `${Math.max(widthPercent, hasData ? 5 : 0)}%`,
                     background: `linear-gradient(90deg, ${colors.from}, ${colors.to})`,
                   }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-500 drop-shadow-md">
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-500 drop-shadow-md">
                   {hasData ? (
                     <span className="text-white">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   ) : (
@@ -1945,46 +1945,46 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
   };
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Lead Source Quality</h3>
-      <p className="text-sm text-gray-500 mt-1 mb-4">Compares the performance of different lead sources.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Lead Source Quality</h3>
+      <p className="text-sm text-zinc-500 mt-1 mb-4">Compares the performance of different lead sources.</p>
 
       <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
         <Table>
           <TableHead>
-            <TableRow className="bg-gray-50">
+            <TableRow className="bg-obsidian-850">
               <TableHeaderCell
-                className="cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("source")}
               >
                 Source{renderSortIndicator("source")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="text-center cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("avgRevenue")}
               >
                 Avg Revenue{renderSortIndicator("avgRevenue")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="text-center cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("qualRate")}
               >
                 Qual Rate{renderSortIndicator("qualRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="text-center cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("showRate")}
               >
                 Show Rate{renderSortIndicator("showRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="text-center cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("closeRate")}
               >
                 Close Rate{renderSortIndicator("closeRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-gray-100 font-semibold text-gray-700"
+                className="text-center cursor-pointer hover:bg-obsidian-800 font-semibold text-zinc-300"
                 onClick={() => handleSort("totalRevenue")}
               >
                 Total Revenue{renderSortIndicator("totalRevenue")}
@@ -1994,23 +1994,23 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
           <TableBody>
             {sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                <TableCell colSpan={6} className="text-center text-zinc-500 py-8">
                   No lead sources found for this period
                 </TableCell>
               </TableRow>
             ) : (
               sortedData.map((row, index) => (
-                <TableRow key={index} className="hover:bg-gray-50">
-                  <TableCell className="max-w-[200px] truncate font-medium text-gray-900" title={row.source}>
+                <TableRow key={index} className="hover:bg-obsidian-850">
+                  <TableCell className="max-w-[200px] truncate font-medium text-zinc-100" title={row.source}>
                     {row.source}
                   </TableCell>
-                  <TableCell className="text-center text-gray-700">
+                  <TableCell className="text-center text-zinc-300">
                     ${row.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
-                  <TableCell className="text-center text-gray-700">{row.qualRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-gray-700">{row.showRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-gray-700">{row.closeRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center font-semibold text-gray-900">
+                  <TableCell className="text-center text-zinc-300">{row.qualRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-zinc-300">{row.showRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-zinc-300">{row.closeRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center font-semibold text-zinc-100">
                     ${row.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
                 </TableRow>
@@ -2066,9 +2066,9 @@ function TremorRevenueTrendsChart({ data, dateRange }: { data: RevenueTrendPoint
   const chartData = hasData ? realChartData : generatePlaceholderData();
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Revenue Trends Over Time</h3>
-      <p className="text-sm text-gray-500 mt-1">Tracks average revenue potential over the selected date range.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Revenue Trends Over Time</h3>
+      <p className="text-sm text-zinc-500 mt-1">Tracks average revenue potential over the selected date range.</p>
 
       <AreaChart
         data={chartData}
@@ -2125,21 +2125,21 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
   };
 
   return (
-    <Card className="p-6 shadow-sm border border-gray-200 rounded-xl">
-      <h3 className="text-lg font-semibold text-gray-900">Revenue Tier Heatmap</h3>
-      <p className="text-sm text-gray-500 mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
+    <Card className="p-6 shadow-lg shadow-black/20 border border-white/10 rounded-xl">
+      <h3 className="text-lg font-semibold text-zinc-100">Revenue Tier Heatmap</h3>
+      <p className="text-sm text-zinc-500 mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
 
       <div className="overflow-x-auto mt-6">
-        <table className="w-full border-collapse rounded-lg overflow-hidden shadow-sm">
+        <table className="w-full border-collapse rounded-lg overflow-hidden shadow-lg shadow-black/20">
           <thead>
             <tr>
-              <th className="px-6 py-4 bg-gray-100 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <th className="px-6 py-4 bg-obsidian-800 text-left text-xs font-bold text-zinc-300 uppercase tracking-wider">
                 Revenue Tier
               </th>
-              <th className="px-6 py-4 bg-purple-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.qualified.base})` }}>
+              <th className="px-6 py-4 bg-purple-500/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.qualified.base})` }}>
                 Qualified
               </th>
-              <th className="px-6 py-4 bg-emerald-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.shown.base})` }}>
+              <th className="px-6 py-4 bg-emerald-500/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.shown.base})` }}>
                 Shown
               </th>
               <th className="px-6 py-4 bg-teal-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.closed.base})` }}>
@@ -2149,8 +2149,8 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {displayData.map((row, index) => (
-              <tr key={row.tier} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                <td className="px-6 py-4 font-semibold text-sm text-gray-900">
+              <tr key={row.tier} className={index % 2 === 0 ? "bg-obsidian-900" : "bg-obsidian-850"}>
+                <td className="px-6 py-4 font-semibold text-sm text-zinc-100">
                   {row.tier}
                 </td>
                 <td
@@ -2217,7 +2217,7 @@ function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-sm text-gray-500">Loading leads breakdown data...</p>
+          <p className="mt-4 text-sm text-zinc-500">Loading leads breakdown data...</p>
         </div>
       </div>
     );
@@ -2237,7 +2237,7 @@ function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-gray-500">No data available for the selected date range.</p>
+          <p className="text-zinc-500">No data available for the selected date range.</p>
         </div>
       </div>
     );
@@ -2314,13 +2314,13 @@ function PlaceholderView({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-center h-64">
       <div className="text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 bg-obsidian-800 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-500 mt-1">This feature is coming soon.</p>
+        <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>
+        <p className="text-sm text-zinc-500 mt-1">This feature is coming soon.</p>
       </div>
     </div>
   );
@@ -2373,18 +2373,18 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-gray-100 items-center justify-center">
-        <div className="text-center bg-white p-8 rounded-xl shadow-lg max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="flex h-screen bg-obsidian-800 items-center justify-center">
+        <div className="text-center bg-obsidian-900 p-8 rounded-xl shadow-lg max-w-md">
+          <div className="w-16 h-16 bg-red-500/15 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h3>
-          <p className="text-sm text-gray-500 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-zinc-100 mb-2">Error Loading Data</h3>
+          <p className="text-sm text-zinc-500 mb-4">{error}</p>
           <button
             onClick={refetch}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            className="px-4 py-2 bg-cyan-500/100 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
           >
             Retry
           </button>
@@ -2394,7 +2394,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-obsidian-850">
       {/* Sidebar */}
       <Sidebar
         currentView={currentView}
@@ -2413,7 +2413,7 @@ export default function DashboardPage() {
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-obsidian-850 p-6">
           {currentView === "Dashboard" && (
             <DashboardView
               data={data}

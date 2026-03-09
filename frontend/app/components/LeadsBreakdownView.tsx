@@ -98,12 +98,12 @@ function KpiCard({
   trend?: "up" | "down" | "neutral";
   trendLabel?: string;
 }) {
-  const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-gray-500";
+  const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-zinc-500";
 
   return (
-    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+    <div className="bg-obsidian-800/50 rounded-lg p-4 border border-white/10">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-gray-400 text-sm">{title}</span>
+        <span className="text-zinc-500 text-sm">{title}</span>
         <span className="text-blue-400">{icon}</span>
       </div>
       <div className="text-2xl font-bold text-white">{value}</div>
@@ -201,7 +201,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
 
   if (!data) {
     return (
-      <div className="text-center text-gray-400 py-12">
+      <div className="text-center text-zinc-500 py-12">
         No data available for the selected date range.
       </div>
     );
@@ -223,13 +223,13 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-700 pb-2">
+      <div className="flex gap-2 border-b border-white/10 pb-2">
         <button
           onClick={() => setSelectedTab("overview")}
           className={`px-4 py-2 rounded-t text-sm font-medium transition-colors ${
             selectedTab === "overview"
               ? "bg-blue-600 text-white"
-              : "text-gray-400 hover:text-white hover:bg-gray-700"
+              : "text-zinc-500 hover:text-white hover:bg-obsidian-700"
           }`}
         >
           Overview
@@ -239,7 +239,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           className={`px-4 py-2 rounded-t text-sm font-medium transition-colors ${
             selectedTab === "leads"
               ? "bg-blue-600 text-white"
-              : "text-gray-400 hover:text-white hover:bg-gray-700"
+              : "text-zinc-500 hover:text-white hover:bg-obsidian-700"
           }`}
         >
           Individual Leads ({data.totalLeads})
@@ -275,9 +275,9 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </div>
 
           {/* Revenue Distribution */}
-          <Card className="bg-gray-800/50 border-gray-700">
+          <Card className="bg-obsidian-800/50 border-white/10">
             <SectionHeader title="Revenue Distribution" icon={LeadsIcons.DollarSign} />
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-zinc-500 text-sm mb-4">
               Monthly revenue breakdown of leads with qualification rates
             </p>
             <BarChart
@@ -295,19 +295,19 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableHeaderCell className="text-gray-300">Revenue Tier</TableHeaderCell>
-                    <TableHeaderCell className="text-gray-300 text-right">Leads</TableHeaderCell>
-                    <TableHeaderCell className="text-gray-300 text-right">% of Total</TableHeaderCell>
-                    <TableHeaderCell className="text-gray-300 text-right">Qualified</TableHeaderCell>
-                    <TableHeaderCell className="text-gray-300 text-right">Qual Rate</TableHeaderCell>
+                    <TableHeaderCell className="text-zinc-500">Revenue Tier</TableHeaderCell>
+                    <TableHeaderCell className="text-zinc-500 text-right">Leads</TableHeaderCell>
+                    <TableHeaderCell className="text-zinc-500 text-right">% of Total</TableHeaderCell>
+                    <TableHeaderCell className="text-zinc-500 text-right">Qualified</TableHeaderCell>
+                    <TableHeaderCell className="text-zinc-500 text-right">Qual Rate</TableHeaderCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {data.revenueDistribution.map((item) => (
                     <TableRow key={item.label}>
                       <TableCell className="text-white font-medium">{item.label}</TableCell>
-                      <TableCell className="text-gray-300 text-right">{item.count}</TableCell>
-                      <TableCell className="text-gray-300 text-right">{formatPercent(item.percentage)}</TableCell>
+                      <TableCell className="text-zinc-500 text-right">{item.count}</TableCell>
+                      <TableCell className="text-zinc-500 text-right">{formatPercent(item.percentage)}</TableCell>
                       <TableCell className="text-green-400 text-right">{item.qualified}</TableCell>
                       <TableCell className="text-right">
                         <Badge color={item.qualificationRate >= 50 ? "green" : item.qualificationRate >= 25 ? "yellow" : "red"}>
@@ -322,9 +322,9 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </Card>
 
           {/* Investment Ability Distribution */}
-          <Card className="bg-gray-800/50 border-gray-700">
+          <Card className="bg-obsidian-800/50 border-white/10">
             <SectionHeader title="Investment Ability Distribution" icon={LeadsIcons.CreditCard} />
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-zinc-500 text-sm mb-4">
               How leads are distributed by their stated investment ability
             </p>
             <div className="grid md:grid-cols-2 gap-6">
@@ -343,9 +343,9 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableHeaderCell className="text-gray-300">Investment Ability</TableHeaderCell>
-                      <TableHeaderCell className="text-gray-300 text-right">Count</TableHeaderCell>
-                      <TableHeaderCell className="text-gray-300 text-right">Qual Rate</TableHeaderCell>
+                      <TableHeaderCell className="text-zinc-500">Investment Ability</TableHeaderCell>
+                      <TableHeaderCell className="text-zinc-500 text-right">Count</TableHeaderCell>
+                      <TableHeaderCell className="text-zinc-500 text-right">Qual Rate</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -354,7 +354,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                         <TableCell className="text-white font-medium max-w-[200px] truncate" title={item.value}>
                           {item.value}
                         </TableCell>
-                        <TableCell className="text-gray-300 text-right">{item.count}</TableCell>
+                        <TableCell className="text-zinc-500 text-right">{item.count}</TableCell>
                         <TableCell className="text-right">
                           <Badge color={item.qualificationRate >= 50 ? "green" : item.qualificationRate >= 25 ? "yellow" : "red"}>
                             {formatPercent(item.qualificationRate)}
@@ -369,13 +369,13 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </Card>
 
           {/* Top Scaling Challenges */}
-          <Card className="bg-gray-800/50 border-gray-700">
+          <Card className="bg-obsidian-800/50 border-white/10">
             <SectionHeader title="Top Scaling Challenges" icon={LeadsIcons.AlertTriangle} />
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-zinc-500 text-sm mb-4">
               Most common challenges leads face, ranked by frequency
             </p>
             {data.scalingChallenges.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
+              <div className="text-center text-zinc-500 py-8">
                 No scaling challenge data available. This field will populate once leads provide their challenges.
               </div>
             ) : (
@@ -383,7 +383,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 {data.scalingChallenges.slice(0, 10).map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 p-3 bg-gray-900/50 rounded-lg border border-gray-700"
+                    className="flex items-center gap-4 p-3 bg-obsidian-900/50 rounded-lg border border-white/10"
                   >
                     <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {idx + 1}
@@ -392,7 +392,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                       <div className="text-white font-medium truncate" title={item.challenge}>
                         {item.challenge}
                       </div>
-                      <div className="text-gray-400 text-sm">
+                      <div className="text-zinc-500 text-sm">
                         {item.count} leads ({formatPercent(item.percentage)})
                       </div>
                     </div>
@@ -445,7 +445,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
   });
 
   return (
-    <Card className="bg-gray-800/50 border-gray-700">
+    <Card className="bg-obsidian-800/50 border-white/10">
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="flex-grow">
@@ -454,7 +454,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
             placeholder="Search leads..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-4 py-2 bg-obsidian-900 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
           />
         </div>
         <div className="flex gap-2">
@@ -463,7 +463,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
             className={`px-4 py-2 rounded text-sm ${
               filterQualified === "all"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-obsidian-700 text-zinc-500 hover:bg-obsidian-600"
             }`}
           >
             All ({leads.length})
@@ -473,7 +473,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
             className={`px-4 py-2 rounded text-sm ${
               filterQualified === "qualified"
                 ? "bg-green-600 text-white"
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-obsidian-700 text-zinc-500 hover:bg-obsidian-600"
             }`}
           >
             Qualified ({leads.filter((l) => l.is_qualified === true).length})
@@ -483,7 +483,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
             className={`px-4 py-2 rounded text-sm ${
               filterQualified === "dq"
                 ? "bg-red-600 text-white"
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-obsidian-700 text-zinc-500 hover:bg-obsidian-600"
             }`}
           >
             DQ ({leads.filter((l) => l.is_qualified === false).length})
@@ -492,14 +492,14 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
       </div>
 
       {/* Results count */}
-      <div className="text-gray-400 text-sm mb-4">
+      <div className="text-zinc-500 text-sm mb-4">
         Showing {filteredLeads.length} of {leads.length} leads
       </div>
 
       {/* Leads list */}
       <div className="space-y-3 max-h-[600px] overflow-y-auto">
         {filteredLeads.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-zinc-500 py-8">
             No leads match your filters.
           </div>
         ) : (
@@ -533,13 +533,13 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
 
   return (
     <div
-      className={`bg-gray-900/50 rounded-lg border border-gray-700 overflow-hidden transition-all ${
+      className={`bg-obsidian-900/50 rounded-lg border border-white/10 overflow-hidden transition-all ${
         expanded ? "ring-2 ring-blue-500" : ""
       }`}
     >
       {/* Header - always visible */}
       <div
-        className="p-4 flex items-center gap-4 cursor-pointer hover:bg-gray-800/50"
+        className="p-4 flex items-center gap-4 cursor-pointer hover:bg-obsidian-800/50"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex-grow min-w-0">
@@ -547,7 +547,7 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
             <span className="text-white font-medium">{lead.name}</span>
             {statusBadge}
           </div>
-          <div className="text-gray-400 text-sm truncate">
+          <div className="text-zinc-500 text-sm truncate">
             {lead.email || lead.phone || "No contact info"}
           </div>
         </div>
@@ -555,13 +555,13 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {lead.revenue !== null && (
             <div className="text-green-400 font-medium">{formatCurrency(lead.revenue)}/mo</div>
           )}
-          <div className="text-gray-500 text-xs">
+          <div className="text-zinc-500 text-xs">
             {lead.form_submitted_at
               ? format(new Date(lead.form_submitted_at), "MMM d, yyyy")
               : "Unknown date"}
           </div>
         </div>
-        <div className="flex-shrink-0 text-gray-400">
+        <div className="flex-shrink-0 text-zinc-500">
           <svg
             className={`w-5 h-5 transition-transform ${expanded ? "rotate-180" : ""}`}
             fill="none"
@@ -575,15 +575,15 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-gray-700 p-4 space-y-4">
+        <div className="border-t border-white/10 p-4 space-y-4">
           {/* Contact Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-gray-500 text-xs uppercase">Email</div>
+              <div className="text-zinc-500 text-xs uppercase">Email</div>
               <div className="text-white">{lead.email || "-"}</div>
             </div>
             <div>
-              <div className="text-gray-500 text-xs uppercase">Phone</div>
+              <div className="text-zinc-500 text-xs uppercase">Phone</div>
               <div className="text-white">{lead.phone || "-"}</div>
             </div>
           </div>
@@ -591,13 +591,13 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Attribution */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-gray-500 text-xs uppercase">Ad Name</div>
+              <div className="text-zinc-500 text-xs uppercase">Ad Name</div>
               <div className="text-white truncate" title={lead.ad_name || undefined}>
                 {lead.ad_name || "-"}
               </div>
             </div>
             <div>
-              <div className="text-gray-500 text-xs uppercase">Campaign</div>
+              <div className="text-zinc-500 text-xs uppercase">Campaign</div>
               <div className="text-white truncate" title={lead.campaign_name || undefined}>
                 {lead.campaign_name || "-"}
               </div>
@@ -607,13 +607,13 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Custom Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-gray-500 text-xs uppercase">Monthly Revenue</div>
+              <div className="text-zinc-500 text-xs uppercase">Monthly Revenue</div>
               <div className="text-green-400 font-medium">
                 {lead.revenue !== null ? formatCurrency(lead.revenue) : "-"}
               </div>
             </div>
             <div>
-              <div className="text-gray-500 text-xs uppercase">Investment Ability</div>
+              <div className="text-zinc-500 text-xs uppercase">Investment Ability</div>
               <div className="text-white">{lead.investment_ability || "-"}</div>
             </div>
           </div>
@@ -621,8 +621,8 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Scaling Challenge */}
           {lead.scaling_challenge && (
             <div>
-              <div className="text-gray-500 text-xs uppercase">Scaling Challenge</div>
-              <div className="text-white bg-gray-800 p-2 rounded mt-1">
+              <div className="text-zinc-500 text-xs uppercase">Scaling Challenge</div>
+              <div className="text-white bg-obsidian-800 p-2 rounded mt-1">
                 {lead.scaling_challenge}
               </div>
             </div>
@@ -631,7 +631,7 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Pipeline Stage */}
           {lead.current_stage && (
             <div>
-              <div className="text-gray-500 text-xs uppercase">Current Stage</div>
+              <div className="text-zinc-500 text-xs uppercase">Current Stage</div>
               <div className="text-blue-400">{lead.current_stage}</div>
             </div>
           )}
@@ -639,7 +639,7 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Deal Value */}
           {lead.closed_deal && lead.deal_value !== null && (
             <div>
-              <div className="text-gray-500 text-xs uppercase">Deal Value</div>
+              <div className="text-zinc-500 text-xs uppercase">Deal Value</div>
               <div className="text-green-400 font-bold text-lg">{formatCurrency(lead.deal_value)}</div>
             </div>
           )}

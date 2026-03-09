@@ -1,85 +1,867 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   DARK LUXURY THEME - Catalyst Dashboard
+   Aesthetic: Linear/Vercel-inspired, refined dark mode, electric accents
+   ============================================================================ */
+
+/* CSS Variables - Design Tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Obsidian Dark Palette */
+  --obsidian-950: #09090B;
+  --obsidian-900: #0F0F12;
+  --obsidian-850: #131316;
+  --obsidian-800: #16161A;
+  --obsidian-750: #1A1A1F;
+  --obsidian-700: #1C1C21;
+  --obsidian-600: #27272A;
+  --obsidian-500: #3F3F46;
+  --obsidian-400: #52525B;
+  --obsidian-300: #71717A;
+  --obsidian-200: #A1A1AA;
+  --obsidian-100: #D4D4D8;
+  --obsidian-50: #FAFAFA;
+
+  /* Electric Cyan Accent */
+  --accent-500: #00E5FF;
+  --accent-400: #22ECFF;
+  --accent-300: #67F2FF;
+  --accent-600: #00B8CC;
+  --accent-glow: rgba(0, 229, 255, 0.15);
+  --accent-glow-strong: rgba(0, 229, 255, 0.25);
+
+  /* Semantic Colors */
+  --success: #10B981;
+  --success-muted: rgba(16, 185, 129, 0.15);
+  --warning: #F59E0B;
+  --warning-muted: rgba(245, 158, 11, 0.15);
+  --danger: #EF4444;
+  --danger-muted: rgba(239, 68, 68, 0.15);
+
+  /* Surfaces */
+  --surface-base: var(--obsidian-950);
+  --surface-raised: var(--obsidian-900);
+  --surface-overlay: var(--obsidian-800);
+  --surface-elevated: var(--obsidian-700);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-accent: rgba(0, 229, 255, 0.3);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+  --shadow-glow-lg: 0 0 40px var(--accent-glow-strong);
+
+  /* Typography */
+  --font-display: var(--font-manrope), system-ui, sans-serif;
+  --font-body: var(--font-jakarta), system-ui, sans-serif;
+
+  /* Timing */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Tailwind Theme Integration */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-obsidian-950: var(--obsidian-950);
+  --color-obsidian-900: var(--obsidian-900);
+  --color-obsidian-850: var(--obsidian-850);
+  --color-obsidian-800: var(--obsidian-800);
+  --color-obsidian-750: var(--obsidian-750);
+  --color-obsidian-700: var(--obsidian-700);
+  --color-obsidian-600: var(--obsidian-600);
+  --color-obsidian-500: var(--obsidian-500);
+  --color-obsidian-400: var(--obsidian-400);
+  --color-obsidian-300: var(--obsidian-300);
+  --color-obsidian-200: var(--obsidian-200);
+  --color-obsidian-100: var(--obsidian-100);
+  --color-obsidian-50: var(--obsidian-50);
+  --color-accent: var(--accent-500);
+  --color-accent-light: var(--accent-400);
+  --color-accent-dark: var(--accent-600);
+  --font-display: var(--font-manrope);
+  --font-body: var(--font-jakarta);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base Styles */
+html {
+  background: var(--obsidian-950);
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--obsidian-950);
+  color: var(--obsidian-100);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
-/* Add to app/globals.css */
 
-/* React Day Picker Custom Styles */
+/* Subtle grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text-display-xl {
+  font-size: 3rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.text-display-lg {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.text-display-md {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.text-display-sm {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Muted text variants */
+.text-muted {
+  color: var(--obsidian-300);
+}
+
+.text-subtle {
+  color: var(--obsidian-400);
+}
+
+/* ============================================================================
+   CARD SYSTEM - Layered Glass Surfaces
+   ============================================================================ */
+
+.card-base {
+  background: linear-gradient(
+    135deg,
+    rgba(22, 22, 26, 0.8) 0%,
+    rgba(15, 15, 18, 0.9) 100%
+  );
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s var(--ease-out-expo);
+}
+
+.card-base:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated {
+  background: linear-gradient(
+    145deg,
+    rgba(28, 28, 33, 0.95) 0%,
+    rgba(22, 22, 26, 0.98) 100%
+  );
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s var(--ease-out-expo);
+}
+
+.card-elevated:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-interactive {
+  background: var(--obsidian-800);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out-expo);
+}
+
+.card-interactive:hover {
+  background: var(--obsidian-750);
+  border-color: var(--accent-500);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.card-accent {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.08) 0%,
+    rgba(0, 229, 255, 0.02) 100%
+  );
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+}
+
+/* ============================================================================
+   BUTTONS & INTERACTIVE ELEMENTS
+   ============================================================================ */
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-500) 0%, var(--accent-600) 100%);
+  color: var(--obsidian-950);
+  font-family: var(--font-display);
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out-expo);
+  box-shadow: 0 2px 8px rgba(0, 229, 255, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-lg), 0 4px 12px rgba(0, 229, 255, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--obsidian-800);
+  color: var(--obsidian-100);
+  font-family: var(--font-display);
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out-expo);
+}
+
+.btn-secondary:hover {
+  background: var(--obsidian-750);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--obsidian-200);
+  font-family: var(--font-display);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-in-out);
+}
+
+.btn-ghost:hover {
+  background: var(--obsidian-800);
+  color: var(--obsidian-50);
+}
+
+/* ============================================================================
+   NAVIGATION & SIDEBAR
+   ============================================================================ */
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: var(--obsidian-300);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s var(--ease-in-out);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: var(--obsidian-800);
+  color: var(--obsidian-100);
+  border-color: var(--border-subtle);
+}
+
+.nav-item.active {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 229, 255, 0.1) 0%,
+    rgba(0, 229, 255, 0.05) 100%
+  );
+  color: var(--accent-500);
+  border-color: var(--border-accent);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--accent-500);
+  border-radius: 0 2px 2px 0;
+  box-shadow: var(--shadow-glow);
+}
+
+/* ============================================================================
+   TABLES
+   ============================================================================ */
+
+.table-container {
+  background: var(--obsidian-900);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-header {
+  background: var(--obsidian-850);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.table-header th {
+  padding: 0.875rem 1rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--obsidian-300);
+  text-align: left;
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s var(--ease-in-out);
+}
+
+.table-row:hover {
+  background: var(--obsidian-850);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-cell {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--obsidian-100);
+}
+
+/* ============================================================================
+   CHARTS & DATA VISUALIZATION
+   ============================================================================ */
+
+.chart-container {
+  background: linear-gradient(
+    180deg,
+    var(--obsidian-900) 0%,
+    var(--obsidian-850) 100%
+  );
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* ============================================================================
+   BADGES & STATUS INDICATORS
+   ============================================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-accent {
+  background: var(--accent-glow);
+  color: var(--accent-400);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.badge-success {
+  background: var(--success-muted);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-warning {
+  background: var(--warning-muted);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.badge-danger {
+  background: var(--danger-muted);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badge-neutral {
+  background: var(--obsidian-800);
+  color: var(--obsidian-200);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ============================================================================
+   KPI CARDS
+   ============================================================================ */
+
+.kpi-card {
+  background: linear-gradient(
+    145deg,
+    var(--obsidian-800) 0%,
+    var(--obsidian-850) 100%
+  );
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s var(--ease-out-expo);
+}
+
+.kpi-card:hover {
+  border-color: var(--border-default);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--obsidian-400);
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--obsidian-50);
+  letter-spacing: -0.02em;
+}
+
+.kpi-value.accent {
+  color: var(--accent-500);
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+
+.kpi-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.kpi-change.positive {
+  color: var(--success);
+}
+
+.kpi-change.negative {
+  color: var(--danger);
+}
+
+/* ============================================================================
+   TABS
+   ============================================================================ */
+
+.tabs-container {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--obsidian-900);
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+}
+
+.tab-item {
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--obsidian-300);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-in-out);
+  border: 1px solid transparent;
+}
+
+.tab-item:hover {
+  color: var(--obsidian-100);
+  background: var(--obsidian-800);
+}
+
+.tab-item.active {
+  background: var(--obsidian-700);
+  color: var(--obsidian-50);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================================
+   INPUTS & FORM ELEMENTS
+   ============================================================================ */
+
+.input {
+  background: var(--obsidian-900);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--obsidian-100);
+  transition: all 0.2s var(--ease-in-out);
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.input::placeholder {
+  color: var(--obsidian-400);
+}
+
+.select {
+  background: var(--obsidian-900);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 0.625rem 2rem 0.625rem 0.875rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--obsidian-100);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A1A1AA'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  transition: all 0.2s var(--ease-in-out);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent-500);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* ============================================================================
+   MODALS & OVERLAYS
+   ============================================================================ */
+
+.modal-overlay {
+  background: rgba(9, 9, 11, 0.85);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: linear-gradient(
+    145deg,
+    var(--obsidian-850) 0%,
+    var(--obsidian-900) 100%
+  );
+  border: 1px solid var(--border-default);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg), 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================================
+   SCROLLBAR
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--obsidian-900);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--obsidian-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--obsidian-500);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--accent-glow-strong);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-out-expo) forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s var(--ease-out-expo) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Staggered animations */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ============================================================================
+   TREMOR COMPONENT OVERRIDES
+   ============================================================================ */
+
+/* Override Tremor Card */
+[data-tremor-id="tremor-Card"],
+.tremor-Card-root {
+  background: linear-gradient(
+    145deg,
+    var(--obsidian-800) 0%,
+    var(--obsidian-850) 100%
+  ) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* Override Tremor Table */
+.tremor-Table-root {
+  background: transparent !important;
+}
+
+.tremor-TableHead-root {
+  background: var(--obsidian-850) !important;
+}
+
+.tremor-TableHeaderCell-root {
+  color: var(--obsidian-300) !important;
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom: 1px solid var(--border-default) !important;
+  padding: 0.875rem 1rem !important;
+}
+
+.tremor-TableRow-root {
+  border-bottom: 1px solid var(--border-subtle) !important;
+  transition: background 0.15s var(--ease-in-out) !important;
+}
+
+.tremor-TableRow-root:hover {
+  background: var(--obsidian-850) !important;
+}
+
+.tremor-TableCell-root {
+  color: var(--obsidian-100) !important;
+  padding: 1rem !important;
+}
+
+/* Override Tremor Badge */
+.tremor-Badge-root {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+}
+
+/* Override Tremor Charts */
+.tremor-BarChart-root,
+.tremor-AreaChart-root,
+.tremor-DonutChart-root {
+  --tremor-background-default: var(--obsidian-900) !important;
+  --tremor-content-subtle: var(--obsidian-400) !important;
+  --tremor-content-default: var(--obsidian-200) !important;
+  --tremor-border-default: var(--border-subtle) !important;
+}
+
+/* ============================================================================
+   DATE PICKER OVERRIDES
+   ============================================================================ */
+
 .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: #f97316;
-  --rdp-background-color: #fff7ed;
+  --rdp-accent-color: var(--accent-500);
+  --rdp-background-color: var(--accent-glow);
+  font-family: var(--font-display);
 }
 
 .rdp-day_selected:not([disabled]) {
-  background-color: var(--rdp-accent-color);
-  color: white;
+  background-color: var(--accent-500) !important;
+  color: var(--obsidian-950) !important;
 }
 
 .rdp-day_selected:hover:not([disabled]) {
-  background-color: #ea580c;
+  background-color: var(--accent-600) !important;
 }
 
 .rdp-day_range_middle {
-  background-color: var(--rdp-background-color);
-  color: #1f2937;
+  background-color: var(--accent-glow) !important;
+  color: var(--obsidian-100) !important;
 }
 
 .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-  background-color: #f3f4f6;
+  background-color: var(--obsidian-700) !important;
 }
 
-/* Tremor DateRangePicker Fixes */
-[data-tremor-id="tremor-DateRangePicker"] {
-  position: relative;
-  z-index: 50;
-}
-
-/* Ensure the dropdown has proper background and shadow */
 [data-tremor-id="tremor-DateRangePicker"] [role="dialog"],
 [data-tremor-id="tremor-DateRangePicker"] [data-headlessui-state],
 .tremor-DateRangePicker-calendarDropdown {
-  background-color: white !important;
-  z-index: 9999 !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 0.75rem !important;
+  background-color: var(--obsidian-850) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
-/* Fix Tremor popover/dropdown layering */
+[data-tremor-id="tremor-DateRangePicker"] button,
+[data-tremor-id="tremor-DateRangePicker"] span {
+  color: var(--obsidian-200) !important;
+}
+
+[data-tremor-id="tremor-DateRangePicker"] button:hover {
+  background-color: var(--obsidian-700) !important;
+}
+
 [data-headlessui-portal] {
   position: relative;
   z-index: 9999;
 }
 
-/* Ensure proper text colors in date picker */
-[data-tremor-id="tremor-DateRangePicker"] button,
-[data-tremor-id="tremor-DateRangePicker"] span {
-  color: #374151;
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.glass {
+  background: rgba(22, 22, 26, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
 }
 
-[data-tremor-id="tremor-DateRangePicker"] button:hover {
-  background-color: #f3f4f6;
+.glow-accent {
+  box-shadow: var(--shadow-glow);
+}
+
+.glow-accent-strong {
+  box-shadow: var(--shadow-glow-lg);
+}
+
+.border-glow {
+  border-color: var(--accent-500);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-400) 0%, var(--accent-500) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Focus ring */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--obsidian-950), 0 0 0 4px var(--accent-500);
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--obsidian-800) 0%,
+    var(--obsidian-700) 50%,
+    var(--obsidian-800) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
 }

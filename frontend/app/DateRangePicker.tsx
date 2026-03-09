@@ -191,22 +191,22 @@ export function CustomDateRangePicker({ value, onChange }: CustomDateRangePicker
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-obsidian-900 border border-white/10 rounded-lg shadow-xl shadow-black/30 shadow-black/20 hover:bg-obsidian-850 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
       >
         {/* Calendar Icon */}
-        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
 
         {/* Date Display */}
         <div className="flex flex-col items-start">
-          <span className="text-xs font-medium text-gray-500">{getDisplayLabel()}</span>
-          <span className="text-sm font-semibold text-gray-900">{formatDateRange()}</span>
+          <span className="text-xs font-medium text-zinc-500">{getDisplayLabel()}</span>
+          <span className="text-sm font-semibold text-zinc-100">{formatDateRange()}</span>
         </div>
 
         {/* Chevron */}
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -217,11 +217,11 @@ export function CustomDateRangePicker({ value, onChange }: CustomDateRangePicker
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 z-[9999]">
+        <div className="absolute right-0 mt-2 bg-obsidian-900 rounded-xl shadow-2xl border border-white/10 z-[9999]">
           <div className="flex">
             {/* Left Sidebar - Quick Selects */}
-            <div className="w-44 border-r border-gray-200 py-3 bg-gray-50 rounded-l-xl">
-              <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="w-44 border-r border-white/10 py-3 bg-obsidian-850 rounded-l-xl">
+              <div className="px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 Quick Select
               </div>
               <div className="space-y-0.5 px-2">
@@ -232,7 +232,7 @@ export function CustomDateRangePicker({ value, onChange }: CustomDateRangePicker
                     className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                       value.selectValue === option.value
                         ? 'bg-blue-100 text-blue-700 font-medium'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        : 'text-zinc-300 hover:bg-obsidian-800'
                     }`}
                   >
                     {option.label}
@@ -243,7 +243,7 @@ export function CustomDateRangePicker({ value, onChange }: CustomDateRangePicker
 
             {/* Right Panel - Calendar */}
             <div className="p-4">
-              <div className="text-sm font-medium text-gray-700 mb-4">
+              <div className="text-sm font-medium text-zinc-300 mb-4">
                 Or select custom range:
               </div>
 
@@ -381,22 +381,22 @@ function CalendarMonth({ month, selected, onSelect, offset }: CalendarMonthProps
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={prevMonth}
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+          className="p-1 hover:bg-obsidian-800 rounded-md transition-colors"
           type="button"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span className="text-sm font-semibold text-gray-900">
+        <span className="text-sm font-semibold text-zinc-100">
           {format(displayMonth, 'MMMM yyyy')}
         </span>
         <button
           onClick={nextMonth}
-          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+          className="p-1 hover:bg-obsidian-800 rounded-md transition-colors"
           type="button"
         >
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -405,7 +405,7 @@ function CalendarMonth({ month, selected, onSelect, offset }: CalendarMonthProps
       {/* Day of Week Headers */}
       <div className="grid grid-cols-7 mb-2">
         {daysOfWeek.map((day) => (
-          <div key={day} className="h-8 flex items-center justify-center text-xs font-medium text-gray-500">
+          <div key={day} className="h-8 flex items-center justify-center text-xs font-medium text-zinc-500">
             {day}
           </div>
         ))}
@@ -434,14 +434,14 @@ function CalendarMonth({ month, selected, onSelect, offset }: CalendarMonthProps
               className={`
                 h-9 w-9 flex items-center justify-center text-sm transition-colors
                 ${disabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
-                ${!disabled && !selected && !inRange ? 'hover:bg-gray-100' : ''}
+                ${!disabled && !selected && !inRange ? 'hover:bg-obsidian-800' : ''}
                 ${selected ? 'bg-blue-600 text-white font-medium' : ''}
                 ${rangeStart && !rangeEnd ? 'rounded-l-md' : ''}
                 ${rangeEnd && !rangeStart ? 'rounded-r-md' : ''}
                 ${rangeStart && rangeEnd ? 'rounded-md' : ''}
                 ${inRange ? 'bg-blue-50 text-blue-900' : ''}
                 ${todayDate && !selected ? 'bg-orange-100 text-orange-900 font-semibold rounded-md' : ''}
-                ${!selected && !inRange && !todayDate && !disabled ? 'text-gray-900' : ''}
+                ${!selected && !inRange && !todayDate && !disabled ? 'text-zinc-100' : ''}
               `}
             >
               {date.getDate()}
