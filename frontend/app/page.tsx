@@ -895,7 +895,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     ),
     getValue: (row) => row.source,
     renderTotal: () => (
-      <div className="text-sm font-semibold text-vui-text-white">All Sources</div>
+      <div className="text-sm font-semibold text-white">All Sources</div>
     ),
   },
   spend: {
@@ -907,7 +907,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     ),
     getValue: (row) => row.spend,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-vui-text-white">${formatNumber(Math.round(totals.spend))}</span>
+      <span className="text-sm font-semibold text-white">${formatNumber(Math.round(totals.spend))}</span>
     ),
   },
   applications: {
@@ -942,7 +942,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     align: "center",
     render: (row) => <span className="text-sm text-white">{row.shown}</span>,
     getValue: (row) => row.shown,
-    renderTotal: (totals) => <span className="text-sm font-semibold text-vui-text-white">{totals.shown}</span>,
+    renderTotal: (totals) => <span className="text-sm font-semibold text-white">{totals.shown}</span>,
   },
   showRate: {
     id: "showRate",
@@ -1019,7 +1019,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     ),
     getValue: (row) => row.costPerLead,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-vui-text-white">${totals.costPerLead.toFixed(2)}</span>
+      <span className="text-sm font-semibold text-white">${totals.costPerLead.toFixed(2)}</span>
     ),
   },
   roas: {
