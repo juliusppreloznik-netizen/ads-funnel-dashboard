@@ -1065,9 +1065,9 @@ function SortableHeaderCell({
     <th
       ref={setNodeRef}
       style={style}
-      className={`px-3 py-3 text-xs font-semibold text-vui-text uppercase tracking-wider whitespace-nowrap select-none
+      className={`px-3 py-3 text-[10.4px] font-bold text-vui-text whitespace-nowrap select-none
         ${column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"}
-        ${isDragging ? "bg-vui-brand/20 z-20" : "bg-vui-body"}
+        ${isDragging ? "bg-vui-brand/20 z-20" : "bg-transparent"}
       `}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : "justify-start"}`}>
@@ -1278,7 +1278,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 items={columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
-                <tr className="border-b border-vui-border/30">
+                <tr className="border-b border-[#2d3748]">
                   {orderedColumns.map((column) => (
                     <SortableHeaderCell
                       key={column.id}
@@ -1317,9 +1317,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 sortedData.map((row, index) => (
                   <tr
                     key={`${row.source}-${index}`}
-                    className={`border-b border-vui-border/20 hover:bg-vui-body transition-colors ${
-                      index % 2 === 0 ? "bg-vui-page" : "bg-vui-body/30"
-                    }`}
+                    className="border-b border-[#2d3748] hover:bg-[rgba(26,31,55,0.3)] transition-colors bg-transparent"
                   >
                     {orderedColumns.map((column) => (
                       <td
