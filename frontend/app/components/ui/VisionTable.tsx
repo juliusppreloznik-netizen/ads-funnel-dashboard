@@ -66,8 +66,8 @@ export function TableHeaderCell({
     <th
       onClick={onClick}
       className={`
-        py-3 px-4 text-left text-xs font-semibold uppercase tracking-wider
-        text-[#a0aec0] bg-[rgba(255,255,255,0.02)]
+        py-3 px-4 text-left text-[10.4px] font-bold uppercase tracking-[0.05em]
+        text-[#a0aec0] bg-[rgba(6,11,40,0.5)]
         ${onClick ? "cursor-pointer hover:bg-[rgba(255,255,255,0.05)]" : ""}
         ${className}
       `}

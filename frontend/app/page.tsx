@@ -376,7 +376,7 @@ function Sidebar({
       } vui-sidenav !min-h-screen !relative flex flex-col`}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-vui-border/30">
+      <div className="h-16 flex items-center justify-between px-4">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-vui-info-grad rounded-vui flex items-center justify-center">
@@ -394,6 +394,9 @@ function Sidebar({
           {isCollapsed ? Icons.ChevronRight : Icons.ChevronLeft}
         </button>
       </div>
+
+      {/* Gradient Divider */}
+      <hr className="vui-divider mx-4 my-0" />
 
       {/* Navigation */}
       <nav className="flex-1 py-4 space-y-1">
@@ -416,7 +419,7 @@ function Sidebar({
 
       {/* Footer */}
       {!isCollapsed && (
-        <div className="p-4 border-t border-vui-border/30">
+        <div className="p-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-vui-grey-700 rounded-full flex items-center justify-center text-sm font-medium text-vui-text-white">
               CM
@@ -446,7 +449,7 @@ function Header({
   setDateRange: (range: DateRangeValue) => void;
 }) {
   return (
-    <header className="h-16 bg-vui-page border-b border-vui-border/30 flex items-center justify-between px-6 relative z-50">
+    <header className="h-16 bg-transparent flex items-center justify-between px-6 relative z-50">
       <div>
         <h1 className="text-xl font-bold text-vui-text-white">{title}</h1>
         <p className="text-sm text-vui-text">Contact-level attribution analytics</p>

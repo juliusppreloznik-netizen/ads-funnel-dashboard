@@ -28,7 +28,7 @@ export function GlassCard({
       className={`
         bg-[linear-gradient(127.09deg,rgba(6,11,40,0.94)_19.41%,rgba(10,14,35,0.49)_76.65%)]
         backdrop-blur-[120px]
-        border border-[rgba(255,255,255,0.1)]
+        border-0
         rounded-[20px]
         shadow-[0_20px_27px_0_rgba(0,0,0,0.05)]
         ${paddingClasses[padding]}
