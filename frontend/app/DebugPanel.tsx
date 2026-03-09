@@ -105,7 +105,7 @@ export function DebugPanel() {
     return (
       <button
         onClick={handleOpen}
-        className="fixed bottom-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-[15px] shadow-lg hover:bg-purple-700 z-50 flex items-center gap-2"
+        className="fixed bottom-4 right-4 bg-purple-600 text-vui-text-white px-4 py-2 rounded-vui shadow-lg hover:bg-purple-700 z-50 flex items-center gap-2"
       >
         <span>Debug Database</span>
       </button>
@@ -114,9 +114,9 @@ export function DebugPanel() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0f1535] rounded-[15px] shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-vui-page rounded-vui shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-purple-600 text-white px-6 py-4 flex justify-between items-center shrink-0">
+        <div className="bg-purple-600 text-vui-text-white px-6 py-4 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold">Database Debug Panel</h2>
           <div className="flex items-center gap-4">
             <button
@@ -127,7 +127,7 @@ export function DebugPanel() {
             </button>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 text-xl"
+              className="text-vui-text-white hover:text-gray-200 text-xl"
             >
               x
             </button>
@@ -145,13 +145,13 @@ export function DebugPanel() {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="mt-2 text-[#718096]">Loading database data...</p>
+              <p className="mt-2 text-vui-text">Loading database data...</p>
             </div>
           ) : (
             <div className="space-y-6">
               {/* Contacts Section */}
               <div>
-                <h3 className="text-lg font-bold mb-2 text-white">
+                <h3 className="text-lg font-bold mb-2 text-vui-text-white">
                   Contacts Table ({contacts.length} records shown)
                 </h3>
                 {contacts.length === 0 ? (
@@ -159,28 +159,28 @@ export function DebugPanel() {
                     No contacts found in database. The webhook may not be writing data.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto border rounded-[15px]">
+                  <div className="overflow-x-auto border rounded-vui">
                     <table className="min-w-full border-collapse text-sm">
-                      <thead className="bg-[#1a1f37]">
+                      <thead className="bg-vui-sidenav-btn">
                         <tr>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">ID</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Name</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Email</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Form Submitted</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Call Booked</th>
-                          <th className="border-b px-3 py-2 text-center font-semibold text-[#a0aec0]">Qualified</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Showed</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Closed</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">ID</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Name</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Email</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Form Submitted</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Call Booked</th>
+                          <th className="border-b px-3 py-2 text-center font-semibold text-vui-text">Qualified</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Showed</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Closed</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {contacts.map((contact) => (
-                          <tr key={contact.id} className="hover:bg-[#0a0e23]">
-                            <td className="px-3 py-2 text-[#718096] font-mono text-xs">{contact.id.slice(0, 8)}...</td>
-                            <td className="px-3 py-2 text-white">{contact.first_name} {contact.last_name}</td>
-                            <td className="px-3 py-2 text-[#718096]">{contact.email || 'N/A'}</td>
-                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.form_submitted_at)}</td>
-                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.call_booked_at)}</td>
+                          <tr key={contact.id} className="hover:bg-vui-body">
+                            <td className="px-3 py-2 text-vui-text font-mono text-xs">{contact.id.slice(0, 8)}...</td>
+                            <td className="px-3 py-2 text-vui-text-white">{contact.first_name} {contact.last_name}</td>
+                            <td className="px-3 py-2 text-vui-text">{contact.email || 'N/A'}</td>
+                            <td className="px-3 py-2 text-vui-text text-xs">{formatTimestamp(contact.form_submitted_at)}</td>
+                            <td className="px-3 py-2 text-vui-text text-xs">{formatTimestamp(contact.call_booked_at)}</td>
                             <td className="px-3 py-2 text-center">
                               {contact.is_qualified === true ? (
                                 <span className="text-green-600 font-bold">Yes</span>
@@ -190,8 +190,8 @@ export function DebugPanel() {
                                 <span className="text-gray-400">-</span>
                               )}
                             </td>
-                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.showed_up_at)}</td>
-                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.deal_closed_at)}</td>
+                            <td className="px-3 py-2 text-vui-text text-xs">{formatTimestamp(contact.showed_up_at)}</td>
+                            <td className="px-3 py-2 text-vui-text text-xs">{formatTimestamp(contact.deal_closed_at)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -202,7 +202,7 @@ export function DebugPanel() {
 
               {/* Ads Section */}
               <div>
-                <h3 className="text-lg font-bold mb-2 text-white">
+                <h3 className="text-lg font-bold mb-2 text-vui-text-white">
                   Ads Table ({ads.length} records shown)
                 </h3>
                 {ads.length === 0 ? (
@@ -210,35 +210,35 @@ export function DebugPanel() {
                     No ads found in database. The Facebook sync may not have run.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto border rounded-[15px]">
+                  <div className="overflow-x-auto border rounded-vui">
                     <table className="min-w-full border-collapse text-sm">
-                      <thead className="bg-[#1a1f37]">
+                      <thead className="bg-vui-sidenav-btn">
                         <tr>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Date</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Ad Name</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Campaign</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Spend</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Impressions</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Clicks</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Date</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Ad Name</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-vui-text">Campaign</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-vui-text">Spend</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-vui-text">Impressions</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-vui-text">Clicks</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {ads.map((ad, idx) => (
-                          <tr key={`${ad.id}-${idx}`} className="hover:bg-[#0a0e23]">
-                            <td className="px-3 py-2 text-white font-medium">{ad.date}</td>
-                            <td className="px-3 py-2 text-[#718096] max-w-[200px] truncate" title={ad.ad_name || undefined}>
+                          <tr key={`${ad.id}-${idx}`} className="hover:bg-vui-body">
+                            <td className="px-3 py-2 text-vui-text-white font-medium">{ad.date}</td>
+                            <td className="px-3 py-2 text-vui-text max-w-[200px] truncate" title={ad.ad_name || undefined}>
                               {ad.ad_name || 'N/A'}
                             </td>
-                            <td className="px-3 py-2 text-[#718096] max-w-[200px] truncate" title={ad.campaign_name || undefined}>
+                            <td className="px-3 py-2 text-vui-text max-w-[200px] truncate" title={ad.campaign_name || undefined}>
                               {ad.campaign_name || 'N/A'}
                             </td>
-                            <td className="px-3 py-2 text-right text-white font-medium">
+                            <td className="px-3 py-2 text-right text-vui-text-white font-medium">
                               ${(ad.spend || 0).toFixed(2)}
                             </td>
-                            <td className="px-3 py-2 text-right text-[#718096]">
+                            <td className="px-3 py-2 text-right text-vui-text">
                               {(ad.impressions || 0).toLocaleString()}
                             </td>
-                            <td className="px-3 py-2 text-right text-[#718096]">
+                            <td className="px-3 py-2 text-right text-vui-text">
                               {(ad.clicks || 0).toLocaleString()}
                             </td>
                           </tr>
@@ -250,9 +250,9 @@ export function DebugPanel() {
               </div>
 
               {/* Summary */}
-              <div className="bg-[#1a1f37] rounded-[15px] p-4">
-                <h4 className="font-bold text-white mb-2">Summary</h4>
-                <ul className="text-sm text-[#a0aec0] space-y-1">
+              <div className="bg-vui-sidenav-btn rounded-vui p-4">
+                <h4 className="font-bold text-vui-text-white mb-2">Summary</h4>
+                <ul className="text-sm text-vui-text space-y-1">
                   <li>Total Contacts: <span className="font-semibold">{contacts.length}</span></li>
                   <li>Contacts with form_submitted_at: <span className="font-semibold">{contacts.filter(c => c.form_submitted_at).length}</span></li>
                   <li>Contacts with call_booked_at: <span className="font-semibold">{contacts.filter(c => c.call_booked_at).length}</span></li>

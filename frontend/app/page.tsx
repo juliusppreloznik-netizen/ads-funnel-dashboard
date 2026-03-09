@@ -372,45 +372,41 @@ function Sidebar({
     <aside
       className={`${
         isCollapsed ? "w-16" : "w-64"
-      } bg-[#030c1d] text-white flex flex-col transition-all duration-300 ease-in-out`}
+      } vui-sidenav !min-h-screen !relative flex flex-col`}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-800">
+      <div className="h-16 flex items-center justify-between px-4 border-b border-vui-border/30">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#0075ff] to-[#21d4fd] rounded-[15px] flex items-center justify-center">
+            <div className="w-8 h-8 bg-vui-info-grad rounded-vui flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="font-bold text-lg">Catalyst</span>
+            <span className="font-bold text-lg text-vui-text-white">Catalyst</span>
           </div>
         )}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1.5 rounded-[15px] hover:bg-[#1a1f37] transition-colors"
+          className="p-1.5 rounded-vui hover:bg-vui-sidenav-btn transition-colors text-vui-text"
         >
           {isCollapsed ? Icons.ChevronRight : Icons.ChevronLeft}
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1">
+      <nav className="flex-1 py-4 space-y-1">
         {navItems.map((item) => {
           const isActive = currentView === item.name;
           return (
             <button
               key={item.name}
               onClick={() => setView(item.name)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-[15px] transition-all duration-200 ${
-                isActive
-                  ? "bg-[#0075ff]/100 text-white shadow-lg shadow-orange-500/30"
-                  : "text-[#718096] hover:bg-[#1a1f37] hover:text-white"
-              }`}
+              className={`vui-sidenav-item ${isActive ? "active" : ""}`}
             >
-              <span className={isActive ? "text-white" : ""}>{item.icon}</span>
+              <span className={`vui-sidenav-icon ${isActive ? "!bg-vui-brand" : ""}`}>{item.icon}</span>
               {!isCollapsed && (
-                <span className="font-medium text-sm">{item.name}</span>
+                <span className="vui-sidenav-text">{item.name}</span>
               )}
             </button>
           );
@@ -419,14 +415,14 @@ function Sidebar({
 
       {/* Footer */}
       {!isCollapsed && (
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-vui-border/30">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#2d3748] rounded-full flex items-center justify-center text-sm font-medium">
+            <div className="w-8 h-8 bg-vui-grey-700 rounded-full flex items-center justify-center text-sm font-medium text-vui-text-white">
               CM
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">Catalyst Marketing</p>
-              <p className="text-xs text-[#718096] truncate">Pro Plan</p>
+              <p className="text-sm font-medium text-vui-text-white truncate">Catalyst Marketing</p>
+              <p className="text-xs text-vui-text truncate">Pro Plan</p>
             </div>
           </div>
         </div>
@@ -449,20 +445,20 @@ function Header({
   setDateRange: (range: DateRangeValue) => void;
 }) {
   return (
-    <header className="h-16 bg-[#0f1535] border-b border-[rgba(226,232,240,0.3)] flex items-center justify-between px-6 relative z-50">
+    <header className="h-16 bg-vui-page border-b border-vui-border/30 flex items-center justify-between px-6 relative z-50">
       <div>
-        <h1 className="text-xl font-bold text-white">{title}</h1>
-        <p className="text-sm text-[#718096]">Contact-level attribution analytics</p>
+        <h1 className="text-xl font-bold text-vui-text-white">{title}</h1>
+        <p className="text-sm text-vui-text">Contact-level attribution analytics</p>
       </div>
 
       <div className="flex items-center gap-4 relative z-50">
         {/* Live Indicator */}
-        <div className="flex items-center gap-2 text-green-600 text-sm">
+        <div className="flex items-center gap-2 text-sm">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#01b574] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-[#01b574]"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-vui-success opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-vui-success"></span>
           </span>
-          <span className="text-[#718096] font-medium">Live</span>
+          <span className="text-vui-text font-medium">Live</span>
         </div>
 
         {/* Custom Date Range Picker */}
@@ -695,10 +691,10 @@ function MetricCard({
   }, [trendData, chartType, chartColor, subtitle, valueType]);
 
   return (
-    <div className="bg-[#0f1535] px-4 pt-3 pb-5 border border-solid border-[rgba(226,232,240,0.3)] rounded-[15px] shadow-lg shadow-black/20 w-full relative h-full min-h-[280px]">
+    <div className="vui-card !p-4 !pt-3 !pb-5 w-full relative h-full min-h-[280px]">
       {/* Header */}
       <div className="flex flex-row items-center justify-between h-10">
-        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="text-sm font-semibold text-vui-text-white">{title}</span>
       </div>
 
       {/* Values Section */}
@@ -712,24 +708,24 @@ function MetricCard({
             >
               {mainValue}
             </div>
-            <div className="font-normal cursor-default leading-tight text-[#718096] text-sm">
+            <div className="font-normal cursor-default leading-tight text-vui-text text-sm">
               {previousValue}
             </div>
           </div>
 
           {/* Subtitle and Percentage Change */}
-          <div className="font-medium text-[#718096] flex gap-x-2 items-center text-xs mt-1">
+          <div className="font-medium text-vui-text flex gap-x-2 items-center text-xs mt-1">
             {subtitle}
             <div
               className={`border border-solid rounded-full py-0.5 px-1.5 flex flex-row items-center gap-x-0.5 ${
                 isPositiveChange
-                  ? "border-emerald-200 bg-emerald-50"
-                  : "border-red-200 bg-red-50"
+                  ? "border-vui-success/30 bg-vui-success/10"
+                  : "border-vui-error/30 bg-vui-error/10"
               }`}
             >
               <span
                 className={`font-medium text-xs ${
-                  isPositiveChange ? "text-[#01b574]" : "text-[#e31a1a]"
+                  isPositiveChange ? "text-vui-success" : "text-vui-error"
                 }`}
               >
                 {percentageChange}
@@ -771,7 +767,7 @@ function MetricCard({
       {/* Chart Section */}
       <div className="relative w-full" style={{ height: "150px" }}>
         {trendData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-[#718096] text-xs">
+          <div className="h-full flex items-center justify-center text-vui-text text-xs">
             No data available
           </div>
         ) : (
@@ -821,37 +817,37 @@ interface SourceKPITotals {
 
 // Badge components for styled numbers
 const PurpleBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[rgba(67,24,255,0.15)] text-[#4318ff] min-w-[32px]">
+  <span className="vui-badge vui-badge-info !bg-vui-primary/15 !text-vui-primary min-w-[32px] justify-center">
     {value}
   </span>
 );
 
 const GreenBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[#01b574]/15 text-[#01b574] min-w-[32px]">
+  <span className="vui-badge vui-badge-success min-w-[32px] justify-center">
     {value}
   </span>
 );
 
 const RedBadge = ({ value }: { value: number }) => (
-  <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[rgba(227,26,26,0.15)] text-[#e31a1a] min-w-[32px]">
+  <span className="vui-badge vui-badge-error min-w-[32px] justify-center">
     {value}
   </span>
 );
 
 const PercentageText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-medium ${value === 0 ? "text-red-500" : "text-[#a0aec0]"}`}>
+  <span className={`text-sm font-medium ${value === 0 ? "text-vui-error" : "text-vui-text"}`}>
     {value.toFixed(1)}%
   </span>
 );
 
 const RoasText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-semibold ${value === 0 ? "text-red-500" : "text-[#a0aec0]"}`}>
+  <span className={`text-sm font-semibold ${value === 0 ? "text-vui-error" : "text-vui-text"}`}>
     {value.toFixed(2)}x
   </span>
 );
 
 const RevenueText = ({ value }: { value: number }) => (
-  <span className="text-sm font-semibold text-emerald-600">
+  <span className="text-sm font-semibold text-vui-success">
     ${formatNumber(Math.round(value))}
   </span>
 );
@@ -883,11 +879,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     width: "200px",
     render: (row) => (
       <div className="min-w-[180px]">
-        <div className="text-sm font-medium text-white truncate max-w-[200px]" title={row.source}>
+        <div className="text-sm font-medium text-vui-text-white truncate max-w-[200px]" title={row.source}>
           {row.source}
         </div>
         {row.sourceId && (
-          <div className="text-xs text-[#718096] truncate max-w-[200px]" title={row.sourceId}>
+          <div className="text-xs text-vui-text truncate max-w-[200px]" title={row.sourceId}>
             {row.sourceId}
           </div>
         )}
@@ -895,7 +891,7 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     ),
     getValue: (row) => row.source,
     renderTotal: () => (
-      <div className="text-sm font-semibold text-white">All Sources</div>
+      <div className="text-sm font-semibold text-vui-text-white">All Sources</div>
     ),
   },
   spend: {
@@ -903,11 +899,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "SPEND",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-[#a0aec0]">${formatNumber(Math.round(row.spend))}</span>
+      <span className="text-sm text-vui-text">${formatNumber(Math.round(row.spend))}</span>
     ),
     getValue: (row) => row.spend,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-white">${formatNumber(Math.round(totals.spend))}</span>
+      <span className="text-sm font-semibold text-vui-text-white">${formatNumber(Math.round(totals.spend))}</span>
     ),
   },
   applications: {
@@ -940,9 +936,9 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     id: "shown",
     label: "SHOWS",
     align: "center",
-    render: (row) => <span className="text-sm text-[#a0aec0]">{row.shown}</span>,
+    render: (row) => <span className="text-sm text-vui-text">{row.shown}</span>,
     getValue: (row) => row.shown,
-    renderTotal: (totals) => <span className="text-sm font-semibold text-white">{totals.shown}</span>,
+    renderTotal: (totals) => <span className="text-sm font-semibold text-vui-text-white">{totals.shown}</span>,
   },
   showRate: {
     id: "showRate",
@@ -982,13 +978,13 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     shortLabel: "CASH",
     align: "right",
     render: (row) => (
-      <span className="text-sm font-semibold text-emerald-600">
+      <span className="text-sm font-semibold text-vui-success">
         ${formatNumber(Math.round(row.cashCollected))}
       </span>
     ),
     getValue: (row) => row.cashCollected,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-emerald-600">
+      <span className="text-sm font-semibold text-vui-success">
         ${formatNumber(Math.round(totals.cashCollected))}
       </span>
     ),
@@ -999,13 +995,13 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     shortLabel: "DEAL",
     align: "right",
     render: (row) => (
-      <span className="text-sm font-semibold text-purple-600">
+      <span className="text-sm font-semibold text-vui-primary">
         ${formatNumber(Math.round(row.dealValue))}
       </span>
     ),
     getValue: (row) => row.dealValue,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-purple-600">
+      <span className="text-sm font-semibold text-vui-primary">
         ${formatNumber(Math.round(totals.dealValue))}
       </span>
     ),
@@ -1015,11 +1011,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "COST/LEAD",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-[#a0aec0]">${row.costPerLead.toFixed(2)}</span>
+      <span className="text-sm text-vui-text">${row.costPerLead.toFixed(2)}</span>
     ),
     getValue: (row) => row.costPerLead,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-white">${totals.costPerLead.toFixed(2)}</span>
+      <span className="text-sm font-semibold text-vui-text-white">${totals.costPerLead.toFixed(2)}</span>
     ),
   },
   roas: {
@@ -1065,9 +1061,9 @@ function SortableHeaderCell({
     <th
       ref={setNodeRef}
       style={style}
-      className={`px-3 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap select-none
+      className={`px-3 py-3 text-xs font-semibold text-vui-text uppercase tracking-wider whitespace-nowrap select-none
         ${column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"}
-        ${isDragging ? "bg-orange-100 z-20" : "bg-[#0a0e23]"}
+        ${isDragging ? "bg-vui-brand/20 z-20" : "bg-vui-body"}
       `}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : "justify-start"}`}>
@@ -1075,7 +1071,7 @@ function SortableHeaderCell({
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-[#2d3748] text-[#718096] hover:text-[#718096]"
+          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-vui-grey-700 text-vui-text"
           title="Drag to reorder"
         >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1086,21 +1082,21 @@ function SortableHeaderCell({
         {/* Sort button */}
         <button
           onClick={() => onSort(column.id)}
-          className="flex items-center gap-1 hover:text-white transition-colors"
+          className="flex items-center gap-1 hover:text-vui-text-white transition-colors"
         >
           <span>{column.shortLabel || column.label}</span>
           {isActive ? (
             sortDirection === "asc" ? (
-              <svg className="w-3.5 h-3.5 text-[#0075ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-vui-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
             ) : (
-              <svg className="w-3.5 h-3.5 text-[#0075ff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-vui-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             )
           ) : (
-            <svg className="w-3.5 h-3.5 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
             </svg>
           )}
@@ -1234,22 +1230,22 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
     .filter(Boolean);
 
   return (
-    <div className="bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-[20px] shadow-lg shadow-black/20 overflow-hidden">
+    <div className="vui-card !p-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(226,232,240,0.2)] bg-[#0a0e23]/50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-vui-border/20 bg-vui-body/50">
         <div className="flex items-center gap-4">
-          <h3 className="text-base font-semibold text-white">KPI per Source</h3>
+          <h3 className="text-base font-semibold text-vui-text-white">KPI per Source</h3>
 
           {/* Redesigned Breakdown Dropdown */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-[15px] shadow-lg shadow-black/20">
-            <svg className="w-4 h-4 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-vui-page border border-vui-border/30 rounded-vui shadow-vui-btn">
+            <svg className="w-4 h-4 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
             </svg>
-            <span className="text-sm text-[#718096] font-medium">Breakdown by:</span>
+            <span className="text-sm text-vui-text font-medium">Breakdown by:</span>
             <select
               value={breakdownLevel}
               onChange={(e) => onBreakdownChange(e.target.value as BreakdownLevel)}
-              className="text-sm font-semibold text-white bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-6 -mr-2"
+              className="text-sm font-semibold text-vui-text-white bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-6 -mr-2"
             >
               {breakdownOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -1260,7 +1256,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
           </div>
         </div>
 
-        <div className="text-xs text-[#718096]">
+        <div className="text-xs text-vui-text">
           Drag column headers to reorder
         </div>
       </div>
@@ -1278,7 +1274,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 items={columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
-                <tr className="border-b border-[rgba(226,232,240,0.3)]">
+                <tr className="border-b border-vui-border/30">
                   {orderedColumns.map((column) => (
                     <SortableHeaderCell
                       key={column.id}
@@ -1293,7 +1289,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
             </thead>
             <tbody>
               {/* Summary Row */}
-              <tr className="bg-[#0075ff]/10/70 border-b border-[rgba(0,117,255,0.3)]">
+              <tr className="bg-vui-brand/10 border-b border-vui-brand/30">
                 {orderedColumns.map((column) => (
                   <td
                     key={column.id}
@@ -1309,7 +1305,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
               {/* Data Rows */}
               {sortedData.length === 0 ? (
                 <tr>
-                  <td colSpan={orderedColumns.length} className="px-4 py-12 text-center text-sm text-[#718096]">
+                  <td colSpan={orderedColumns.length} className="px-4 py-12 text-center text-sm text-vui-text">
                     No data available for the selected date range.
                   </td>
                 </tr>
@@ -1317,8 +1313,8 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 sortedData.map((row, index) => (
                   <tr
                     key={`${row.source}-${index}`}
-                    className={`border-b border-[rgba(226,232,240,0.2)] hover:bg-[#0a0e23] transition-colors ${
-                      index % 2 === 0 ? "bg-[#0f1535]" : "bg-[#0a0e23]/30"
+                    className={`border-b border-vui-border/20 hover:bg-vui-body transition-colors ${
+                      index % 2 === 0 ? "bg-vui-page" : "bg-vui-body/30"
                     }`}
                   >
                     {orderedColumns.map((column) => (
@@ -1375,8 +1371,8 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-sm text-[#718096]">Loading dashboard data...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-vui-brand mx-auto"></div>
+          <p className="mt-4 text-sm text-vui-text">Loading dashboard data...</p>
         </div>
       </div>
     );
@@ -1388,8 +1384,8 @@ function DashboardView({ data, loading, breakdownLevel, onBreakdownChange }: Das
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-[#718096]">No data available for the selected date range.</p>
-          <p className="text-sm text-[#718096] mt-2">Try selecting a different date range or check your data source.</p>
+          <p className="text-vui-text">No data available for the selected date range.</p>
+          <p className="text-sm text-vui-text mt-2">Try selecting a different date range or check your data source.</p>
         </div>
       </div>
     );
@@ -1694,8 +1690,8 @@ function TremorKpiCard({
       : `${value.toFixed(1)}%`;
 
   return (
-    <Card className="p-5 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <p className="text-sm font-semibold text-[#a0aec0]">{title}</p>
+    <Card className="vui-stat-card !p-5">
+      <p className="vui-stat-label">{title}</p>
       <p className={`text-3xl font-bold mt-2 ${KPI_TEXT_COLORS[color]}`}>
         {formattedValue}
       </p>
@@ -1730,9 +1726,9 @@ function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: 
   const chartData = hasData ? realChartData : placeholderData;
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Revenue Distribution by Funnel Stage</h3>
-      <p className="text-sm text-[#718096] mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Distribution by Funnel Stage</h3>
+      <p className="text-sm text-vui-text mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
 
       <BarChart
         data={chartData}
@@ -1771,8 +1767,8 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
   const legendColors = ["rgb(16, 185, 129)", "rgb(249, 115, 22)", "rgb(156, 163, 175)"];
 
   return (
-    <div className="bg-[#0a0e23] rounded-[15px] p-4">
-      <h4 className="text-sm font-semibold text-white text-center mb-3">{stageTitle}</h4>
+    <div className="bg-vui-body rounded-vui p-4">
+      <h4 className="text-sm font-semibold text-vui-text-white text-center mb-3">{stageTitle}</h4>
       <TremorDonutChart
         data={chartData}
         category="value"
@@ -1790,9 +1786,9 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
                 className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: legendColors[i] || "#9CA3AF" }}
               />
-              <span className="text-[#a0aec0] font-medium">{tier.label}</span>
+              <span className="text-vui-text font-medium">{tier.label}</span>
             </span>
-            <span className="font-bold text-white">{tier.percentage.toFixed(1)}%</span>
+            <span className="font-bold text-vui-text-white">{tier.percentage.toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -1816,9 +1812,9 @@ function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] })
   const displayData = hasData ? data : placeholderData;
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Investment Ability Breakdown</h3>
-      <p className="text-sm text-[#718096] mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Investment Ability Breakdown</h3>
+      <p className="text-sm text-vui-text mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {displayData.map((stage) => (
@@ -1854,9 +1850,9 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
   const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.totalRevenue), 1) : 1;
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Revenue Funnel</h3>
-      <p className="text-sm text-[#718096] mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Funnel</h3>
+      <p className="text-sm text-vui-text mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
 
       <div className="space-y-5 mt-6">
         {displayData.map((stage, index) => {
@@ -1872,32 +1868,32 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
           return (
             <div key={stage.stage}>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-bold text-white">{stage.stage}</div>
-                <div className="text-sm text-[#718096]">
-                  <span className="font-semibold text-white">{stage.count}</span> leads &bull;{" "}
+                <div className="text-sm font-bold text-vui-text-white">{stage.stage}</div>
+                <div className="text-sm text-vui-text">
+                  <span className="font-semibold text-vui-text-white">{stage.count}</span> leads &bull;{" "}
                   <span className="font-bold" style={{ color: colors.from }}>
                     ${stage.totalRevenue.toLocaleString()}
                   </span>
                 </div>
               </div>
-              <div className="relative h-14 bg-[#1a1f37] rounded-[15px] overflow-hidden shadow-inner shadow-black/30">
+              <div className="relative h-14 bg-vui-sidenav-btn rounded-vui overflow-hidden shadow-inner shadow-black/30">
                 <div
-                  className="absolute h-full transition-all duration-500 rounded-[15px] shadow-lg shadow-black/20"
+                  className="absolute h-full transition-all duration-500 rounded-vui shadow-vui-btn"
                   style={{
                     width: `${Math.max(widthPercent, hasData ? 5 : 0)}%`,
                     background: `linear-gradient(90deg, ${colors.from}, ${colors.to})`,
                   }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-[#718096] drop-shadow-md">
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-vui-text drop-shadow-md">
                   {hasData ? (
-                    <span className="text-white">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span className="text-vui-text-white">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   ) : (
                     <span>$0</span>
                   )}
                 </div>
               </div>
               {index < displayData.length - 1 && dropRate > 0 && (
-                <div className="flex items-center justify-center gap-1 text-xs font-semibold text-red-600 mt-2">
+                <div className="flex items-center justify-center gap-1 text-xs font-semibold text-vui-error mt-2">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
@@ -1945,46 +1941,46 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
   };
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Lead Source Quality</h3>
-      <p className="text-sm text-[#718096] mt-1 mb-4">Compares the performance of different lead sources.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Lead Source Quality</h3>
+      <p className="text-sm text-vui-text mt-1 mb-4">Compares the performance of different lead sources.</p>
 
       <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
         <Table>
           <TableHead>
-            <TableRow className="bg-[#0a0e23]">
+            <TableRow className="bg-vui-body">
               <TableHeaderCell
-                className="cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("source")}
               >
                 Source{renderSortIndicator("source")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("avgRevenue")}
               >
                 Avg Revenue{renderSortIndicator("avgRevenue")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("qualRate")}
               >
                 Qual Rate{renderSortIndicator("qualRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("showRate")}
               >
                 Show Rate{renderSortIndicator("showRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("closeRate")}
               >
                 Close Rate{renderSortIndicator("closeRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-[#1a1f37] font-semibold text-[#a0aec0]"
+                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
                 onClick={() => handleSort("totalRevenue")}
               >
                 Total Revenue{renderSortIndicator("totalRevenue")}
@@ -1994,23 +1990,23 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
           <TableBody>
             {sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-[#718096] py-8">
+                <TableCell colSpan={6} className="text-center text-vui-text py-8">
                   No lead sources found for this period
                 </TableCell>
               </TableRow>
             ) : (
               sortedData.map((row, index) => (
-                <TableRow key={index} className="hover:bg-[#0a0e23]">
-                  <TableCell className="max-w-[200px] truncate font-medium text-white" title={row.source}>
+                <TableRow key={index} className="hover:bg-vui-body">
+                  <TableCell className="max-w-[200px] truncate font-medium text-vui-text-white" title={row.source}>
                     {row.source}
                   </TableCell>
-                  <TableCell className="text-center text-[#a0aec0]">
+                  <TableCell className="text-center text-vui-text">
                     ${row.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
-                  <TableCell className="text-center text-[#a0aec0]">{row.qualRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-[#a0aec0]">{row.showRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-[#a0aec0]">{row.closeRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center font-semibold text-white">
+                  <TableCell className="text-center text-vui-text">{row.qualRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-vui-text">{row.showRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center text-vui-text">{row.closeRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center font-semibold text-vui-text-white">
                     ${row.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
                 </TableRow>
@@ -2066,9 +2062,9 @@ function TremorRevenueTrendsChart({ data, dateRange }: { data: RevenueTrendPoint
   const chartData = hasData ? realChartData : generatePlaceholderData();
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Revenue Trends Over Time</h3>
-      <p className="text-sm text-[#718096] mt-1">Tracks average revenue potential over the selected date range.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Trends Over Time</h3>
+      <p className="text-sm text-vui-text mt-1">Tracks average revenue potential over the selected date range.</p>
 
       <AreaChart
         data={chartData}
@@ -2125,32 +2121,32 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
   };
 
   return (
-    <Card className="p-6 shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] rounded-[20px]">
-      <h3 className="text-lg font-semibold text-white">Revenue Tier Heatmap</h3>
-      <p className="text-sm text-[#718096] mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
+    <Card className="vui-card !p-6">
+      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Tier Heatmap</h3>
+      <p className="text-sm text-vui-text mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
 
       <div className="overflow-x-auto mt-6">
-        <table className="w-full border-collapse rounded-[15px] overflow-hidden shadow-lg shadow-black/20">
+        <table className="w-full border-collapse rounded-vui overflow-hidden shadow-vui-card">
           <thead>
             <tr>
-              <th className="px-6 py-4 bg-[#1a1f37] text-left text-xs font-bold text-[#a0aec0] uppercase tracking-wider">
+              <th className="px-6 py-4 bg-vui-sidenav-btn text-left text-xs font-bold text-vui-text uppercase tracking-wider">
                 Revenue Tier
               </th>
-              <th className="px-6 py-4 bg-[rgba(67,24,255,0.15)] text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.qualified.base})` }}>
+              <th className="px-6 py-4 bg-vui-primary/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.qualified.base})` }}>
                 Qualified
               </th>
-              <th className="px-6 py-4 bg-[#01b574]/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.shown.base})` }}>
+              <th className="px-6 py-4 bg-vui-success/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.shown.base})` }}>
                 Shown
               </th>
-              <th className="px-6 py-4 bg-teal-100 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.closed.base})` }}>
+              <th className="px-6 py-4 bg-vui-info/15 text-center text-xs font-bold uppercase tracking-wider" style={{ color: `rgb(${HEATMAP_COLORS.closed.base})` }}>
                 Closed
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-vui-border/20">
             {displayData.map((row, index) => (
-              <tr key={row.tier} className={index % 2 === 0 ? "bg-[#0f1535]" : "bg-[#0a0e23]"}>
-                <td className="px-6 py-4 font-semibold text-sm text-white">
+              <tr key={row.tier} className={index % 2 === 0 ? "bg-vui-page" : "bg-vui-body"}>
+                <td className="px-6 py-4 font-semibold text-sm text-vui-text-white">
                   {row.tier}
                 </td>
                 <td
@@ -2216,8 +2212,8 @@ function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-sm text-[#718096]">Loading leads breakdown data...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-vui-brand mx-auto"></div>
+          <p className="mt-4 text-sm text-vui-text">Loading leads breakdown data...</p>
         </div>
       </div>
     );
@@ -2227,7 +2223,7 @@ function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-500">{error}</p>
+          <p className="text-vui-error">{error}</p>
         </div>
       </div>
     );
@@ -2237,7 +2233,7 @@ function LeadsBreakdownView({ dateRange }: { dateRange: DateRangeValue }) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-[#718096]">No data available for the selected date range.</p>
+          <p className="text-vui-text">No data available for the selected date range.</p>
         </div>
       </div>
     );
@@ -2314,13 +2310,13 @@ function PlaceholderView({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-center h-64">
       <div className="text-center">
-        <div className="w-16 h-16 bg-[#1a1f37] rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 bg-vui-sidenav-btn rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <p className="text-sm text-[#718096] mt-1">This feature is coming soon.</p>
+        <h3 className="text-lg font-semibold text-vui-text-white">{title}</h3>
+        <p className="text-sm text-vui-text mt-1">This feature is coming soon.</p>
       </div>
     </div>
   );
@@ -2373,18 +2369,18 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-[#1a1f37] items-center justify-center">
-        <div className="text-center bg-[#0f1535] p-8 rounded-[20px] shadow-lg max-w-md">
-          <div className="w-16 h-16 bg-[rgba(227,26,26,0.15)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex h-screen bg-vui-sidenav-btn items-center justify-center">
+        <div className="vui-card text-center !p-8 max-w-md">
+          <div className="w-16 h-16 bg-vui-error/15 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-vui-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Error Loading Data</h3>
-          <p className="text-sm text-[#718096] mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-vui-text-white mb-2">Error Loading Data</h3>
+          <p className="text-sm text-vui-text mb-4">{error}</p>
           <button
             onClick={refetch}
-            className="px-4 py-2 bg-[#0075ff]/100 text-white rounded-[15px] hover:bg-orange-600 transition-colors font-medium"
+            className="vui-btn vui-btn-info"
           >
             Retry
           </button>
@@ -2394,7 +2390,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0e23]">
+    <div className="flex h-screen bg-vui-body">
       {/* Sidebar */}
       <Sidebar
         currentView={currentView}
@@ -2413,7 +2409,7 @@ export default function DashboardPage() {
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[#0a0e23] p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-vui-body p-6">
           {currentView === "Dashboard" && (
             <DashboardView
               data={data}

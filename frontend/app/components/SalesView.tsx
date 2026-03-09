@@ -330,12 +330,12 @@ function SalesMetricCard({
   }, [trendData, chartColor, title, valueType]);
 
   return (
-    <div className="bg-[#0f1535] px-4 pt-3 pb-5 border border-solid border-[rgba(226,232,240,0.3)] rounded-[15px] shadow-lg shadow-black/20 w-full relative h-full min-h-[280px]" title={tooltip}>
+    <div className="bg-vui-page px-4 pt-3 pb-5 border border-solid border-vui-border/30 rounded-vui shadow-lg shadow-black/20 w-full relative h-full min-h-[280px]" title={tooltip}>
       {/* Header */}
       <div className="flex flex-row items-center justify-between h-10">
         <div className="flex items-center gap-2">
-          <span className="text-[#0075ff]">{icon}</span>
-          <span className="text-sm font-semibold text-white">{title}</span>
+          <span className="text-vui-brand">{icon}</span>
+          <span className="text-sm font-semibold text-vui-text-white">{title}</span>
         </div>
       </div>
 
@@ -343,15 +343,15 @@ function SalesMetricCard({
       <div className="flex flex-row gap-4 items-center justify-start my-3">
         <div>
           <div className="flex flex-row items-baseline gap-x-2">
-            <div className="font-semibold cursor-pointer leading-tight text-2xl text-white">
+            <div className="font-semibold cursor-pointer leading-tight text-2xl text-vui-text-white">
               {mainValue}
             </div>
-            <div className="font-normal cursor-default leading-tight text-[#718096] text-sm">
+            <div className="font-normal cursor-default leading-tight text-vui-text text-sm">
               {previousValue}
             </div>
           </div>
 
-          <div className="font-medium text-[#718096] flex gap-x-2 items-center text-xs mt-1">
+          <div className="font-medium text-vui-text flex gap-x-2 items-center text-xs mt-1">
             vs previous period
             <div
               className={`border border-solid rounded-full py-0.5 px-1.5 flex flex-row items-center gap-x-0.5 ${
@@ -368,7 +368,7 @@ function SalesMetricCard({
                 {percentageChange}
               </span>
               {isPositiveChange ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-emerald-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-vui-success">
                   <path d="M6.35355 2.14645C6.15829 1.95118 5.84171 1.95118 5.64645 2.14645L2.14645 5.64645C1.95118 5.84171 1.95118 6.15829 2.14645 6.35355C2.34171 6.54882 2.65829 6.54882 2.85355 6.35355L5.5 3.70711L5.5 9.5C5.5 9.77614 5.72386 10 6 10C6.27614 10 6.5 9.77614 6.5 9.5L6.5 3.70711L9.14645 6.35355C9.34171 6.54882 9.65829 6.54882 9.85355 6.35355C10.0488 6.15829 10.0488 5.84171 9.85355 5.64645L6.35355 2.14645Z" fill="currentColor" />
                 </svg>
               ) : (
@@ -384,7 +384,7 @@ function SalesMetricCard({
       {/* Chart Section */}
       <div className="relative w-full" style={{ height: "150px" }}>
         {trendData.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-[#718096] text-xs">
+          <div className="h-full flex items-center justify-center text-vui-text text-xs">
             No data available
           </div>
         ) : (
@@ -418,25 +418,25 @@ function TranscriptModal({ transcript, onClose }: TranscriptModalProps) {
     switch (outcome) {
       case 'closed':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#01b574]/15 text-emerald-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-success/15 text-emerald-800">
             Closed {formatCurrency(cash)}
           </span>
         );
       case 'no_close':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#0075ff]/15 text-orange-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-brand/15 text-orange-800">
             No Close
           </span>
         );
       case 'no_show':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[rgba(227,26,26,0.15)] text-red-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-error/15 text-red-800">
             No Show
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#1a1f37] text-white">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-sidenav-btn text-vui-text-white">
             Unknown
           </span>
         );
@@ -445,14 +445,14 @@ function TranscriptModal({ transcript, onClose }: TranscriptModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0f1535] rounded-[20px] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-vui-page rounded-vui-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[rgba(226,232,240,0.3)] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-vui-border/30 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-vui-text-white">
               {transcript.contact_name || transcript.topic}
             </h3>
-            <p className="text-sm text-[#718096]">
+            <p className="text-sm text-vui-text">
               {new Date(transcript.start_time).toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
@@ -463,23 +463,23 @@ function TranscriptModal({ transcript, onClose }: TranscriptModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#1a1f37] rounded-full transition-colors"
+            className="p-2 hover:bg-vui-sidenav-btn rounded-full transition-colors"
           >
             {SalesIcons.Close}
           </button>
         </div>
 
         {/* Meta info */}
-        <div className="px-6 py-3 bg-[#0a0e23] border-b border-[rgba(226,232,240,0.3)] flex items-center gap-4 text-sm">
-          <span className="text-[#718096]">
+        <div className="px-6 py-3 bg-vui-body border-b border-vui-border/30 flex items-center gap-4 text-sm">
+          <span className="text-vui-text">
             Duration: <span className="font-medium">{formatDuration(transcript.duration)}</span>
           </span>
-          <span className="text-[#718096]">|</span>
+          <span className="text-vui-text">|</span>
           {getOutcomeBadge(transcript.call_outcome, transcript.cash_collected)}
           {transcript.contact_email && (
             <>
-              <span className="text-[#718096]">|</span>
-              <span className="text-[#718096]">{transcript.contact_email}</span>
+              <span className="text-vui-text">|</span>
+              <span className="text-vui-text">{transcript.contact_email}</span>
             </>
           )}
         </div>
@@ -490,18 +490,18 @@ function TranscriptModal({ transcript, onClose }: TranscriptModalProps) {
             <div className="space-y-3">
               {transcript.transcript_parsed.map((segment, idx) => (
                 <div key={idx} className="flex gap-3">
-                  <span className="text-xs text-[#718096] w-16 flex-shrink-0 font-mono">
+                  <span className="text-xs text-vui-text w-16 flex-shrink-0 font-mono">
                     {segment.start}
                   </span>
                   <div>
-                    <span className="font-semibold text-[#a0aec0]">{segment.speaker}:</span>
-                    <span className="text-[#718096] ml-1">{segment.text}</span>
+                    <span className="font-semibold text-vui-text">{segment.speaker}:</span>
+                    <span className="text-vui-text ml-1">{segment.text}</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-[#718096] text-center py-8">
+            <div className="text-vui-text text-center py-8">
               No transcript segments available
             </div>
           )}
@@ -679,13 +679,13 @@ export default function SalesView({ dateRange }: SalesViewProps) {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-[rgba(226,232,240,0.3)]">
+      <div className="flex gap-4 border-b border-vui-border/30">
         <button
           onClick={() => setActiveTab("metrics")}
           className={`pb-3 px-1 font-medium text-sm border-b-2 transition-colors ${
             activeTab === "metrics"
-              ? "border-orange-500 text-[#0075ff]"
-              : "border-transparent text-[#718096] hover:text-[#a0aec0]"
+              ? "border-orange-500 text-vui-brand"
+              : "border-transparent text-vui-text hover:text-vui-text"
           }`}
         >
           Sales Metrics
@@ -694,8 +694,8 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           onClick={() => setActiveTab("transcripts")}
           className={`pb-3 px-1 font-medium text-sm border-b-2 transition-colors ${
             activeTab === "transcripts"
-              ? "border-orange-500 text-[#0075ff]"
-              : "border-transparent text-[#718096] hover:text-[#a0aec0]"
+              ? "border-orange-500 text-vui-brand"
+              : "border-transparent text-vui-text hover:text-vui-text"
           }`}
         >
           Call Transcripts
@@ -707,7 +707,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
         <div className="space-y-8">
           {/* Volume Metrics - Row 1 (4 cards) */}
           <div>
-            <h3 className="text-sm font-semibold text-[#718096] uppercase tracking-wide mb-4">Volume Metrics</h3>
+            <h3 className="text-sm font-semibold text-vui-text uppercase tracking-wide mb-4">Volume Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <SalesMetricCard
                 title="Total Calls Booked"
@@ -791,7 +791,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
 
           {/* Rate Metrics */}
           <div>
-            <h3 className="text-sm font-semibold text-[#718096] uppercase tracking-wide mb-4">Rate Metrics</h3>
+            <h3 className="text-sm font-semibold text-vui-text uppercase tracking-wide mb-4">Rate Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <SalesMetricCard
                 title="Total Show Rate"
@@ -865,7 +865,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Cash Collected Over Time */}
             <Card className="p-6">
-              <h3 className="text-sm font-semibold text-white mb-4">Cash Collected Over Time</h3>
+              <h3 className="text-sm font-semibold text-vui-text-white mb-4">Cash Collected Over Time</h3>
               {weeklyCash.length > 0 ? (
                 <BarChart
                   data={weeklyCash.map(w => ({ week: formatWeekLabel(w.week), Cash: w.cash }))}
@@ -876,7 +876,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                   className="h-64"
                 />
               ) : (
-                <div className="h-64 flex items-center justify-center text-[#718096]">
+                <div className="h-64 flex items-center justify-center text-vui-text">
                   No data available
                 </div>
               )}
@@ -884,7 +884,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
 
             {/* Shows vs Closes */}
             <Card className="p-6">
-              <h3 className="text-sm font-semibold text-white mb-4">Shows vs Closes</h3>
+              <h3 className="text-sm font-semibold text-vui-text-white mb-4">Shows vs Closes</h3>
               {weeklyShowsCloses.length > 0 ? (
                 <AreaChart
                   data={weeklyShowsCloses.map(w => ({
@@ -899,7 +899,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                   className="h-64"
                 />
               ) : (
-                <div className="h-64 flex items-center justify-center text-[#718096]">
+                <div className="h-64 flex items-center justify-center text-vui-text">
                   No data available
                 </div>
               )}
@@ -909,9 +909,9 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           {/* Ad Attribution Table */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white">Ad Attribution</h3>
+              <h3 className="text-sm font-semibold text-vui-text-white">Ad Attribution</h3>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-vui-text">
                   {SalesIcons.Search}
                 </span>
                 <input
@@ -919,7 +919,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                   placeholder="Search ads..."
                   value={adSearch}
                   onChange={(e) => setAdSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[rgba(226,232,240,0.3)] rounded-[15px] text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-vui-border/30 rounded-vui text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -939,7 +939,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
               <TableBody>
                 {filteredAds.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-[#718096] py-8">
+                    <TableCell colSpan={8} className="text-center text-vui-text py-8">
                       No ad data available
                     </TableCell>
                   </TableRow>
@@ -952,7 +952,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                       <TableCell className="text-right">{ad.qualifiedBooked}</TableCell>
                       <TableCell className="text-right">{ad.shows}</TableCell>
                       <TableCell className="text-right">{ad.closes}</TableCell>
-                      <TableCell className="text-right font-medium text-emerald-600">
+                      <TableCell className="text-right font-medium text-vui-success">
                         {formatCurrency(ad.cash)}
                       </TableCell>
                       <TableCell className="text-right">{formatPercentage(ad.closeRate)}</TableCell>
@@ -971,7 +971,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           {/* Filters */}
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-vui-text">
                 {SalesIcons.Search}
               </span>
               <input
@@ -979,13 +979,13 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                 placeholder="Search transcripts..."
                 value={transcriptSearch}
                 onChange={(e) => setTranscriptSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[rgba(226,232,240,0.3)] rounded-[15px] text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-vui-border/30 rounded-vui text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
             <select
               value={transcriptOutcomeFilter}
               onChange={(e) => setTranscriptOutcomeFilter(e.target.value)}
-              className="px-4 py-2 border border-[rgba(226,232,240,0.3)] rounded-[15px] text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="px-4 py-2 border border-vui-border/30 rounded-vui text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="all">All Outcomes</option>
               <option value="closed">Closed</option>
@@ -996,7 +996,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
             <button
               onClick={handleSyncTranscripts}
               disabled={syncing}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0075ff]/100 text-white rounded-[15px] text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-vui-brand/100 text-vui-text-white rounded-vui text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
             >
               {syncing ? (
                 <>
@@ -1014,19 +1014,19 @@ export default function SalesView({ dateRange }: SalesViewProps) {
 
           {/* Transcript List */}
           {filteredTranscripts.length === 0 ? (
-            <div className="bg-[#0f1535] rounded-[20px] border border-[rgba(226,232,240,0.3)] p-12 text-center">
-              <div className="w-16 h-16 bg-[#1a1f37] rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="bg-vui-page rounded-vui-xl border border-vui-border/30 p-12 text-center">
+              <div className="w-16 h-16 bg-vui-sidenav-btn rounded-full flex items-center justify-center mx-auto mb-4">
                 {SalesIcons.Phone}
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">No call transcripts yet</h3>
-              <p className="text-[#718096] text-sm max-w-md mx-auto mb-6">
+              <h3 className="text-lg font-semibold text-vui-text-white mb-2">No call transcripts yet</h3>
+              <p className="text-vui-text text-sm max-w-md mx-auto mb-6">
                 Cloud Recording with audio transcription has been enabled.
                 Your next sales call recorded to the cloud will appear here within 30-60 minutes after the call ends.
               </p>
               <button
                 onClick={handleSyncTranscripts}
                 disabled={syncing}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0075ff]/100 text-white rounded-[15px] text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-vui-brand/100 text-vui-text-white rounded-vui text-sm font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
               >
                 {syncing ? "Syncing..." : "Sync Now"}
               </button>
@@ -1036,17 +1036,17 @@ export default function SalesView({ dateRange }: SalesViewProps) {
               {filteredTranscripts.map((transcript) => (
                 <div
                   key={transcript.id}
-                  className="bg-[#0f1535] rounded-[15px] border border-[rgba(226,232,240,0.3)] p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+                  className="bg-vui-page rounded-vui border border-vui-border/30 p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#1a1f37] rounded-full flex items-center justify-center text-[#718096]">
+                    <div className="w-10 h-10 bg-vui-sidenav-btn rounded-full flex items-center justify-center text-vui-text">
                       {SalesIcons.PhoneCall}
                     </div>
                     <div>
-                      <h4 className="font-medium text-white">
+                      <h4 className="font-medium text-vui-text-white">
                         {transcript.contact_name || transcript.topic || "Unknown Contact"}
                       </h4>
-                      <p className="text-sm text-[#718096]">
+                      <p className="text-sm text-vui-text">
                         {new Date(transcript.start_time).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -1060,28 +1060,28 @@ export default function SalesView({ dateRange }: SalesViewProps) {
                   <div className="flex items-center gap-4">
                     {/* Outcome badge */}
                     {transcript.call_outcome === "closed" && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#01b574]/15 text-emerald-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-success/15 text-emerald-800">
                         Closed {formatCurrency(transcript.cash_collected)}
                       </span>
                     )}
                     {transcript.call_outcome === "no_close" && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#0075ff]/15 text-orange-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-brand/15 text-orange-800">
                         No Close
                       </span>
                     )}
                     {transcript.call_outcome === "no_show" && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[rgba(227,26,26,0.15)] text-red-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-error/15 text-red-800">
                         No Show
                       </span>
                     )}
                     {transcript.call_outcome === "unknown" && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#1a1f37] text-white">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-vui-sidenav-btn text-vui-text-white">
                         Unknown
                       </span>
                     )}
                     <button
                       onClick={() => setSelectedTranscript(transcript)}
-                      className="text-[#0075ff] hover:text-[#0075ff] text-sm font-medium"
+                      className="text-vui-brand hover:text-vui-brand text-sm font-medium"
                     >
                       View
                     </button>
