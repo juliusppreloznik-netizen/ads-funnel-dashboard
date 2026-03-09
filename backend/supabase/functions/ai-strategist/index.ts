@@ -182,7 +182,7 @@ Based on this analysis, generate 3-5 creative briefs in JSON format. Return ONLY
 
     // Call Claude API
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5-20250514",
+      model: "claude-opus-4-6",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: analysisPrompt }],
@@ -227,7 +227,7 @@ Based on this analysis, generate 3-5 creative briefs in JSON format. Return ONLY
           ads_analyzed: adContext.length,
           top_performers: performanceContext,
         },
-        model_used: "claude-sonnet-4-5-20250514",
+        model_used: "claude-opus-4-6",
         tokens_used: response.usage?.input_tokens + response.usage?.output_tokens,
         analysis_type: "full",
         status: "completed",
