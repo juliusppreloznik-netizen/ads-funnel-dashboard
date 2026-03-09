@@ -754,9 +754,9 @@ interface ZoomTranscript {
   id: string;
   contact_id: string;
   contact_name: string;
-  outcome: string;
+  call_outcome: string;
   transcript_text: string;
-  call_date: string;
+  start_time: string;
   created_at: string;
 }
 
