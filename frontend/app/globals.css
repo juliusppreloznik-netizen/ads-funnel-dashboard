@@ -725,3 +725,19 @@ h6 { font-size: var(--vui-font-md); line-height: 1.625; }
 .vui-gradient-primary {
   background: linear-gradient(97.89deg, var(--vui-primary) 0%, var(--vui-primary-focus) 100%);
 }
+
+/* ============================================================================
+   TREMOR CSS VARIABLE OVERRIDES
+   ============================================================================ */
+
+:root {
+  --tremor-brand: #0075ff;
+  --tremor-brand-emphasis: #4318ff;
+  --tremor-background-default: #0f1535;
+  --tremor-background-subtle: #111c44;
+  --tremor-background-muted: #1a1f37;
+  --tremor-border-default: #56577a;
+  --tremor-content-default: #a0aec0;
+  --tremor-content-emphasis: #ffffff;
+  --tremor-content-strong: #ffffff;
+}

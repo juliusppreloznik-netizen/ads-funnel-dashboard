@@ -1690,7 +1690,7 @@ function TremorKpiCard({
       : `${value.toFixed(1)}%`;
 
   return (
-    <Card className="vui-stat-card !p-5">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-5">
       <p className="vui-stat-label">{title}</p>
       <p className={`text-3xl font-bold mt-2 ${KPI_TEXT_COLORS[color]}`}>
         {formattedValue}
@@ -1726,7 +1726,7 @@ function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: 
   const chartData = hasData ? realChartData : placeholderData;
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Revenue Distribution by Funnel Stage</h3>
       <p className="text-sm text-vui-text mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
 
@@ -1773,7 +1773,7 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
         data={chartData}
         category="value"
         index="name"
-        colors={["emerald", "orange", "gray"]}
+        colors={["blue", "violet", "cyan", "emerald", "amber"]}
         valueFormatter={(value) => `${value.toFixed(1)}%`}
         className="h-36"
         showLabel={false}
@@ -1812,7 +1812,7 @@ function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] })
   const displayData = hasData ? data : placeholderData;
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Investment Ability Breakdown</h3>
       <p className="text-sm text-vui-text mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
 
@@ -1850,7 +1850,7 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
   const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.totalRevenue), 1) : 1;
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Revenue Funnel</h3>
       <p className="text-sm text-vui-text mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
 
@@ -1941,7 +1941,7 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
   };
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Lead Source Quality</h3>
       <p className="text-sm text-vui-text mt-1 mb-4">Compares the performance of different lead sources.</p>
 
@@ -2062,7 +2062,7 @@ function TremorRevenueTrendsChart({ data, dateRange }: { data: RevenueTrendPoint
   const chartData = hasData ? realChartData : generatePlaceholderData();
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Revenue Trends Over Time</h3>
       <p className="text-sm text-vui-text mt-1">Tracks average revenue potential over the selected date range.</p>
 
@@ -2121,7 +2121,7 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
   };
 
   return (
-    <Card className="vui-card !p-6">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
       <h3 className="text-lg font-semibold text-vui-text-white">Revenue Tier Heatmap</h3>
       <p className="text-sm text-vui-text mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
 
@@ -2409,7 +2409,10 @@ export default function DashboardPage() {
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-vui-body p-6">
+        <main
+          className="flex-1 overflow-x-hidden overflow-y-auto p-6"
+          style={{ background: 'linear-gradient(159.02deg, #0f123b 14.25%, #090d2e 56.45%, #020515 86.14%)' }}
+        >
           {currentView === "Dashboard" && (
             <DashboardView
               data={data}

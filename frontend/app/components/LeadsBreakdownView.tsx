@@ -275,7 +275,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </div>
 
           {/* Revenue Distribution */}
-          <Card className="bg-vui-sidenav-btn/50 border-vui-border/30">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <SectionHeader title="Revenue Distribution" icon={LeadsIcons.DollarSign} />
             <p className="text-vui-text text-sm mb-4">
               Monthly revenue breakdown of leads with qualification rates
@@ -322,7 +322,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </Card>
 
           {/* Investment Ability Distribution */}
-          <Card className="bg-vui-sidenav-btn/50 border-vui-border/30">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <SectionHeader title="Investment Ability Distribution" icon={LeadsIcons.CreditCard} />
             <p className="text-vui-text text-sm mb-4">
               How leads are distributed by their stated investment ability
@@ -369,7 +369,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </Card>
 
           {/* Top Scaling Challenges */}
-          <Card className="bg-vui-sidenav-btn/50 border-vui-border/30">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <SectionHeader title="Top Scaling Challenges" icon={LeadsIcons.AlertTriangle} />
             <p className="text-vui-text text-sm mb-4">
               Most common challenges leads face, ranked by frequency
@@ -445,7 +445,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
   });
 
   return (
-    <Card className="bg-vui-sidenav-btn/50 border-vui-border/30">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="flex-grow">

@@ -864,14 +864,14 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           {/* Trend Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Cash Collected Over Time */}
-            <Card className="p-6">
+            <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl p-6">
               <h3 className="text-sm font-semibold text-vui-text-white mb-4">Cash Collected Over Time</h3>
               {weeklyCash.length > 0 ? (
                 <BarChart
                   data={weeklyCash.map(w => ({ week: formatWeekLabel(w.week), Cash: w.cash }))}
                   index="week"
                   categories={["Cash"]}
-                  colors={["emerald"]}
+                  colors={["blue", "cyan"]}
                   valueFormatter={(value) => formatCurrency(value)}
                   className="h-64"
                 />
@@ -883,7 +883,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
             </Card>
 
             {/* Shows vs Closes */}
-            <Card className="p-6">
+            <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl p-6">
               <h3 className="text-sm font-semibold text-vui-text-white mb-4">Shows vs Closes</h3>
               {weeklyShowsCloses.length > 0 ? (
                 <AreaChart
@@ -907,7 +907,7 @@ export default function SalesView({ dateRange }: SalesViewProps) {
           </div>
 
           {/* Ad Attribution Table */}
-          <Card className="p-6">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-vui-text-white">Ad Attribution</h3>
               <div className="relative">

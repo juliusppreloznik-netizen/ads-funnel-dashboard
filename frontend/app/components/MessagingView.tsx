@@ -397,19 +397,19 @@ function AIStrategistTab() {
       {/* Source Data Summary */}
       {briefs && (
         <div className="grid grid-cols-3 gap-4">
-          <Card className="bg-vui-page">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <div className="text-sm text-vui-text">Sales Calls Analyzed</div>
             <div className="text-2xl font-bold text-vui-text-white">
               {briefs.source_data.zoom_transcripts_count}
             </div>
           </Card>
-          <Card className="bg-vui-page">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <div className="text-sm text-vui-text">Ad Transcripts Analyzed</div>
             <div className="text-2xl font-bold text-vui-text-white">
               {briefs.source_data.ad_transcripts_count}
             </div>
           </Card>
-          <Card className="bg-vui-page">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
             <div className="text-sm text-vui-text">Ads Performance Data</div>
             <div className="text-2xl font-bold text-vui-text-white">
               {briefs.source_data.ads_analyzed}
@@ -420,7 +420,7 @@ function AIStrategistTab() {
 
       {/* Insights Section */}
       {briefs?.briefs?.insights && (
-        <Card className="bg-vui-page">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
           <h3 className="text-lg font-semibold text-vui-text-white mb-4">Key Insights</h3>
           <div className="grid md:grid-cols-2 gap-6">
             {briefs.briefs.insights.top_pain_points && (
@@ -474,7 +474,7 @@ function AIStrategistTab() {
       )}
 
       {!briefs && !error && (
-        <Card className="bg-vui-body border-dashed border-2 border-vui-border/30">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border border-dashed backdrop-blur-xl">
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-[#2d3748] rounded-full flex items-center justify-center mx-auto mb-4">
               {MessagingIcons.Brain}
@@ -692,7 +692,7 @@ function MessageBriefsTab() {
       {/* Brief Items List */}
       <div className="space-y-3">
         {filteredItems.length === 0 ? (
-          <Card className="bg-vui-body border-dashed border-2 border-vui-border/30">
+          <Card className="!bg-[#0f1535] !border-[#56577a] !border border-dashed backdrop-blur-xl">
             <div className="text-center py-8">
               <p className="text-vui-text">No briefs found. Generate some from the AI Strategist tab.</p>
             </div>
@@ -805,19 +805,19 @@ function CallInsightsTab() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-vui-page">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
           <div className="text-sm text-vui-text">Total Calls</div>
           <div className="text-2xl font-bold text-vui-text-white">{transcripts.length}</div>
         </Card>
-        <Card className="bg-vui-page">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
           <div className="text-sm text-vui-text">Won</div>
           <div className="text-2xl font-bold text-green-600">{wonCalls.length}</div>
         </Card>
-        <Card className="bg-vui-page">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
           <div className="text-sm text-vui-text">Lost</div>
           <div className="text-2xl font-bold text-red-600">{lostCalls.length}</div>
         </Card>
-        <Card className="bg-vui-page">
+        <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
           <div className="text-sm text-vui-text">Total Revenue</div>
           <div className="text-2xl font-bold text-vui-text-white">
             {formatCurrency(wonCalls.reduce((sum, c) => sum + (c.cash_collected || 0), 0))}
@@ -826,7 +826,7 @@ function CallInsightsTab() {
       </div>
 
       {/* Calls Table */}
-      <Card className="bg-vui-page">
+      <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
         <h3 className="text-lg font-semibold text-vui-text-white mb-4">Recent Sales Calls</h3>
         <Table>
           <TableHead>
@@ -1000,7 +1000,7 @@ function FatigueMonitorTab() {
       </div>
 
       {/* Fatigue Table */}
-      <Card className="bg-vui-page">
+      <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
         <Table>
           <TableHead>
             <TableRow>
@@ -1233,7 +1233,7 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
         <p className="text-vui-text">Conversion and cost metrics for each ad</p>
       </div>
 
-      <Card className="bg-vui-page">
+      <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
         <Table>
           <TableHead>
             <TableRow>
@@ -1399,7 +1399,7 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
         <p className="text-vui-text">Video engagement and attention metrics for each ad</p>
       </div>
 
-      <Card className="bg-vui-page">
+      <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
         <Table>
           <TableHead>
             <TableRow>
@@ -1465,7 +1465,7 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
 
 function PlaceholderTab({ title, description }: { title: string; description: string }) {
   return (
-    <Card className="bg-vui-body border-dashed border-2 border-vui-border/30">
+    <Card className="!bg-[#0f1535] !border-[#56577a] !border border-dashed backdrop-blur-xl">
       <div className="text-center py-16">
         <div className="w-16 h-16 bg-[#2d3748] rounded-full flex items-center justify-center mx-auto mb-4">
           <svg className="w-8 h-8 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
