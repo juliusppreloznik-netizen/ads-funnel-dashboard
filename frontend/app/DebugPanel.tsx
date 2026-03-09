@@ -105,7 +105,7 @@ export function DebugPanel() {
     return (
       <button
         onClick={handleOpen}
-        className="fixed bottom-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-purple-700 z-50 flex items-center gap-2"
+        className="fixed bottom-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-[15px] shadow-lg hover:bg-purple-700 z-50 flex items-center gap-2"
       >
         <span>Debug Database</span>
       </button>
@@ -114,7 +114,7 @@ export function DebugPanel() {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-obsidian-900 rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-[#0f1535] rounded-[15px] shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-purple-600 text-white px-6 py-4 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold">Database Debug Panel</h2>
@@ -145,13 +145,13 @@ export function DebugPanel() {
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
-              <p className="mt-2 text-zinc-500">Loading database data...</p>
+              <p className="mt-2 text-[#718096]">Loading database data...</p>
             </div>
           ) : (
             <div className="space-y-6">
               {/* Contacts Section */}
               <div>
-                <h3 className="text-lg font-bold mb-2 text-zinc-100">
+                <h3 className="text-lg font-bold mb-2 text-white">
                   Contacts Table ({contacts.length} records shown)
                 </h3>
                 {contacts.length === 0 ? (
@@ -159,28 +159,28 @@ export function DebugPanel() {
                     No contacts found in database. The webhook may not be writing data.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto border rounded-lg">
+                  <div className="overflow-x-auto border rounded-[15px]">
                     <table className="min-w-full border-collapse text-sm">
-                      <thead className="bg-obsidian-800">
+                      <thead className="bg-[#1a1f37]">
                         <tr>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">ID</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Name</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Email</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Form Submitted</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Call Booked</th>
-                          <th className="border-b px-3 py-2 text-center font-semibold text-zinc-300">Qualified</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Showed</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Closed</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">ID</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Name</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Email</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Form Submitted</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Call Booked</th>
+                          <th className="border-b px-3 py-2 text-center font-semibold text-[#a0aec0]">Qualified</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Showed</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Closed</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {contacts.map((contact) => (
-                          <tr key={contact.id} className="hover:bg-obsidian-850">
-                            <td className="px-3 py-2 text-zinc-400 font-mono text-xs">{contact.id.slice(0, 8)}...</td>
-                            <td className="px-3 py-2 text-zinc-100">{contact.first_name} {contact.last_name}</td>
-                            <td className="px-3 py-2 text-zinc-400">{contact.email || 'N/A'}</td>
-                            <td className="px-3 py-2 text-zinc-400 text-xs">{formatTimestamp(contact.form_submitted_at)}</td>
-                            <td className="px-3 py-2 text-zinc-400 text-xs">{formatTimestamp(contact.call_booked_at)}</td>
+                          <tr key={contact.id} className="hover:bg-[#0a0e23]">
+                            <td className="px-3 py-2 text-[#718096] font-mono text-xs">{contact.id.slice(0, 8)}...</td>
+                            <td className="px-3 py-2 text-white">{contact.first_name} {contact.last_name}</td>
+                            <td className="px-3 py-2 text-[#718096]">{contact.email || 'N/A'}</td>
+                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.form_submitted_at)}</td>
+                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.call_booked_at)}</td>
                             <td className="px-3 py-2 text-center">
                               {contact.is_qualified === true ? (
                                 <span className="text-green-600 font-bold">Yes</span>
@@ -190,8 +190,8 @@ export function DebugPanel() {
                                 <span className="text-gray-400">-</span>
                               )}
                             </td>
-                            <td className="px-3 py-2 text-zinc-400 text-xs">{formatTimestamp(contact.showed_up_at)}</td>
-                            <td className="px-3 py-2 text-zinc-400 text-xs">{formatTimestamp(contact.deal_closed_at)}</td>
+                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.showed_up_at)}</td>
+                            <td className="px-3 py-2 text-[#718096] text-xs">{formatTimestamp(contact.deal_closed_at)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -202,7 +202,7 @@ export function DebugPanel() {
 
               {/* Ads Section */}
               <div>
-                <h3 className="text-lg font-bold mb-2 text-zinc-100">
+                <h3 className="text-lg font-bold mb-2 text-white">
                   Ads Table ({ads.length} records shown)
                 </h3>
                 {ads.length === 0 ? (
@@ -210,35 +210,35 @@ export function DebugPanel() {
                     No ads found in database. The Facebook sync may not have run.
                   </div>
                 ) : (
-                  <div className="overflow-x-auto border rounded-lg">
+                  <div className="overflow-x-auto border rounded-[15px]">
                     <table className="min-w-full border-collapse text-sm">
-                      <thead className="bg-obsidian-800">
+                      <thead className="bg-[#1a1f37]">
                         <tr>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Date</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Ad Name</th>
-                          <th className="border-b px-3 py-2 text-left font-semibold text-zinc-300">Campaign</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-zinc-300">Spend</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-zinc-300">Impressions</th>
-                          <th className="border-b px-3 py-2 text-right font-semibold text-zinc-300">Clicks</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Date</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Ad Name</th>
+                          <th className="border-b px-3 py-2 text-left font-semibold text-[#a0aec0]">Campaign</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Spend</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Impressions</th>
+                          <th className="border-b px-3 py-2 text-right font-semibold text-[#a0aec0]">Clicks</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {ads.map((ad, idx) => (
-                          <tr key={`${ad.id}-${idx}`} className="hover:bg-obsidian-850">
-                            <td className="px-3 py-2 text-zinc-100 font-medium">{ad.date}</td>
-                            <td className="px-3 py-2 text-zinc-400 max-w-[200px] truncate" title={ad.ad_name || undefined}>
+                          <tr key={`${ad.id}-${idx}`} className="hover:bg-[#0a0e23]">
+                            <td className="px-3 py-2 text-white font-medium">{ad.date}</td>
+                            <td className="px-3 py-2 text-[#718096] max-w-[200px] truncate" title={ad.ad_name || undefined}>
                               {ad.ad_name || 'N/A'}
                             </td>
-                            <td className="px-3 py-2 text-zinc-400 max-w-[200px] truncate" title={ad.campaign_name || undefined}>
+                            <td className="px-3 py-2 text-[#718096] max-w-[200px] truncate" title={ad.campaign_name || undefined}>
                               {ad.campaign_name || 'N/A'}
                             </td>
-                            <td className="px-3 py-2 text-right text-zinc-100 font-medium">
+                            <td className="px-3 py-2 text-right text-white font-medium">
                               ${(ad.spend || 0).toFixed(2)}
                             </td>
-                            <td className="px-3 py-2 text-right text-zinc-400">
+                            <td className="px-3 py-2 text-right text-[#718096]">
                               {(ad.impressions || 0).toLocaleString()}
                             </td>
-                            <td className="px-3 py-2 text-right text-zinc-400">
+                            <td className="px-3 py-2 text-right text-[#718096]">
                               {(ad.clicks || 0).toLocaleString()}
                             </td>
                           </tr>
@@ -250,9 +250,9 @@ export function DebugPanel() {
               </div>
 
               {/* Summary */}
-              <div className="bg-obsidian-800 rounded-lg p-4">
-                <h4 className="font-bold text-zinc-100 mb-2">Summary</h4>
-                <ul className="text-sm text-zinc-300 space-y-1">
+              <div className="bg-[#1a1f37] rounded-[15px] p-4">
+                <h4 className="font-bold text-white mb-2">Summary</h4>
+                <ul className="text-sm text-[#a0aec0] space-y-1">
                   <li>Total Contacts: <span className="font-semibold">{contacts.length}</span></li>
                   <li>Contacts with form_submitted_at: <span className="font-semibold">{contacts.filter(c => c.form_submitted_at).length}</span></li>
                   <li>Contacts with call_booked_at: <span className="font-semibold">{contacts.filter(c => c.call_booked_at).length}</span></li>

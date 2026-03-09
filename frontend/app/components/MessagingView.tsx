@@ -243,19 +243,19 @@ export default function MessagingView({ dateRange }: MessagingViewProps) {
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="bg-obsidian-900 rounded-lg shadow-lg shadow-black/20 border border-white/10 p-1">
+      <div className="bg-[#0f1535] rounded-[15px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] p-1">
         <div className="flex flex-wrap gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-[15px] text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? "bg-cyan-500/100 text-white shadow-lg shadow-black/20"
-                  : "text-zinc-400 hover:bg-obsidian-800"
+                  ? "bg-[#0075ff]/100 text-white shadow-lg shadow-black/20"
+                  : "text-[#718096] hover:bg-[#1a1f37]"
               }`}
             >
-              <span className={activeTab === tab.id ? "text-white" : "text-zinc-500"}>
+              <span className={activeTab === tab.id ? "text-white" : "text-[#718096]"}>
                 {tab.icon}
               </span>
               {tab.label}
@@ -371,7 +371,7 @@ function AIStrategistTab() {
           <button
             onClick={generateNewBriefs}
             disabled={generating}
-            className="flex items-center gap-2 px-6 py-3 bg-obsidian-900 text-cyan-500 rounded-lg font-semibold hover:bg-cyan-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0f1535] text-[#0075ff] rounded-[15px] font-semibold hover:bg-[#0075ff]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
@@ -389,7 +389,7 @@ function AIStrategistTab() {
       </Card>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-400">
+        <div className="bg-red-50 border border-red-200 rounded-[15px] p-4 text-[#e31a1a]">
           {error}
         </div>
       )}
@@ -397,21 +397,21 @@ function AIStrategistTab() {
       {/* Source Data Summary */}
       {briefs && (
         <div className="grid grid-cols-3 gap-4">
-          <Card className="bg-obsidian-900">
-            <div className="text-sm text-zinc-500">Sales Calls Analyzed</div>
-            <div className="text-2xl font-bold text-zinc-100">
+          <Card className="bg-[#0f1535]">
+            <div className="text-sm text-[#718096]">Sales Calls Analyzed</div>
+            <div className="text-2xl font-bold text-white">
               {briefs.source_data.zoom_transcripts_count}
             </div>
           </Card>
-          <Card className="bg-obsidian-900">
-            <div className="text-sm text-zinc-500">Ad Transcripts Analyzed</div>
-            <div className="text-2xl font-bold text-zinc-100">
+          <Card className="bg-[#0f1535]">
+            <div className="text-sm text-[#718096]">Ad Transcripts Analyzed</div>
+            <div className="text-2xl font-bold text-white">
               {briefs.source_data.ad_transcripts_count}
             </div>
           </Card>
-          <Card className="bg-obsidian-900">
-            <div className="text-sm text-zinc-500">Ads Performance Data</div>
-            <div className="text-2xl font-bold text-zinc-100">
+          <Card className="bg-[#0f1535]">
+            <div className="text-sm text-[#718096]">Ads Performance Data</div>
+            <div className="text-2xl font-bold text-white">
               {briefs.source_data.ads_analyzed}
             </div>
           </Card>
@@ -420,12 +420,12 @@ function AIStrategistTab() {
 
       {/* Insights Section */}
       {briefs?.briefs?.insights && (
-        <Card className="bg-obsidian-900">
-          <h3 className="text-lg font-semibold text-zinc-100 mb-4">Key Insights</h3>
+        <Card className="bg-[#0f1535]">
+          <h3 className="text-lg font-semibold text-white mb-4">Key Insights</h3>
           <div className="grid md:grid-cols-2 gap-6">
             {briefs.briefs.insights.top_pain_points && (
               <div>
-                <h4 className="text-sm font-medium text-zinc-300 mb-2">Top Pain Points</h4>
+                <h4 className="text-sm font-medium text-[#a0aec0] mb-2">Top Pain Points</h4>
                 <div className="flex flex-wrap gap-2">
                   {briefs.briefs.insights.top_pain_points.map((point, idx) => (
                     <Badge key={idx} color="red">{point}</Badge>
@@ -435,7 +435,7 @@ function AIStrategistTab() {
             )}
             {briefs.briefs.insights.winning_hooks && (
               <div>
-                <h4 className="text-sm font-medium text-zinc-300 mb-2">Winning Hook Types</h4>
+                <h4 className="text-sm font-medium text-[#a0aec0] mb-2">Winning Hook Types</h4>
                 <div className="flex flex-wrap gap-2">
                   {briefs.briefs.insights.winning_hooks.map((hook, idx) => (
                     <Badge key={idx} color="green">{hook}</Badge>
@@ -445,7 +445,7 @@ function AIStrategistTab() {
             )}
             {briefs.briefs.insights.content_gaps && (
               <div>
-                <h4 className="text-sm font-medium text-zinc-300 mb-2">Content Gaps</h4>
+                <h4 className="text-sm font-medium text-[#a0aec0] mb-2">Content Gaps</h4>
                 <div className="flex flex-wrap gap-2">
                   {briefs.briefs.insights.content_gaps.map((gap, idx) => (
                     <Badge key={idx} color="yellow">{gap}</Badge>
@@ -455,8 +455,8 @@ function AIStrategistTab() {
             )}
             {briefs.briefs.insights.audience_insights && (
               <div className="md:col-span-2">
-                <h4 className="text-sm font-medium text-zinc-300 mb-2">Audience Insights</h4>
-                <p className="text-zinc-400">{briefs.briefs.insights.audience_insights}</p>
+                <h4 className="text-sm font-medium text-[#a0aec0] mb-2">Audience Insights</h4>
+                <p className="text-[#718096]">{briefs.briefs.insights.audience_insights}</p>
               </div>
             )}
           </div>
@@ -466,7 +466,7 @@ function AIStrategistTab() {
       {/* Creative Briefs */}
       {briefs?.briefs?.briefs && briefs.briefs.briefs.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-zinc-100">Generated Creative Briefs</h3>
+          <h3 className="text-lg font-semibold text-white">Generated Creative Briefs</h3>
           {briefs.briefs.briefs.map((brief, idx) => (
             <BriefCard key={idx} brief={brief} index={idx} />
           ))}
@@ -474,13 +474,13 @@ function AIStrategistTab() {
       )}
 
       {!briefs && !error && (
-        <Card className="bg-obsidian-850 border-dashed border-2 border-white/10">
+        <Card className="bg-[#0a0e23] border-dashed border-2 border-[rgba(226,232,240,0.3)]">
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-obsidian-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-[#2d3748] rounded-full flex items-center justify-center mx-auto mb-4">
               {MessagingIcons.Brain}
             </div>
-            <h3 className="text-lg font-semibold text-zinc-100">No briefs generated yet</h3>
-            <p className="text-zinc-500 mt-1">
+            <h3 className="text-lg font-semibold text-white">No briefs generated yet</h3>
+            <p className="text-[#718096] mt-1">
               Click &quot;Generate New Briefs&quot; to analyze your sales calls and ad performance
             </p>
           </div>
@@ -489,7 +489,7 @@ function AIStrategistTab() {
 
       {/* Last Generated */}
       {briefs && (
-        <div className="text-sm text-zinc-500 text-center">
+        <div className="text-sm text-[#718096] text-center">
           Last generated: {new Date(briefs.created_at).toLocaleString()} using {briefs.model_used}
         </div>
       )}
@@ -506,14 +506,14 @@ function BriefCard({ brief, index }: { brief: BriefItem; index: number }) {
 
   const priorityColors: Record<number, string> = {
     1: "bg-red-500",
-    2: "bg-cyan-500/100",
+    2: "bg-[#0075ff]/100",
     3: "bg-yellow-500",
     4: "bg-blue-500",
-    5: "bg-obsidian-8500",
+    5: "bg-[#0a0e23]0",
   };
 
   return (
-    <Card className="bg-obsidian-900 overflow-hidden">
+    <Card className="bg-[#0f1535] overflow-hidden">
       <div
         className="flex items-start justify-between cursor-pointer"
         onClick={() => setExpanded(!expanded)}
@@ -527,52 +527,52 @@ function BriefCard({ brief, index }: { brief: BriefItem; index: number }) {
             {brief.priority}
           </div>
           <div>
-            <h4 className="text-lg font-semibold text-zinc-100">{brief.title}</h4>
+            <h4 className="text-lg font-semibold text-white">{brief.title}</h4>
             <div className="flex items-center gap-2 mt-1">
               <Badge color="blue">{brief.hook_type}</Badge>
               {brief.reference_ads?.length > 0 && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-[#718096]">
                   Inspired by: {brief.reference_ads.join(", ")}
                 </span>
               )}
             </div>
           </div>
         </div>
-        <button className="text-zinc-500 hover:text-zinc-400">
+        <button className="text-[#718096] hover:text-[#718096]">
           {expanded ? MessagingIcons.ChevronUp : MessagingIcons.ChevronDown}
         </button>
       </div>
 
       {expanded && (
-        <div className="mt-4 pt-4 border-t border-white/5 grid md:grid-cols-2 gap-4">
+        <div className="mt-4 pt-4 border-t border-[rgba(226,232,240,0.2)] grid md:grid-cols-2 gap-4">
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Target Audience</h5>
-            <p className="text-zinc-400 mt-1">{brief.target_audience}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Target Audience</h5>
+            <p className="text-[#718096] mt-1">{brief.target_audience}</p>
           </div>
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Key Message</h5>
-            <p className="text-zinc-400 mt-1">{brief.key_message}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Key Message</h5>
+            <p className="text-[#718096] mt-1">{brief.key_message}</p>
           </div>
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Pain Point</h5>
-            <p className="text-zinc-400 mt-1">{brief.pain_point}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Pain Point</h5>
+            <p className="text-[#718096] mt-1">{brief.pain_point}</p>
           </div>
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Proof Element</h5>
-            <p className="text-zinc-400 mt-1">{brief.proof_element}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Proof Element</h5>
+            <p className="text-[#718096] mt-1">{brief.proof_element}</p>
           </div>
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Call to Action</h5>
-            <p className="text-zinc-400 mt-1">{brief.call_to_action}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Call to Action</h5>
+            <p className="text-[#718096] mt-1">{brief.call_to_action}</p>
           </div>
           <div>
-            <h5 className="text-sm font-medium text-zinc-300">Visual Direction</h5>
-            <p className="text-zinc-400 mt-1">{brief.visual_direction}</p>
+            <h5 className="text-sm font-medium text-[#a0aec0]">Visual Direction</h5>
+            <p className="text-[#718096] mt-1">{brief.visual_direction}</p>
           </div>
           {brief.rationale && (
             <div className="md:col-span-2">
-              <h5 className="text-sm font-medium text-zinc-300">Rationale</h5>
-              <p className="text-zinc-400 mt-1 bg-obsidian-850 p-3 rounded-lg">{brief.rationale}</p>
+              <h5 className="text-sm font-medium text-[#a0aec0]">Rationale</h5>
+              <p className="text-[#718096] mt-1 bg-[#0a0e23] p-3 rounded-[15px]">{brief.rationale}</p>
             </div>
           )}
         </div>
@@ -658,16 +658,16 @@ function MessageBriefsTab() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="bg-obsidian-900 cursor-pointer hover:ring-2 ring-orange-500" onClick={() => setFilter("all")}>
-          <div className="text-sm text-zinc-500">Total Briefs</div>
-          <div className="text-2xl font-bold text-zinc-100">{briefItems.length}</div>
+        <Card className="bg-[#0f1535] cursor-pointer hover:ring-2 ring-orange-500" onClick={() => setFilter("all")}>
+          <div className="text-sm text-[#718096]">Total Briefs</div>
+          <div className="text-2xl font-bold text-white">{briefItems.length}</div>
         </Card>
-        <Card className="bg-obsidian-900 cursor-pointer hover:ring-2 ring-yellow-500" onClick={() => setFilter("pending")}>
-          <div className="text-sm text-zinc-500">Pending</div>
+        <Card className="bg-[#0f1535] cursor-pointer hover:ring-2 ring-yellow-500" onClick={() => setFilter("pending")}>
+          <div className="text-sm text-[#718096]">Pending</div>
           <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
         </Card>
-        <Card className="bg-obsidian-900 cursor-pointer hover:ring-2 ring-green-500" onClick={() => setFilter("completed")}>
-          <div className="text-sm text-zinc-500">Completed</div>
+        <Card className="bg-[#0f1535] cursor-pointer hover:ring-2 ring-green-500" onClick={() => setFilter("completed")}>
+          <div className="text-sm text-[#718096]">Completed</div>
           <div className="text-2xl font-bold text-green-600">{completedCount}</div>
         </Card>
       </div>
@@ -678,10 +678,10 @@ function MessageBriefsTab() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            className={`px-4 py-2 rounded-[15px] text-sm font-medium ${
               filter === f
-                ? "bg-cyan-500/100 text-white"
-                : "bg-obsidian-800 text-zinc-400 hover:bg-obsidian-700"
+                ? "bg-[#0075ff]/100 text-white"
+                : "bg-[#1a1f37] text-[#718096] hover:bg-[#2d3748]"
             }`}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -692,16 +692,16 @@ function MessageBriefsTab() {
       {/* Brief Items List */}
       <div className="space-y-3">
         {filteredItems.length === 0 ? (
-          <Card className="bg-obsidian-850 border-dashed border-2 border-white/10">
+          <Card className="bg-[#0a0e23] border-dashed border-2 border-[rgba(226,232,240,0.3)]">
             <div className="text-center py-8">
-              <p className="text-zinc-500">No briefs found. Generate some from the AI Strategist tab.</p>
+              <p className="text-[#718096]">No briefs found. Generate some from the AI Strategist tab.</p>
             </div>
           </Card>
         ) : (
           filteredItems.map((item) => (
             <Card
               key={item.id}
-              className={`bg-obsidian-900 transition-all ${
+              className={`bg-[#0f1535] transition-all ${
                 item.is_completed ? "opacity-60" : ""
               }`}
             >
@@ -711,7 +711,7 @@ function MessageBriefsTab() {
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-1 ${
                     item.is_completed
                       ? "bg-green-500 border-green-500 text-white"
-                      : "border-white/10 hover:border-orange-500"
+                      : "border-[rgba(226,232,240,0.3)] hover:border-orange-500"
                   }`}
                 >
                   {item.is_completed && MessagingIcons.Check}
@@ -720,7 +720,7 @@ function MessageBriefsTab() {
                   <div className="flex items-center gap-2">
                     <h4
                       className={`font-semibold ${
-                        item.is_completed ? "text-zinc-500 line-through" : "text-zinc-100"
+                        item.is_completed ? "text-[#718096] line-through" : "text-white"
                       }`}
                     >
                       {item.title}
@@ -730,9 +730,9 @@ function MessageBriefsTab() {
                     </Badge>
                     <Badge color="gray">{item.hook_type}</Badge>
                   </div>
-                  <p className="text-sm text-zinc-500 mt-1">{item.key_message}</p>
+                  <p className="text-sm text-[#718096] mt-1">{item.key_message}</p>
                   {item.completed_at && (
-                    <p className="text-xs text-zinc-500 mt-2">
+                    <p className="text-xs text-[#718096] mt-2">
                       Completed: {new Date(item.completed_at).toLocaleDateString()}
                     </p>
                   )}
@@ -805,29 +805,29 @@ function CallInsightsTab() {
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="bg-obsidian-900">
-          <div className="text-sm text-zinc-500">Total Calls</div>
-          <div className="text-2xl font-bold text-zinc-100">{transcripts.length}</div>
+        <Card className="bg-[#0f1535]">
+          <div className="text-sm text-[#718096]">Total Calls</div>
+          <div className="text-2xl font-bold text-white">{transcripts.length}</div>
         </Card>
-        <Card className="bg-obsidian-900">
-          <div className="text-sm text-zinc-500">Won</div>
+        <Card className="bg-[#0f1535]">
+          <div className="text-sm text-[#718096]">Won</div>
           <div className="text-2xl font-bold text-green-600">{wonCalls.length}</div>
         </Card>
-        <Card className="bg-obsidian-900">
-          <div className="text-sm text-zinc-500">Lost</div>
+        <Card className="bg-[#0f1535]">
+          <div className="text-sm text-[#718096]">Lost</div>
           <div className="text-2xl font-bold text-red-600">{lostCalls.length}</div>
         </Card>
-        <Card className="bg-obsidian-900">
-          <div className="text-sm text-zinc-500">Total Revenue</div>
-          <div className="text-2xl font-bold text-zinc-100">
+        <Card className="bg-[#0f1535]">
+          <div className="text-sm text-[#718096]">Total Revenue</div>
+          <div className="text-2xl font-bold text-white">
             {formatCurrency(wonCalls.reduce((sum, c) => sum + (c.cash_collected || 0), 0))}
           </div>
         </Card>
       </div>
 
       {/* Calls Table */}
-      <Card className="bg-obsidian-900">
-        <h3 className="text-lg font-semibold text-zinc-100 mb-4">Recent Sales Calls</h3>
+      <Card className="bg-[#0f1535]">
+        <h3 className="text-lg font-semibold text-white mb-4">Recent Sales Calls</h3>
         <Table>
           <TableHead>
             <TableRow>
@@ -982,13 +982,13 @@ function FatigueMonitorTab() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-100">Ad Fatigue Monitor</h2>
-          <p className="text-zinc-500">Track creative fatigue based on CPA, CPM, and CTR trends</p>
+          <h2 className="text-xl font-semibold text-white">Ad Fatigue Monitor</h2>
+          <p className="text-[#718096]">Track creative fatigue based on CPA, CPM, and CTR trends</p>
         </div>
         <button
           onClick={refreshFatigueScores}
           disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-500/100 text-white rounded-lg font-medium hover:bg-orange-600 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-[#0075ff]/100 text-white rounded-[15px] font-medium hover:bg-orange-600 disabled:opacity-50"
         >
           {refreshing ? (
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -1000,31 +1000,31 @@ function FatigueMonitorTab() {
       </div>
 
       {/* Fatigue Table */}
-      <Card className="bg-obsidian-900">
+      <Card className="bg-[#0f1535]">
         <Table>
           <TableHead>
             <TableRow>
               <TableHeaderCell>Ad</TableHeaderCell>
               <TableHeaderCell
-                className="cursor-pointer hover:bg-obsidian-850"
+                className="cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => setSortBy("fatigue_score")}
               >
                 Fatigue Score {sortBy === "fatigue_score" && "↓"}
               </TableHeaderCell>
               <TableHeaderCell
-                className="cursor-pointer hover:bg-obsidian-850"
+                className="cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => setSortBy("cpa_trend")}
               >
                 CPA Trend {sortBy === "cpa_trend" && "↓"}
               </TableHeaderCell>
               <TableHeaderCell
-                className="cursor-pointer hover:bg-obsidian-850"
+                className="cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => setSortBy("cpm_trend")}
               >
                 CPM Trend {sortBy === "cpm_trend" && "↓"}
               </TableHeaderCell>
               <TableHeaderCell
-                className="cursor-pointer hover:bg-obsidian-850"
+                className="cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => setSortBy("ctr_trend")}
               >
                 CTR Trend {sortBy === "ctr_trend" && "↑"}
@@ -1035,7 +1035,7 @@ function FatigueMonitorTab() {
           <TableBody>
             {sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-zinc-500">
+                <TableCell colSpan={6} className="text-center py-8 text-[#718096]">
                   No fatigue data available. Click &quot;Refresh Scores&quot; to analyze your ads.
                 </TableCell>
               </TableRow>
@@ -1053,8 +1053,8 @@ function FatigueMonitorTab() {
                         />
                       )}
                       <div>
-                        <div className="font-medium text-zinc-100">{ad.ad_name}</div>
-                        <div className="text-xs text-zinc-500">{ad.days_analyzed} days analyzed</div>
+                        <div className="font-medium text-white">{ad.ad_name}</div>
+                        <div className="text-xs text-[#718096]">{ad.days_analyzed} days analyzed</div>
                       </div>
                     </div>
                   </TableCell>
@@ -1079,7 +1079,7 @@ function FatigueMonitorTab() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-sm text-zinc-400">{ad.recommendation}</span>
+                    <span className="text-sm text-[#718096]">{ad.recommendation}</span>
                   </TableCell>
                 </TableRow>
               ))
@@ -1229,11 +1229,11 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Performance KPIs</h2>
-        <p className="text-zinc-500">Conversion and cost metrics for each ad</p>
+        <h2 className="text-xl font-semibold text-white">Performance KPIs</h2>
+        <p className="text-[#718096]">Conversion and cost metrics for each ad</p>
       </div>
 
-      <Card className="bg-obsidian-900">
+      <Card className="bg-[#0f1535]">
         <Table>
           <TableHead>
             <TableRow>
@@ -1243,25 +1243,25 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
               <TableHeaderCell className="text-right">Leads</TableHeaderCell>
               <TableHeaderCell className="text-right">Booked</TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("opt_in_rate")}
               >
                 Opt-in Rate {sortBy === "opt_in_rate" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("booking_rate")}
               >
                 Booking Rate {sortBy === "booking_rate" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("cpc")}
               >
                 CPC {sortBy === "cpc" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("cost_per_booked")}
               >
                 Cost/Booked {sortBy === "cost_per_booked" && (sortAsc ? "↑" : "↓")}
@@ -1272,7 +1272,7 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
             {sortedData.map((ad) => (
               <TableRow key={ad.ad_id}>
                 <TableCell className="font-medium">{ad.ad_name}</TableCell>
-                <TableCell className="text-zinc-500">{ad.campaign_name}</TableCell>
+                <TableCell className="text-[#718096]">{ad.campaign_name}</TableCell>
                 <TableCell className="text-right">{formatCurrency(ad.total_spend)}</TableCell>
                 <TableCell className="text-right">{ad.total_leads}</TableCell>
                 <TableCell className="text-right">{ad.calls_booked}</TableCell>
@@ -1395,11 +1395,11 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Engagement KPIs</h2>
-        <p className="text-zinc-500">Video engagement and attention metrics for each ad</p>
+        <h2 className="text-xl font-semibold text-white">Engagement KPIs</h2>
+        <p className="text-[#718096]">Video engagement and attention metrics for each ad</p>
       </div>
 
-      <Card className="bg-obsidian-900">
+      <Card className="bg-[#0f1535]">
         <Table>
           <TableHead>
             <TableRow>
@@ -1407,25 +1407,25 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
               <TableHeaderCell>Campaign</TableHeaderCell>
               <TableHeaderCell className="text-right">Impressions</TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("cpm")}
               >
                 CPM {sortBy === "cpm" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("hook_rate")}
               >
                 Hook Rate {sortBy === "hook_rate" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("hold_rate")}
               >
                 Hold Rate {sortBy === "hold_rate" && (sortAsc ? "↑" : "↓")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-right cursor-pointer hover:bg-obsidian-850"
+                className="text-right cursor-pointer hover:bg-[#0a0e23]"
                 onClick={() => handleSort("outbound_ctr")}
               >
                 Outbound CTR {sortBy === "outbound_ctr" && (sortAsc ? "↑" : "↓")}
@@ -1436,7 +1436,7 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
             {sortedData.map((ad) => (
               <TableRow key={ad.ad_id}>
                 <TableCell className="font-medium">{ad.ad_name}</TableCell>
-                <TableCell className="text-zinc-500">{ad.campaign_name}</TableCell>
+                <TableCell className="text-[#718096]">{ad.campaign_name}</TableCell>
                 <TableCell className="text-right">{ad.total_impressions.toLocaleString()}</TableCell>
                 <TableCell className="text-right">{formatCurrency(ad.cpm)}</TableCell>
                 <TableCell className="text-right">
@@ -1465,15 +1465,15 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
 
 function PlaceholderTab({ title, description }: { title: string; description: string }) {
   return (
-    <Card className="bg-obsidian-850 border-dashed border-2 border-white/10">
+    <Card className="bg-[#0a0e23] border-dashed border-2 border-[rgba(226,232,240,0.3)]">
       <div className="text-center py-16">
-        <div className="w-16 h-16 bg-obsidian-700 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 bg-[#2d3748] rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-[#718096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>
-        <p className="text-zinc-500 mt-2 max-w-md mx-auto">{description}</p>
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <p className="text-[#718096] mt-2 max-w-md mx-auto">{description}</p>
       </div>
     </Card>
   );
