@@ -1,29 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ChartJS } from "@/lib/chart-setup";
-import {
-  Card,
-  BarChart,
-  DonutChart,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TableHeaderCell,
-  Badge,
-} from "@tremor/react";
 import { DateRangeValue } from "../DateRangePicker";
 import {
   getLeadsBreakdownDataV2,
   type LeadsBreakdownDataV2,
-  type RevenueTierData,
-  type InvestmentAbilityData,
-  type ScalingChallengeData,
   type LeadCardData,
 } from "@/lib/contact-queries";
 import { format } from "date-fns";
+import {
+  GlassCard,
+  VisionBarChart,
+  VisionDonutChart,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableHeaderCell,
+  TableCell,
+  Badge,
+} from "./ui";
 
 // ============================================================================
 // TYPES
@@ -74,11 +70,6 @@ const LeadsIcons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
     </svg>
   ),
-  TrendingUp: (
-    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-    </svg>
-  ),
 };
 
 // ============================================================================
@@ -98,15 +89,15 @@ function KpiCard({
   trend?: "up" | "down" | "neutral";
   trendLabel?: string;
 }) {
-  const trendColor = trend === "up" ? "text-green-500" : trend === "down" ? "text-vui-error" : "text-vui-text";
+  const trendColor = trend === "up" ? "text-[#01b574]" : trend === "down" ? "text-[#e31a1a]" : "text-[#a0aec0]";
 
   return (
-    <div className="bg-vui-sidenav-btn/50 rounded-vui p-4 border border-vui-border/30">
+    <div className="bg-[rgba(255,255,255,0.02)] rounded-[15px] p-4 border border-[rgba(255,255,255,0.05)]">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-vui-text text-sm">{title}</span>
-        <span className="text-[#4299e1]">{icon}</span>
+        <span className="text-[#a0aec0] text-sm">{title}</span>
+        <span className="text-[#0075ff]">{icon}</span>
       </div>
-      <div className="text-2xl font-bold text-vui-text-white">{value}</div>
+      <div className="text-2xl font-bold text-white">{value}</div>
       {trendLabel && (
         <div className={`text-xs mt-1 ${trendColor}`}>
           {trend === "up" && "↑ "}
@@ -121,8 +112,8 @@ function KpiCard({
 function SectionHeader({ title, icon }: { title: string; icon: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-4">
-      <span className="text-[#4299e1]">{icon}</span>
-      <h2 className="text-xl font-semibold text-vui-text-white">{title}</h2>
+      <span className="text-[#0075ff]">{icon}</span>
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
     </div>
   );
 }
@@ -180,18 +171,18 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0075ff]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-900/20 border border-red-700 rounded-vui p-6 text-center">
+      <div className="bg-[#e31a1a]/10 border border-[#e31a1a]/30 rounded-[20px] p-6 text-center">
         <p className="text-[#e31a1a]">{error}</p>
         <button
           onClick={fetchData}
-          className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-vui-text-white text-sm"
+          className="mt-4 px-4 py-2 bg-[#e31a1a] hover:bg-[#c71515] rounded-[12px] text-white text-sm"
         >
           Retry
         </button>
@@ -201,7 +192,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
 
   if (!data) {
     return (
-      <div className="text-center text-vui-text py-12">
+      <div className="text-center text-[#a0aec0] py-12">
         No data available for the selected date range.
       </div>
     );
@@ -212,7 +203,6 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
     name: item.label,
     Leads: item.count,
     Qualified: item.qualified,
-    "Qual Rate": item.qualificationRate,
   }));
 
   const investmentChartData = data.investmentAbilityDistribution.map((item) => ({
@@ -223,23 +213,23 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-vui-border/30 pb-2">
+      <div className="flex gap-2 border-b border-[rgba(255,255,255,0.1)] pb-2">
         <button
           onClick={() => setSelectedTab("overview")}
-          className={`px-4 py-2 rounded-t text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-t-[12px] text-sm font-medium transition-colors ${
             selectedTab === "overview"
-              ? "bg-blue-600 text-vui-text-white"
-              : "text-vui-text hover:text-vui-text-white hover:bg-[#2d3748]"
+              ? "bg-[#0075ff] text-white"
+              : "text-[#a0aec0] hover:text-white hover:bg-[rgba(255,255,255,0.05)]"
           }`}
         >
           Overview
         </button>
         <button
           onClick={() => setSelectedTab("leads")}
-          className={`px-4 py-2 rounded-t text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-t-[12px] text-sm font-medium transition-colors ${
             selectedTab === "leads"
-              ? "bg-blue-600 text-vui-text-white"
-              : "text-vui-text hover:text-vui-text-white hover:bg-[#2d3748]"
+              ? "bg-[#0075ff] text-white"
+              : "text-[#a0aec0] hover:text-white hover:bg-[rgba(255,255,255,0.05)]"
           }`}
         >
           Individual Leads ({data.totalLeads})
@@ -275,40 +265,38 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
           </div>
 
           {/* Revenue Distribution */}
-          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
+          <GlassCard>
             <SectionHeader title="Revenue Distribution" icon={LeadsIcons.DollarSign} />
-            <p className="text-vui-text text-sm mb-4">
+            <p className="text-[#a0aec0] text-sm mb-4">
               Monthly revenue breakdown of leads with qualification rates
             </p>
-            <BarChart
+            <VisionBarChart
               className="h-72"
               data={revenueChartData}
               index="name"
               categories={["Leads", "Qualified"]}
-              colors={["blue", "green"]}
-              yAxisWidth={48}
-              showLegend={true}
+              colors={["#0075ff", "#01b574"]}
               valueFormatter={(value) => String(value)}
             />
             {/* Revenue breakdown table */}
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4">
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableHeaderCell className="text-vui-text">Revenue Tier</TableHeaderCell>
-                    <TableHeaderCell className="text-vui-text text-right">Leads</TableHeaderCell>
-                    <TableHeaderCell className="text-vui-text text-right">% of Total</TableHeaderCell>
-                    <TableHeaderCell className="text-vui-text text-right">Qualified</TableHeaderCell>
-                    <TableHeaderCell className="text-vui-text text-right">Qual Rate</TableHeaderCell>
+                    <TableHeaderCell>Revenue Tier</TableHeaderCell>
+                    <TableHeaderCell className="text-right">Leads</TableHeaderCell>
+                    <TableHeaderCell className="text-right">% of Total</TableHeaderCell>
+                    <TableHeaderCell className="text-right">Qualified</TableHeaderCell>
+                    <TableHeaderCell className="text-right">Qual Rate</TableHeaderCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {data.revenueDistribution.map((item) => (
                     <TableRow key={item.label}>
-                      <TableCell className="text-vui-text-white font-medium">{item.label}</TableCell>
-                      <TableCell className="text-vui-text text-right">{item.count}</TableCell>
-                      <TableCell className="text-vui-text text-right">{formatPercent(item.percentage)}</TableCell>
-                      <TableCell className="text-green-400 text-right">{item.qualified}</TableCell>
+                      <TableCell className="text-white font-medium">{item.label}</TableCell>
+                      <TableCell className="text-right">{item.count}</TableCell>
+                      <TableCell className="text-right">{formatPercent(item.percentage)}</TableCell>
+                      <TableCell className="text-[#01b574] text-right">{item.qualified}</TableCell>
                       <TableCell className="text-right">
                         <Badge color={item.qualificationRate >= 50 ? "green" : item.qualificationRate >= 25 ? "yellow" : "red"}>
                           {formatPercent(item.qualificationRate)}
@@ -319,42 +307,37 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 </TableBody>
               </Table>
             </div>
-          </Card>
+          </GlassCard>
 
           {/* Investment Ability Distribution */}
-          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
+          <GlassCard>
             <SectionHeader title="Investment Ability Distribution" icon={LeadsIcons.CreditCard} />
-            <p className="text-vui-text text-sm mb-4">
+            <p className="text-[#a0aec0] text-sm mb-4">
               How leads are distributed by their stated investment ability
             </p>
             <div className="grid md:grid-cols-2 gap-6">
+              <VisionDonutChart
+                className="h-60"
+                data={investmentChartData}
+                colors={["#0075ff", "#00bcd4", "#5c6bc0", "#7928ca", "#9c27b0", "#d946ef"]}
+                valueFormatter={(value) => String(value)}
+              />
               <div>
-                <DonutChart
-                  className="h-60"
-                  data={investmentChartData}
-                  index="name"
-                  category="value"
-                  colors={["blue", "cyan", "indigo", "violet", "purple", "fuchsia"]}
-                  showLabel={true}
-                  valueFormatter={(value) => String(value)}
-                />
-              </div>
-              <div className="overflow-x-auto">
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableHeaderCell className="text-vui-text">Investment Ability</TableHeaderCell>
-                      <TableHeaderCell className="text-vui-text text-right">Count</TableHeaderCell>
-                      <TableHeaderCell className="text-vui-text text-right">Qual Rate</TableHeaderCell>
+                      <TableHeaderCell>Investment Ability</TableHeaderCell>
+                      <TableHeaderCell className="text-right">Count</TableHeaderCell>
+                      <TableHeaderCell className="text-right">Qual Rate</TableHeaderCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {data.investmentAbilityDistribution.slice(0, 10).map((item, idx) => (
                       <TableRow key={idx}>
-                        <TableCell className="text-vui-text-white font-medium max-w-[200px] truncate" title={item.value}>
+                        <TableCell className="text-white font-medium max-w-[200px] truncate" title={item.value}>
                           {item.value}
                         </TableCell>
-                        <TableCell className="text-vui-text text-right">{item.count}</TableCell>
+                        <TableCell className="text-right">{item.count}</TableCell>
                         <TableCell className="text-right">
                           <Badge color={item.qualificationRate >= 50 ? "green" : item.qualificationRate >= 25 ? "yellow" : "red"}>
                             {formatPercent(item.qualificationRate)}
@@ -366,16 +349,16 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 </Table>
               </div>
             </div>
-          </Card>
+          </GlassCard>
 
           {/* Top Scaling Challenges */}
-          <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
+          <GlassCard>
             <SectionHeader title="Top Scaling Challenges" icon={LeadsIcons.AlertTriangle} />
-            <p className="text-vui-text text-sm mb-4">
+            <p className="text-[#a0aec0] text-sm mb-4">
               Most common challenges leads face, ranked by frequency
             </p>
             {data.scalingChallenges.length === 0 ? (
-              <div className="text-center text-vui-text py-8">
+              <div className="text-center text-[#a0aec0] py-8">
                 No scaling challenge data available. This field will populate once leads provide their challenges.
               </div>
             ) : (
@@ -383,16 +366,16 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 {data.scalingChallenges.slice(0, 10).map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 p-3 bg-vui-page/50 rounded-vui border border-vui-border/30"
+                    className="flex items-center gap-4 p-3 bg-[rgba(255,255,255,0.02)] rounded-[15px] border border-[rgba(255,255,255,0.05)]"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-vui-text-white font-bold text-sm">
+                    <div className="flex-shrink-0 w-8 h-8 bg-[#0075ff] rounded-full flex items-center justify-center text-white font-bold text-sm">
                       {idx + 1}
                     </div>
                     <div className="flex-grow min-w-0">
-                      <div className="text-vui-text-white font-medium truncate" title={item.challenge}>
+                      <div className="text-white font-medium truncate" title={item.challenge}>
                         {item.challenge}
                       </div>
-                      <div className="text-vui-text text-sm">
+                      <div className="text-[#a0aec0] text-sm">
                         {item.count} leads ({formatPercent(item.percentage)})
                       </div>
                     </div>
@@ -405,7 +388,7 @@ export default function LeadsBreakdownView({ dateRange }: LeadsBreakdownViewProp
                 ))}
               </div>
             )}
-          </Card>
+          </GlassCard>
         </>
       )}
 
@@ -445,7 +428,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
   });
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl">
+    <GlassCard>
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="flex-grow">
@@ -454,36 +437,36 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
             placeholder="Search leads..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 bg-vui-page border border-vui-border/30 rounded-vui text-vui-text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full px-4 py-2 bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.1)] rounded-[12px] text-white placeholder-[#718096] focus:outline-none focus:border-[#0075ff]"
           />
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setFilterQualified("all")}
-            className={`px-4 py-2 rounded text-sm ${
+            className={`px-4 py-2 rounded-[12px] text-sm ${
               filterQualified === "all"
-                ? "bg-blue-600 text-vui-text-white"
-                : "bg-[#2d3748] text-vui-text hover:bg-[#4a5568]"
+                ? "bg-[#0075ff] text-white"
+                : "bg-[rgba(255,255,255,0.02)] text-[#a0aec0] hover:bg-[rgba(255,255,255,0.05)]"
             }`}
           >
             All ({leads.length})
           </button>
           <button
             onClick={() => setFilterQualified("qualified")}
-            className={`px-4 py-2 rounded text-sm ${
+            className={`px-4 py-2 rounded-[12px] text-sm ${
               filterQualified === "qualified"
-                ? "bg-green-600 text-vui-text-white"
-                : "bg-[#2d3748] text-vui-text hover:bg-[#4a5568]"
+                ? "bg-[#01b574] text-white"
+                : "bg-[rgba(255,255,255,0.02)] text-[#a0aec0] hover:bg-[rgba(255,255,255,0.05)]"
             }`}
           >
             Qualified ({leads.filter((l) => l.is_qualified === true).length})
           </button>
           <button
             onClick={() => setFilterQualified("dq")}
-            className={`px-4 py-2 rounded text-sm ${
+            className={`px-4 py-2 rounded-[12px] text-sm ${
               filterQualified === "dq"
-                ? "bg-red-600 text-vui-text-white"
-                : "bg-[#2d3748] text-vui-text hover:bg-[#4a5568]"
+                ? "bg-[#e31a1a] text-white"
+                : "bg-[rgba(255,255,255,0.02)] text-[#a0aec0] hover:bg-[rgba(255,255,255,0.05)]"
             }`}
           >
             DQ ({leads.filter((l) => l.is_qualified === false).length})
@@ -492,14 +475,14 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
       </div>
 
       {/* Results count */}
-      <div className="text-vui-text text-sm mb-4">
+      <div className="text-[#a0aec0] text-sm mb-4">
         Showing {filteredLeads.length} of {leads.length} leads
       </div>
 
       {/* Leads list */}
       <div className="space-y-3 max-h-[600px] overflow-y-auto">
         {filteredLeads.length === 0 ? (
-          <div className="text-center text-vui-text py-8">
+          <div className="text-center text-[#a0aec0] py-8">
             No leads match your filters.
           </div>
         ) : (
@@ -508,7 +491,7 @@ function LeadsTable({ leads }: { leads: LeadCardData[] }) {
           ))
         )}
       </div>
-    </Card>
+    </GlassCard>
   );
 }
 
@@ -533,35 +516,35 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
 
   return (
     <div
-      className={`bg-vui-page/50 rounded-vui border border-vui-border/30 overflow-hidden transition-all ${
-        expanded ? "ring-2 ring-blue-500" : ""
+      className={`bg-[rgba(255,255,255,0.02)] rounded-[15px] border border-[rgba(255,255,255,0.05)] overflow-hidden transition-all ${
+        expanded ? "ring-2 ring-[#0075ff]" : ""
       }`}
     >
       {/* Header - always visible */}
       <div
-        className="p-4 flex items-center gap-4 cursor-pointer hover:bg-vui-sidenav-btn/50"
+        className="p-4 flex items-center gap-4 cursor-pointer hover:bg-[rgba(255,255,255,0.02)]"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex-grow min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-vui-text-white font-medium">{lead.name}</span>
+            <span className="text-white font-medium">{lead.name}</span>
             {statusBadge}
           </div>
-          <div className="text-vui-text text-sm truncate">
+          <div className="text-[#a0aec0] text-sm truncate">
             {lead.email || lead.phone || "No contact info"}
           </div>
         </div>
         <div className="flex-shrink-0 text-right">
           {lead.revenue !== null && (
-            <div className="text-green-400 font-medium">{formatCurrency(lead.revenue)}/mo</div>
+            <div className="text-[#01b574] font-medium">{formatCurrency(lead.revenue)}/mo</div>
           )}
-          <div className="text-vui-text text-xs">
+          <div className="text-[#a0aec0] text-xs">
             {lead.form_submitted_at
               ? format(new Date(lead.form_submitted_at), "MMM d, yyyy")
               : "Unknown date"}
           </div>
         </div>
-        <div className="flex-shrink-0 text-vui-text">
+        <div className="flex-shrink-0 text-[#a0aec0]">
           <svg
             className={`w-5 h-5 transition-transform ${expanded ? "rotate-180" : ""}`}
             fill="none"
@@ -575,30 +558,30 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="border-t border-vui-border/30 p-4 space-y-4">
+        <div className="border-t border-[rgba(255,255,255,0.05)] p-4 space-y-4">
           {/* Contact Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-vui-text text-xs uppercase">Email</div>
-              <div className="text-vui-text-white">{lead.email || "-"}</div>
+              <div className="text-[#a0aec0] text-xs uppercase">Email</div>
+              <div className="text-white">{lead.email || "-"}</div>
             </div>
             <div>
-              <div className="text-vui-text text-xs uppercase">Phone</div>
-              <div className="text-vui-text-white">{lead.phone || "-"}</div>
+              <div className="text-[#a0aec0] text-xs uppercase">Phone</div>
+              <div className="text-white">{lead.phone || "-"}</div>
             </div>
           </div>
 
           {/* Attribution */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-vui-text text-xs uppercase">Ad Name</div>
-              <div className="text-vui-text-white truncate" title={lead.ad_name || undefined}>
+              <div className="text-[#a0aec0] text-xs uppercase">Ad Name</div>
+              <div className="text-white truncate" title={lead.ad_name || undefined}>
                 {lead.ad_name || "-"}
               </div>
             </div>
             <div>
-              <div className="text-vui-text text-xs uppercase">Campaign</div>
-              <div className="text-vui-text-white truncate" title={lead.campaign_name || undefined}>
+              <div className="text-[#a0aec0] text-xs uppercase">Campaign</div>
+              <div className="text-white truncate" title={lead.campaign_name || undefined}>
                 {lead.campaign_name || "-"}
               </div>
             </div>
@@ -607,22 +590,22 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Custom Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-vui-text text-xs uppercase">Monthly Revenue</div>
-              <div className="text-green-400 font-medium">
+              <div className="text-[#a0aec0] text-xs uppercase">Monthly Revenue</div>
+              <div className="text-[#01b574] font-medium">
                 {lead.revenue !== null ? formatCurrency(lead.revenue) : "-"}
               </div>
             </div>
             <div>
-              <div className="text-vui-text text-xs uppercase">Investment Ability</div>
-              <div className="text-vui-text-white">{lead.investment_ability || "-"}</div>
+              <div className="text-[#a0aec0] text-xs uppercase">Investment Ability</div>
+              <div className="text-white">{lead.investment_ability || "-"}</div>
             </div>
           </div>
 
           {/* Scaling Challenge */}
           {lead.scaling_challenge && (
             <div>
-              <div className="text-vui-text text-xs uppercase">Scaling Challenge</div>
-              <div className="text-vui-text-white bg-vui-sidenav-btn p-2 rounded mt-1">
+              <div className="text-[#a0aec0] text-xs uppercase">Scaling Challenge</div>
+              <div className="text-white bg-[rgba(255,255,255,0.02)] p-2 rounded-[8px] mt-1">
                 {lead.scaling_challenge}
               </div>
             </div>
@@ -631,16 +614,16 @@ function LeadCard({ lead }: { lead: LeadCardData }) {
           {/* Pipeline Stage */}
           {lead.current_stage && (
             <div>
-              <div className="text-vui-text text-xs uppercase">Current Stage</div>
-              <div className="text-[#4299e1]">{lead.current_stage}</div>
+              <div className="text-[#a0aec0] text-xs uppercase">Current Stage</div>
+              <div className="text-[#0075ff]">{lead.current_stage}</div>
             </div>
           )}
 
           {/* Deal Value */}
           {lead.closed_deal && lead.deal_value !== null && (
             <div>
-              <div className="text-vui-text text-xs uppercase">Deal Value</div>
-              <div className="text-green-400 font-bold text-lg">{formatCurrency(lead.deal_value)}</div>
+              <div className="text-[#a0aec0] text-xs uppercase">Deal Value</div>
+              <div className="text-[#01b574] font-bold text-lg">{formatCurrency(lead.deal_value)}</div>
             </div>
           )}
         </div>

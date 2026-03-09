@@ -9,19 +9,20 @@ import { subDays, startOfDay, endOfDay } from "date-fns";
 // Import ChartJS with all components pre-registered (for Dashboard view)
 import { ChartJS } from "@/lib/chart-setup";
 
-// Import Tremor components
+// Import Vision UI components
 import {
-  Card,
-  BarChart,
-  DonutChart as TremorDonutChart,
-  AreaChart,
+  GlassCard,
+  VisionBarChart,
+  VisionDonutChart,
+  VisionAreaChart,
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
   TableHeaderCell,
-} from "@tremor/react";
+  Badge,
+} from "./components/ui";
 
 // Import custom DateRangePicker
 import { CustomDateRangePicker, DateRangeValue } from "./DateRangePicker";
@@ -1671,7 +1672,7 @@ const KPI_TEXT_COLORS: Record<KpiColor, string> = {
 };
 
 /**
- * Tremor-based Lead Quality KPI Card with Dashboard-matching styling
+ * Vision UI Lead Quality KPI Card
  */
 function TremorKpiCard({
   title,
@@ -1690,17 +1691,17 @@ function TremorKpiCard({
       : `${value.toFixed(1)}%`;
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-5">
-      <p className="vui-stat-label">{title}</p>
+    <GlassCard padding="md">
+      <p className="text-xs font-medium uppercase tracking-wider text-[#a0aec0]">{title}</p>
       <p className={`text-3xl font-bold mt-2 ${KPI_TEXT_COLORS[color]}`}>
         {formattedValue}
       </p>
-    </Card>
+    </GlassCard>
   );
 }
 
 /**
- * Tremor-based Revenue Distribution Chart
+ * Vision UI Revenue Distribution Chart
  */
 function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: number; q1: number; median: number; q3: number; max: number; count: number }[] }) {
   // Placeholder data for when real data is empty
@@ -1711,7 +1712,7 @@ function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: 
     { stage: "Closed", Min: 0, Q1: 0, Median: 0, Q3: 0, Max: 0 },
   ];
 
-  // Transform data for Tremor BarChart
+  // Transform data for VisionBarChart
   const realChartData = data.map((d) => ({
     stage: d.stage,
     Min: d.min,
@@ -1726,25 +1727,24 @@ function TremorRevenueDistributionChart({ data }: { data: { stage: string; min: 
   const chartData = hasData ? realChartData : placeholderData;
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Distribution by Funnel Stage</h3>
-      <p className="text-sm text-vui-text mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Revenue Distribution by Funnel Stage</h3>
+      <p className="text-sm text-[#a0aec0] mt-1">Shows the min, median, and max monthly revenue of leads at each stage.</p>
 
-      <BarChart
+      <VisionBarChart
         data={chartData}
         index="stage"
         categories={["Min", "Q1", "Median", "Q3", "Max"]}
-        colors={["blue", "cyan", "indigo", "violet", "purple"]}
+        colors={["#0075ff", "#00bcd4", "#5c6bc0", "#7928ca", "#9c27b0"]}
         valueFormatter={(value) => `$${Intl.NumberFormat("en-US").format(value)}`}
-        yAxisWidth={80}
         className="h-72 mt-6"
       />
-    </Card>
+    </GlassCard>
   );
 }
 
 /**
- * Tremor-based Investment Donut Chart
+ * Vision UI Investment Donut Chart
  */
 function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; count: number; percentage: number }[]; stageTitle: string }) {
   // Placeholder data for empty state
@@ -1758,25 +1758,25 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
   const hasData = data && data.length > 0 && data.some(d => d.count > 0);
   const displayData = hasData ? data : placeholderTiers;
 
-  // Transform data for Tremor DonutChart
+  // Transform data for VisionDonutChart
   const chartData = displayData.map((d) => ({
     name: d.label,
     value: d.percentage,
   }));
 
-  const legendColors = ["rgb(16, 185, 129)", "rgb(249, 115, 22)", "rgb(156, 163, 175)"];
+  const legendColors = ["#0075ff", "#7928ca", "#00bcd4", "#01b574", "#ffc107"];
 
   return (
-    <div className="bg-vui-body rounded-vui p-4">
-      <h4 className="text-sm font-semibold text-vui-text-white text-center mb-3">{stageTitle}</h4>
-      <TremorDonutChart
+    <div className="bg-[rgba(255,255,255,0.02)] rounded-[15px] p-4 border border-[rgba(255,255,255,0.05)]">
+      <h4 className="text-sm font-semibold text-white text-center mb-3">{stageTitle}</h4>
+      <VisionDonutChart
         data={chartData}
-        category="value"
-        index="name"
-        colors={["blue", "violet", "cyan", "emerald", "amber"]}
+        colors={legendColors}
         valueFormatter={(value) => `${value.toFixed(1)}%`}
         className="h-36"
-        showLabel={false}
+        showLegend={false}
+        innerRadius={40}
+        outerRadius={55}
       />
       <div className="mt-4 space-y-2">
         {displayData.map((tier, i) => (
@@ -1784,11 +1784,11 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
             <span className="flex items-center gap-2">
               <span
                 className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: legendColors[i] || "#9CA3AF" }}
+                style={{ backgroundColor: legendColors[i] || "#718096" }}
               />
-              <span className="text-vui-text font-medium">{tier.label}</span>
+              <span className="text-[#a0aec0] font-medium">{tier.label}</span>
             </span>
-            <span className="font-bold text-vui-text-white">{tier.percentage.toFixed(1)}%</span>
+            <span className="font-bold text-white">{tier.percentage.toFixed(1)}%</span>
           </div>
         ))}
       </div>
@@ -1797,7 +1797,7 @@ function TremorInvestmentDonut({ data, stageTitle }: { data: { label: string; co
 }
 
 /**
- * Tremor-based Investment Ability Chart (Multiple Donut Charts)
+ * Vision UI Investment Ability Chart (Multiple Donut Charts)
  */
 function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] }) {
   // Placeholder data for empty state
@@ -1812,16 +1812,16 @@ function TremorInvestmentAbilityChart({ data }: { data: InvestmentBreakdown[] })
   const displayData = hasData ? data : placeholderData;
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Investment Ability Breakdown</h3>
-      <p className="text-sm text-vui-text mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Investment Ability Breakdown</h3>
+      <p className="text-sm text-[#a0aec0] mt-1">Breakdown of investment readiness for leads at each funnel stage.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         {displayData.map((stage) => (
           <TremorInvestmentDonut key={stage.stage} data={stage.tiers} stageTitle={stage.stage} />
         ))}
       </div>
-    </Card>
+    </GlassCard>
   );
 }
 
@@ -1834,7 +1834,7 @@ const FUNNEL_COLORS = [
 ];
 
 /**
- * Tremor-wrapped Revenue Funnel Chart
+ * Vision UI Revenue Funnel Chart
  */
 function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
   // Placeholder data for empty state
@@ -1850,9 +1850,9 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
   const maxRevenue = displayData.length > 0 ? Math.max(...displayData.map((d) => d.totalRevenue), 1) : 1;
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Funnel</h3>
-      <p className="text-sm text-vui-text mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Revenue Funnel</h3>
+      <p className="text-sm text-[#a0aec0] mt-1">Visualizes the revenue potential and drop-off at each stage of the funnel.</p>
 
       <div className="space-y-5 mt-6">
         {displayData.map((stage, index) => {
@@ -1868,32 +1868,32 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
           return (
             <div key={stage.stage}>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-bold text-vui-text-white">{stage.stage}</div>
-                <div className="text-sm text-vui-text">
-                  <span className="font-semibold text-vui-text-white">{stage.count}</span> leads &bull;{" "}
+                <div className="text-sm font-bold text-white">{stage.stage}</div>
+                <div className="text-sm text-[#a0aec0]">
+                  <span className="font-semibold text-white">{stage.count}</span> leads &bull;{" "}
                   <span className="font-bold" style={{ color: colors.from }}>
                     ${stage.totalRevenue.toLocaleString()}
                   </span>
                 </div>
               </div>
-              <div className="relative h-14 bg-vui-sidenav-btn rounded-vui overflow-hidden shadow-inner shadow-black/30">
+              <div className="relative h-14 bg-[rgba(255,255,255,0.02)] rounded-[15px] overflow-hidden border border-[rgba(255,255,255,0.05)]">
                 <div
-                  className="absolute h-full transition-all duration-500 rounded-vui shadow-vui-btn"
+                  className="absolute h-full transition-all duration-500 rounded-[15px]"
                   style={{
                     width: `${Math.max(widthPercent, hasData ? 5 : 0)}%`,
                     background: `linear-gradient(90deg, ${colors.from}, ${colors.to})`,
                   }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-vui-text drop-shadow-md">
+                <div className="absolute inset-0 flex items-center justify-center text-sm font-bold">
                   {hasData ? (
-                    <span className="text-vui-text-white">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span className="text-white drop-shadow-md">Avg: ${stage.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                   ) : (
-                    <span>$0</span>
+                    <span className="text-[#a0aec0]">$0</span>
                   )}
                 </div>
               </div>
               {index < displayData.length - 1 && dropRate > 0 && (
-                <div className="flex items-center justify-center gap-1 text-xs font-semibold text-vui-error mt-2">
+                <div className="flex items-center justify-center gap-1 text-xs font-semibold text-[#e31a1a] mt-2">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
@@ -1904,12 +1904,12 @@ function TremorRevenueFunnelChart({ data }: { data: RevenueFunnelStage[] }) {
           );
         })}
       </div>
-    </Card>
+    </GlassCard>
   );
 }
 
 /**
- * Tremor-based Lead Source Quality Table
+ * Vision UI Lead Source Quality Table
  */
 function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
   const [sortColumn, setSortColumn] = useState<keyof SourceQuality>("totalRevenue");
@@ -1941,46 +1941,46 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
   };
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Lead Source Quality</h3>
-      <p className="text-sm text-vui-text mt-1 mb-4">Compares the performance of different lead sources.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Lead Source Quality</h3>
+      <p className="text-sm text-[#a0aec0] mt-1 mb-4">Compares the performance of different lead sources.</p>
 
       <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
         <Table>
           <TableHead>
-            <TableRow className="bg-vui-body">
+            <TableRow>
               <TableHeaderCell
-                className="cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="cursor-pointer"
                 onClick={() => handleSort("source")}
               >
                 Source{renderSortIndicator("source")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="text-center cursor-pointer"
                 onClick={() => handleSort("avgRevenue")}
               >
                 Avg Revenue{renderSortIndicator("avgRevenue")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="text-center cursor-pointer"
                 onClick={() => handleSort("qualRate")}
               >
                 Qual Rate{renderSortIndicator("qualRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="text-center cursor-pointer"
                 onClick={() => handleSort("showRate")}
               >
                 Show Rate{renderSortIndicator("showRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="text-center cursor-pointer"
                 onClick={() => handleSort("closeRate")}
               >
                 Close Rate{renderSortIndicator("closeRate")}
               </TableHeaderCell>
               <TableHeaderCell
-                className="text-center cursor-pointer hover:bg-vui-sidenav-btn font-semibold text-vui-text"
+                className="text-center cursor-pointer"
                 onClick={() => handleSort("totalRevenue")}
               >
                 Total Revenue{renderSortIndicator("totalRevenue")}
@@ -1990,23 +1990,23 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
           <TableBody>
             {sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-vui-text py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   No lead sources found for this period
                 </TableCell>
               </TableRow>
             ) : (
               sortedData.map((row, index) => (
-                <TableRow key={index} className="hover:bg-vui-body">
-                  <TableCell className="max-w-[200px] truncate font-medium text-vui-text-white" title={row.source}>
+                <TableRow key={index}>
+                  <TableCell className="max-w-[200px] truncate font-medium text-white">
                     {row.source}
                   </TableCell>
-                  <TableCell className="text-center text-vui-text">
+                  <TableCell className="text-center">
                     ${row.avgRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
-                  <TableCell className="text-center text-vui-text">{row.qualRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-vui-text">{row.showRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center text-vui-text">{row.closeRate.toFixed(1)}%</TableCell>
-                  <TableCell className="text-center font-semibold text-vui-text-white">
+                  <TableCell className="text-center">{row.qualRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center">{row.showRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center">{row.closeRate.toFixed(1)}%</TableCell>
+                  <TableCell className="text-center font-semibold text-white">
                     ${row.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </TableCell>
                 </TableRow>
@@ -2015,7 +2015,7 @@ function TremorLeadSourceQualityTable({ data }: { data: SourceQuality[] }) {
           </TableBody>
         </Table>
       </div>
-    </Card>
+    </GlassCard>
   );
 }
 
@@ -2062,21 +2062,21 @@ function TremorRevenueTrendsChart({ data, dateRange }: { data: RevenueTrendPoint
   const chartData = hasData ? realChartData : generatePlaceholderData();
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Trends Over Time</h3>
-      <p className="text-sm text-vui-text mt-1">Tracks average revenue potential over the selected date range.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Revenue Trends Over Time</h3>
+      <p className="text-sm text-[#a0aec0] mt-1">Tracks average revenue potential over the selected date range.</p>
 
-      <AreaChart
-        data={chartData}
-        index="date"
-        categories={["Avg Revenue - Qualified", "Avg Revenue - Shown"]}
-        colors={["blue", "emerald"]}
-        valueFormatter={(value) => `$${Intl.NumberFormat("en-US").format(value)}`}
-        yAxisWidth={80}
-        className="h-72 mt-6"
-        showLegend={true}
-      />
-    </Card>
+      <div className="h-72 mt-6">
+        <VisionAreaChart
+          data={chartData}
+          index="date"
+          categories={["Avg Revenue - Qualified", "Avg Revenue - Shown"]}
+          colors={["#0075ff", "#01b574"]}
+          valueFormatter={(value) => `$${Intl.NumberFormat("en-US").format(value)}`}
+          showLegend={true}
+        />
+      </div>
+    </GlassCard>
   );
 }
 
@@ -2121,9 +2121,9 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
   };
 
   return (
-    <Card className="!bg-[#0f1535] !border-[#56577a] !border backdrop-blur-xl !p-6">
-      <h3 className="text-lg font-semibold text-vui-text-white">Revenue Tier Heatmap</h3>
-      <p className="text-sm text-vui-text mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
+    <GlassCard>
+      <h3 className="text-lg font-semibold text-white">Revenue Tier Heatmap</h3>
+      <p className="text-sm text-[#a0aec0] mt-1">Shows lead distribution by revenue tier across funnel stages.</p>
 
       <div className="overflow-x-auto mt-6">
         <table className="w-full border-collapse rounded-vui overflow-hidden shadow-vui-card">
@@ -2172,7 +2172,7 @@ function TremorInvestmentHeatmap({ data }: { data: InvestmentHeatmapRow[] }) {
           </tbody>
         </table>
       </div>
-    </Card>
+    </GlassCard>
   );
 }
 
