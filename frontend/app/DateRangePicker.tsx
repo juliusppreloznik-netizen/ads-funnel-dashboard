@@ -191,7 +191,7 @@ export function CustomDateRangePicker({ value, onChange }: CustomDateRangePicker
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-vui-page border border-vui-border/30 rounded-vui shadow-xl shadow-black/30 shadow-black/20 hover:bg-vui-body focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-[15px] shadow-xl shadow-black/30 hover:bg-vui-body focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
       >
         {/* Calendar Icon */}
         <svg className="w-5 h-5 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
