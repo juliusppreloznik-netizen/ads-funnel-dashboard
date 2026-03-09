@@ -754,9 +754,13 @@ interface ZoomTranscript {
   id: string;
   contact_id: string;
   contact_name: string;
+  contact_email: string | null;
   call_outcome: string;
   transcript_text: string;
   start_time: string;
+  topic: string | null;
+  duration: number | null;
+  cash_collected: number | null;
   created_at: string;
 }
 
