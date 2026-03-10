@@ -55,6 +55,49 @@ interface AdWithFatigue extends FatigueScore {
   thumbnail_url?: string;
 }
 
+interface WinningHook {
+  hook_text: string;
+  hook_type: string;
+  ad_id: string;
+  ad_name: string;
+  why_it_works: string;
+  performance_score: number;
+  hook_rate?: number;
+  ctr?: number;
+}
+
+interface CrossPollinationRecommendation {
+  title: string;
+  ad_ids: string[];
+  creative_justification: {
+    ads_referenced: {
+      ad_name: string;
+      key_metrics: string;
+      what_worked: string;
+    }[];
+    transcript_reference: string | null;
+  };
+  sales_call_insights: {
+    transcripts_referenced: string[];
+    pain_points: string[];
+    buying_signals: string[];
+    business_objectives: string[];
+    perceived_obstacles: string[];
+    past_failed_attempts: string[];
+  };
+  concept_architecture: {
+    awareness_level: string;
+    persona: string;
+    angle: string;
+  };
+  expected_impact: string;
+  // Legacy fields for backwards compatibility
+  suggestion?: string;
+  source_ads?: string[];
+  elements_to_combine?: string | Record<string, string>;
+  rationale?: string;
+}
+
 interface CreativeBrief {
   id: string;
   briefs: {
@@ -66,6 +109,8 @@ interface CreativeBrief {
       audience_insights?: string;
     };
   };
+  winning_hooks?: WinningHook[];
+  cross_pollination?: CrossPollinationRecommendation[];
   source_data: {
     zoom_transcripts_count: number;
     ad_transcripts_count: number;
@@ -269,8 +314,8 @@ export default function MessagingView({ dateRange }: MessagingViewProps) {
       <div className="min-h-[600px]">
         {activeTab === "ai-strategist" && <AIStrategistTab />}
         {activeTab === "message-briefs" && <MessageBriefsTab />}
-        {activeTab === "winning-hooks" && <PlaceholderTab title="Winning Hooks" description="Analyze top-performing hooks from your ads. This feature will be populated after AI Strategist analysis." />}
-        {activeTab === "cross-pollination" && <PlaceholderTab title="Cross-Pollination" description="Discover opportunities to combine successful elements from different ads. This feature will be populated after AI Strategist analysis." />}
+        {activeTab === "winning-hooks" && <WinningHooksTab />}
+        {activeTab === "cross-pollination" && <CrossPollinationTab />}
         {activeTab === "call-insights" && <CallInsightsTab />}
         {activeTab === "fatigue-monitor" && <FatigueMonitorTab />}
         {activeTab === "performance-kpis" && <PerformanceKPIsTab dateRange={dateRange} />}
@@ -1441,6 +1486,506 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
           </TableBody>
         </Table>
       </GlassCard>
+    </div>
+  );
+}
+
+// ============================================================================
+// WINNING HOOKS TAB
+// ============================================================================
+
+function WinningHooksTab() {
+  const [loading, setLoading] = useState(true);
+  const [hooks, setHooks] = useState<WinningHook[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchHooks() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("ai_creative_briefs")
+          .select("winning_hooks, created_at")
+          .eq("status", "completed")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          throw fetchError;
+        }
+
+        if (data?.winning_hooks && Array.isArray(data.winning_hooks)) {
+          setHooks(data.winning_hooks as WinningHook[]);
+        }
+      } catch (err) {
+        console.error("Error fetching winning hooks:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch hooks");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchHooks();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0075ff]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <GlassCard>
+        <div className="text-center py-8 text-[#e31a1a]">{error}</div>
+      </GlassCard>
+    );
+  }
+
+  if (hooks.length === 0) {
+    return (
+      <GlassCard className="border-dashed">
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-full flex items-center justify-center mx-auto mb-4">
+            {MessagingIcons.Lightning}
+          </div>
+          <h3 className="text-lg font-semibold text-white">No Winning Hooks Yet</h3>
+          <p className="text-[#a0aec0] mt-2 max-w-md mx-auto">
+            Run the AI Strategist to analyze your ad transcripts and extract the top-performing hooks.
+          </p>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-xl font-semibold text-white">Winning Hooks</h2>
+        <p className="text-[#a0aec0]">
+          Top-performing opening hooks extracted from your best ads
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <GlassCard>
+          <div className="text-sm text-[#a0aec0]">Total Hooks Analyzed</div>
+          <div className="text-2xl font-bold text-white">{hooks.length}</div>
+        </GlassCard>
+        <GlassCard>
+          <div className="text-sm text-[#a0aec0]">Avg Performance Score</div>
+          <div className="text-2xl font-bold text-[#01b574]">
+            {Math.round(hooks.reduce((sum, h) => sum + (h.performance_score || 0), 0) / hooks.length)}
+          </div>
+        </GlassCard>
+        <GlassCard>
+          <div className="text-sm text-[#a0aec0]">Top Hook Type</div>
+          <div className="text-2xl font-bold text-[#0075ff]">
+            {(() => {
+              const types: Record<string, number> = {};
+              hooks.forEach(h => { types[h.hook_type] = (types[h.hook_type] || 0) + 1; });
+              return Object.entries(types).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+            })()}
+          </div>
+        </GlassCard>
+      </div>
+
+      {/* Hooks List */}
+      <div className="space-y-4">
+        {hooks
+          .sort((a, b) => (b.performance_score || 0) - (a.performance_score || 0))
+          .map((hook, idx) => (
+            <GlassCard key={idx}>
+              <div className="flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${
+                  idx === 0 ? "bg-[#ffc107]" : idx === 1 ? "bg-[#a0aec0]" : idx === 2 ? "bg-[#cd7f32]" : "bg-[#718096]"
+                }`}>
+                  #{idx + 1}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge color="blue">{hook.hook_type}</Badge>
+                    <Badge color={hook.performance_score >= 80 ? "green" : hook.performance_score >= 60 ? "yellow" : "gray"}>
+                      Score: {hook.performance_score}
+                    </Badge>
+                    {hook.hook_rate && hook.hook_rate > 0 && (
+                      <span className="text-xs text-[#a0aec0]">
+                        Hook Rate: {hook.hook_rate.toFixed(2)}%
+                      </span>
+                    )}
+                  </div>
+                  <blockquote className="text-white border-l-4 border-[#0075ff] pl-4 py-2 bg-[rgba(255,255,255,0.02)] rounded-r-[12px]">
+                    &ldquo;{hook.hook_text}&rdquo;
+                  </blockquote>
+                  <div className="mt-3 grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider">Source Ad</h5>
+                      <p className="text-white text-sm mt-1">{hook.ad_name}</p>
+                      <p className="text-[#718096] text-xs">{hook.ad_id}</p>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider">Why It Works</h5>
+                      <p className="text-white text-sm mt-1">{hook.why_it_works}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// CROSS-POLLINATION TAB
+// ============================================================================
+
+function CrossPollinationTab() {
+  const [loading, setLoading] = useState(true);
+  const [recommendations, setRecommendations] = useState<CrossPollinationRecommendation[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchRecommendations() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("ai_creative_briefs")
+          .select("cross_pollination, created_at")
+          .eq("status", "completed")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          throw fetchError;
+        }
+
+        if (data?.cross_pollination && Array.isArray(data.cross_pollination)) {
+          setRecommendations(data.cross_pollination as CrossPollinationRecommendation[]);
+        }
+      } catch (err) {
+        console.error("Error fetching cross-pollination:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch recommendations");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRecommendations();
+  }, []);
+
+  // Helper to get awareness level badge color
+  const getAwarenessColor = (level: string): "red" | "orange" | "yellow" | "blue" | "green" | "gray" => {
+    const levelLower = level?.toLowerCase() || "";
+    if (levelLower.includes("unaware")) return "red";
+    if (levelLower.includes("problem")) return "orange";
+    if (levelLower.includes("solution")) return "yellow";
+    if (levelLower.includes("product")) return "blue";
+    if (levelLower.includes("most")) return "green";
+    return "gray";
+  };
+
+  // Helper to extract awareness level name
+  const getAwarenessLevelName = (level: string): string => {
+    if (!level) return "Unknown";
+    const match = level.match(/(Unaware|Problem Aware|Solution Aware|Product Aware|Most Aware)/i);
+    return match ? match[1] : level.split(".")[0].trim();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0075ff]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <GlassCard>
+        <div className="text-center py-8 text-[#e31a1a]">{error}</div>
+      </GlassCard>
+    );
+  }
+
+  if (recommendations.length === 0) {
+    return (
+      <GlassCard className="border-dashed">
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-full flex items-center justify-center mx-auto mb-4">
+            {MessagingIcons.Shuffle}
+          </div>
+          <h3 className="text-lg font-semibold text-white">No Cross-Pollination Recommendations Yet</h3>
+          <p className="text-[#a0aec0] mt-2 max-w-md mx-auto">
+            Run the AI Strategist to analyze your ads and sales calls, generating strategic recommendations.
+          </p>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#7928ca] to-[#0075ff] rounded-[20px] p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+            {MessagingIcons.Shuffle}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Cross-Pollination Strategy</h2>
+            <p className="text-white/80 mt-1">
+              AI-generated recommendations combining ad performance data with sales call insights
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Recommendations List */}
+      <div className="space-y-6">
+        {recommendations.map((rec, idx) => {
+          // Check if this is the new format or legacy format
+          const isNewFormat = rec.creative_justification || rec.sales_call_insights || rec.concept_architecture;
+          const title = rec.title || rec.suggestion || `Recommendation ${idx + 1}`;
+          const adIds = rec.ad_ids || rec.source_ads || [];
+
+          return (
+            <GlassCard key={idx} padding="none" className="overflow-hidden">
+              {/* Card Header */}
+              <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#7928ca] to-[#0075ff] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">{title}</h3>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {adIds.map((adId, i) => (
+                        <Badge key={i} color="blue">{adId}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {isNewFormat ? (
+                <>
+                  {/* Subsection 1: Creative Intelligence */}
+                  {rec.creative_justification && (
+                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                      <h4 className="text-xs font-bold text-[#0075ff] uppercase tracking-wider mb-4">
+                        Creative Intelligence
+                      </h4>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Ads Referenced */}
+                        <div>
+                          <h5 className="text-sm font-medium text-[#a0aec0] mb-3">Ads Referenced</h5>
+                          <div className="space-y-3">
+                            {rec.creative_justification.ads_referenced?.map((ad, i) => (
+                              <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-[12px] p-3">
+                                <div className="text-[#0075ff] font-medium text-sm">{ad.ad_name}</div>
+                                <div className="text-xs text-[#a0aec0] mt-1">{ad.key_metrics}</div>
+                                <div className="text-white text-sm mt-2">{ad.what_worked}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Transcript Reference */}
+                        <div>
+                          <h5 className="text-sm font-medium text-[#a0aec0] mb-3">Ad Transcript Reference</h5>
+                          {rec.creative_justification.transcript_reference ? (
+                            <blockquote className="text-white text-sm border-l-4 border-[#7928ca] pl-4 py-2 bg-[rgba(255,255,255,0.02)] rounded-r-[12px] italic">
+                              &ldquo;{rec.creative_justification.transcript_reference}&rdquo;
+                            </blockquote>
+                          ) : (
+                            <p className="text-[#718096] text-sm italic">Not applicable</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subsection 2: Sales Call Insights */}
+                  {rec.sales_call_insights && (
+                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                      <h4 className="text-xs font-bold text-[#01b574] uppercase tracking-wider mb-4">
+                        Sales Call Insights
+                      </h4>
+                      {rec.sales_call_insights.transcripts_referenced?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {rec.sales_call_insights.transcripts_referenced.map((t, i) => (
+                            <Badge key={i} color="gray">{t}</Badge>
+                          ))}
+                        </div>
+                      )}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {/* Pain Points */}
+                        {rec.sales_call_insights.pain_points?.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Pain Points</h5>
+                            <ul className="space-y-1">
+                              {rec.sales_call_insights.pain_points.map((p, i) => (
+                                <li key={i} className="text-white text-sm flex items-start gap-2">
+                                  <span className="text-[#e31a1a] mt-1">•</span>
+                                  <span>{p}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {/* Buying Signals */}
+                        {rec.sales_call_insights.buying_signals?.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Buying Signals</h5>
+                            <ul className="space-y-1">
+                              {rec.sales_call_insights.buying_signals.map((s, i) => (
+                                <li key={i} className="text-white text-sm flex items-start gap-2">
+                                  <span className="text-[#01b574] mt-1">•</span>
+                                  <span>{s}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {/* Business Objectives */}
+                        {rec.sales_call_insights.business_objectives?.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Business Objectives</h5>
+                            <ul className="space-y-1">
+                              {rec.sales_call_insights.business_objectives.map((o, i) => (
+                                <li key={i} className="text-white text-sm flex items-start gap-2">
+                                  <span className="text-[#0075ff] mt-1">•</span>
+                                  <span>{o}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {/* Perceived Obstacles */}
+                        {rec.sales_call_insights.perceived_obstacles?.length > 0 && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Perceived Obstacles</h5>
+                            <ul className="space-y-1">
+                              {rec.sales_call_insights.perceived_obstacles.map((o, i) => (
+                                <li key={i} className="text-white text-sm flex items-start gap-2">
+                                  <span className="text-[#ffc107] mt-1">•</span>
+                                  <span>{o}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {/* Past Failed Attempts */}
+                        {rec.sales_call_insights.past_failed_attempts?.length > 0 && (
+                          <div className="md:col-span-2">
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Past Failed Attempts</h5>
+                            <ul className="space-y-1">
+                              {rec.sales_call_insights.past_failed_attempts.map((a, i) => (
+                                <li key={i} className="text-white text-sm flex items-start gap-2">
+                                  <span className="text-[#718096] mt-1">•</span>
+                                  <span>{a}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subsection 3: Concept Architecture */}
+                  {rec.concept_architecture && (
+                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                      <h4 className="text-xs font-bold text-[#ffc107] uppercase tracking-wider mb-4">
+                        Concept Architecture
+                      </h4>
+                      <div className="space-y-4">
+                        {/* Awareness Level */}
+                        {rec.concept_architecture.awareness_level && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Awareness Level</h5>
+                            <div className="flex items-start gap-3">
+                              <Badge color={getAwarenessColor(rec.concept_architecture.awareness_level)}>
+                                {getAwarenessLevelName(rec.concept_architecture.awareness_level)}
+                              </Badge>
+                              <p className="text-white text-sm flex-1">
+                                {rec.concept_architecture.awareness_level.replace(/^(Unaware|Problem Aware|Solution Aware|Product Aware|Most Aware)[.\s-]*/i, "")}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        {/* Persona */}
+                        {rec.concept_architecture.persona && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Persona</h5>
+                            <p className="text-white text-sm bg-[rgba(255,255,255,0.02)] p-4 rounded-[12px]">
+                              {rec.concept_architecture.persona}
+                            </p>
+                          </div>
+                        )}
+                        {/* Angle */}
+                        {rec.concept_architecture.angle && (
+                          <div>
+                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Angle</h5>
+                            <p className="text-white text-sm bg-[rgba(255,255,255,0.02)] p-4 rounded-[12px]">
+                              {rec.concept_architecture.angle}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Legacy format fallback */
+                <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">
+                        Elements to Combine
+                      </h5>
+                      {typeof rec.elements_to_combine === 'string' ? (
+                        <p className="text-white text-sm">{rec.elements_to_combine}</p>
+                      ) : (
+                        <ul className="text-white text-sm space-y-1">
+                          {Object.entries(rec.elements_to_combine || {}).map(([adId, desc]) => (
+                            <li key={adId}><span className="text-[#0075ff] font-medium">{adId}:</span> {String(desc)}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    {rec.rationale && (
+                      <div>
+                        <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">
+                          Rationale
+                        </h5>
+                        <p className="text-white text-sm">{rec.rationale}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Subsection 4: Expected Impact */}
+              <div className="p-6 bg-[rgba(1,181,116,0.05)]">
+                <h4 className="text-xs font-bold text-[#01b574] uppercase tracking-wider mb-2">
+                  Expected Impact
+                </h4>
+                <p className="text-[#01b574] text-base font-medium">
+                  {rec.expected_impact}
+                </p>
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
     </div>
   );
 }
