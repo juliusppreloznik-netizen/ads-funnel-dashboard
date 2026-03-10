@@ -43,9 +43,88 @@ Return ONLY a JSON array of hooks, sorted by performance_score descending. Inclu
 
 const CROSS_POLLINATION_PROMPT = `You are an expert creative strategist analyzing ad performance data and sales call transcripts to generate cross-pollination recommendations.
 
-Your task is to create strategic recommendations for combining successful elements from different ads, informed by real customer insights from sales calls.
+## CRITICAL EXTRACTION RULES
 
-For each recommendation, you MUST return a JSON object with this EXACT structure:
+Before extracting anything: read the entire transcript first. **Skip the first 2-3 minutes** — this is rapport-building and logistics, not intelligence (greetings, apologies for being late, small talk, how they found you). Only extract from the discovery, pitch, and objection-handling sections.
+
+**If you cannot find a genuine example of a category, return an empty array. Never fabricate. Never stretch a quote to fit a category.**
+
+ALL extracted language must be VERBATIM — never cleaned up, never paraphrased, never made "professional." The raw language IS the weapon.
+
+## EXTRACTION FRAMEWORK
+
+### 1. Pain Points
+A pain point is a specific, emotionally-charged problem the prospect is CURRENTLY experiencing that causes real frustration, lost revenue, or lost time. It must be something they are ACTIVELY suffering from — not mentioned in passing.
+
+**Detection signals:**
+- Words: "struggling," "frustrated," "burned," "stuck," "can't figure out," "overwhelmed," "burnt out," "on the verge of," "inconsistent," "unpredictable," "wasting money"
+- Situation described as getting worse over time
+- Language becomes emotional: longer sentences, more detail, personal stories
+- Prospect connects business problem to personal/family impact
+- Prospect describes feeling trapped or out of options
+
+**NOT pain points:** small talk, logistics, apologies for being late, how they found you, background context
+
+**Emotional Weight Scale (rate each 1-5):**
+1 — Mentioned once, flat tone, no elaboration
+2 — Mentioned with some detail, mild frustration
+3 — Returned to unprompted, noticeable emotional charge
+4 — Extended elaboration, personal/family impact mentioned, strong language
+5 — Highly charged, repeated multiple times, visible distress or urgency
+
+### 2. Buying Signals
+A buying signal indicates the prospect is actively looking for a solution, has budget, has timeline, or expresses genuine enthusiasm. Must indicate forward momentum.
+
+**Detection signals:**
+- "That makes sense" / "That's exactly what I need" / "How does that work?"
+- Asking about logistics: pricing, timelines, onboarding, what happens next
+- Future-pacing: "So if I did this..." / "Would I be able to..."
+- Asking about other clients' results
+- Reducing their own objections before the rep does
+- Asking about guarantees (signals they're past "should I" into "how do I protect myself")
+- Tonality shift from skeptical/guarded to engaged/curious
+
+**NOT buying signals:** generic compliments, polite agreement, casual curiosity
+
+### 3. Business Objectives
+Specific, measurable goals the prospect stated. Must be CONCRETE, not vague.
+
+**Real:** "I want to go from $40k to $100k/month in the next 6 months"
+**Not real:** "I want to grow my business"
+
+### 4. Perceived Obstacles
+What THEY believe is standing in their way — different from what's actually in the way.
+
+**Detection signals:**
+- "I've tried that before" / "I've been burned" / "How is this different?"
+- "My market is different" / "That won't work for..."
+- "I don't have the time/money/team to..."
+- Any language that externalizes blame
+
+### 5. Past Failed Attempts
+Every solution, agency, coach, course, strategy, or tool they tried before. For each: what they tried, how long, what went wrong, how much spent, how it made them feel.
+
+## COLE GORDON'S 7 BELIEFS FRAMEWORK
+Use this to determine awareness level:
+
+1. **Pain** — A problem or unfulfilled desire exists
+2. **Doubt** — They can't fix it alone (or it would cost more in time/energy/money)
+3. **Cost** — The cost of inaction over time exceeds the cost of investing
+4. **Desire** — There's a compelling payoff if the problem gets fixed
+5. **Money** — They have the resources AND willingness to invest
+6. **Support** — People around them support the decision
+7. **Trust** — They believe the methodology works
+
+**Awareness Level Mapping:**
+- Missing Pain belief → **Unaware**
+- Missing Doubt belief → **Problem Aware**
+- Missing Trust belief → **Product Aware**
+- Missing Cost/Desire beliefs → **Solution Aware**
+- All 7 beliefs present → **Most Aware**
+
+## OUTPUT SCHEMA
+
+For each recommendation, return a JSON object with this EXACT structure:
 
 {
   "title": "string — a compelling headline for the recommendation",
@@ -61,26 +140,39 @@ For each recommendation, you MUST return a JSON object with this EXACT structure
     "transcript_reference": "string — the specific hook or line from the ad transcript being referenced, or null if not applicable"
   },
   "sales_call_insights": {
-    "transcripts_referenced": ["array of call identifiers used, e.g. 'Call 1 - won', 'Call 3 - lost'"],
-    "pain_points": ["array of specific frustrations prospects expressed verbatim or paraphrased"],
-    "buying_signals": ["array of moments where interest or intent was expressed"],
-    "business_objectives": ["array of what prospects said they're trying to achieve"],
-    "perceived_obstacles": ["array of what prospects said was stopping them"],
-    "past_failed_attempts": ["array of what prospects said they already tried that didn't work"]
+    "transcripts_referenced": ["array of call identifiers used, e.g. 'Call 1 - John Smith'"],
+    "pain_points": ["array — ONLY genuine, emotionally-charged problems with emotional weight 3-5. Use verbatim language. Return empty array if none found."],
+    "buying_signals": ["array — ONLY genuine forward momentum signals. Return empty array if none found."],
+    "business_objectives": ["array — ONLY concrete, measurable goals. Return empty array if none found."],
+    "perceived_obstacles": ["array — what they BELIEVE is blocking them. Return empty array if none found."],
+    "past_failed_attempts": ["array — agencies, coaches, tools they tried. Return empty array if none found."]
   },
   "concept_architecture": {
-    "awareness_level": "string — one of: Unaware / Problem Aware / Solution Aware / Product Aware / Most Aware. Include explanation.",
-    "persona": "string — highly specific description: demographics, psychographics, exact situation, spoken desires, unspoken desires, perceived roadblocks, and pain points",
-    "angle": "string — format: 'Problem: [specific problem] → Utility: [how the product/service solves it]'"
+    "awareness_level": "string — one of: Unaware / Problem Aware / Solution Aware / Product Aware / Most Aware. Use 7 Beliefs framework. Include which beliefs are missing.",
+    "persona": "string — built from VERBATIM extracted pain points and business objectives. Use the prospect's own language, not generic descriptions.",
+    "angle": "string — rooted in the single highest emotional-weight pain point (rated 4-5). Format: 'Problem: [verbatim pain] → Utility: [how the product solves it]'"
   },
+  "hook_bank": [
+    {
+      "hook_concept": "string — 1-2 sentence hook idea",
+      "hook_type": "string — one of: pain-lead / contrarian / curiosity / proof / identity",
+      "derived_from": "string — which specific transcript insight this was derived from (e.g. 'Call 3 pain point: inconsistent leads')"
+    }
+  ],
   "expected_impact": "string — projected outcome with specific metrics where possible"
 }
 
-IMPORTANT:
-- Extract REAL quotes and insights from the sales call transcripts provided
-- Reference ACTUAL metrics from the ad performance data
-- Be specific, not generic — use real data from the inputs
-- Generate 5-7 recommendations, prioritized by expected impact
+## REQUIREMENTS
+
+1. Extract REAL quotes and insights from the sales call transcripts provided
+2. Reference ACTUAL metrics from the ad performance data
+3. Be specific, not generic — use real data from the inputs
+4. **Skip first 2-3 minutes of each transcript** (rapport-building, logistics)
+5. **Return empty arrays for any category with no genuine examples** — never fabricate
+6. **Persona must use prospect's verbatim language**, not cleaned-up descriptions
+7. **Angle must reference highest emotional-weight pain** (rated 4 or 5)
+8. **Include 3-5 hooks per recommendation** in the hook_bank, each citing its source
+9. Generate 5-7 recommendations, prioritized by expected impact
 
 Return ONLY a JSON array of recommendation objects.`;
 
@@ -107,6 +199,12 @@ interface WinningHook {
   ctr?: number;
 }
 
+interface HookBankItem {
+  hook_concept: string;
+  hook_type: string;
+  derived_from: string;
+}
+
 interface CrossPollinationRecommendation {
   title: string;
   ad_ids: string[];
@@ -131,6 +229,7 @@ interface CrossPollinationRecommendation {
     persona: string;
     angle: string;
   };
+  hook_bank: HookBankItem[];
   expected_impact: string;
 }
 

@@ -66,6 +66,12 @@ interface WinningHook {
   ctr?: number;
 }
 
+interface HookBankItem {
+  hook_concept: string;
+  hook_type: string;
+  derived_from: string;
+}
+
 interface CrossPollinationRecommendation {
   title: string;
   ad_ids: string[];
@@ -90,6 +96,7 @@ interface CrossPollinationRecommendation {
     persona: string;
     angle: string;
   };
+  hook_bank?: HookBankItem[];
   expected_impact: string;
   // Legacy fields for backwards compatibility
   suggestion?: string;
@@ -1939,6 +1946,38 @@ function CrossPollinationTab() {
                             </p>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subsection 4: Hook Bank */}
+                  {rec.hook_bank && rec.hook_bank.length > 0 && (
+                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
+                      <h4 className="text-xs font-bold text-[#7928ca] uppercase tracking-wider mb-4">
+                        Hook Bank
+                      </h4>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {rec.hook_bank.map((hook, i) => (
+                          <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-[12px] p-4 border border-[rgba(255,255,255,0.05)]">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge color={
+                                hook.hook_type === "pain-lead" ? "red" :
+                                hook.hook_type === "contrarian" ? "orange" :
+                                hook.hook_type === "curiosity" ? "yellow" :
+                                hook.hook_type === "proof" ? "green" :
+                                hook.hook_type === "identity" ? "blue" : "gray"
+                              }>
+                                {hook.hook_type}
+                              </Badge>
+                            </div>
+                            <p className="text-white text-sm font-medium mb-2">
+                              &ldquo;{hook.hook_concept}&rdquo;
+                            </p>
+                            <p className="text-[#718096] text-xs italic">
+                              Derived from: {hook.derived_from}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
