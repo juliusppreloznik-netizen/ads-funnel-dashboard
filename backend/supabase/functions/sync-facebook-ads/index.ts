@@ -46,7 +46,9 @@ interface FacebookAdInsight {
   cost_per_outbound_click?: ActionStat[];
   // Video metrics
   video_play_actions?: VideoActionStat[];
-  // Note: video_3_sec_watched_actions is not a valid Facebook API field
+  video_continuous_2_sec_watched_actions?: VideoActionStat[];
+  video_15_sec_watched_actions?: VideoActionStat[];
+  video_30_sec_watched_actions?: VideoActionStat[];
   video_thruplay_watched_actions?: VideoActionStat[];
   video_p25_watched_actions?: VideoActionStat[];
   video_p50_watched_actions?: VideoActionStat[];
@@ -99,6 +101,7 @@ interface AdRecord {
   cost_per_outbound_click: number;
   // Video metrics
   video_plays: number;
+  video_2_sec_watched: number; // For hook rate calculation
   video_thru_plays: number;
   video_p25_watched: number;
   video_p50_watched: number;
@@ -245,20 +248,10 @@ Deno.serve(async (req: Request) => {
 
     // Transform and upsert ad records
     const adRecords: AdRecord[] = insights.map((insight, index) => {
-      // Log raw response for first ad to debug video metrics
-      if (index === 0) {
-        console.log("=== RAW FACEBOOK API RESPONSE (First Ad) ===");
-        console.log("Ad ID:", insight.ad_id);
-        console.log("Ad Name:", insight.ad_name);
-        console.log("Impressions:", insight.impressions);
-        console.log("video_play_actions:", JSON.stringify(insight.video_play_actions));
-        console.log("video_p25_watched_actions:", JSON.stringify(insight.video_p25_watched_actions));
-        console.log("video_thruplay_watched_actions:", JSON.stringify(insight.video_thruplay_watched_actions));
-        console.log("============================================");
-      }
 
       // Extract video metrics
       const videoPlays = getVideoValue(insight.video_play_actions);
+      const video2SecWatched = getVideoValue(insight.video_continuous_2_sec_watched_actions);
       const videoThruPlays = getVideoValue(insight.video_thruplay_watched_actions);
       const videoP25 = getVideoValue(insight.video_p25_watched_actions);
       const videoP50 = getVideoValue(insight.video_p50_watched_actions);
@@ -269,14 +262,24 @@ Deno.serve(async (req: Request) => {
 
       const impressions = parseInt(insight.impressions) || 0;
 
+      // Extract video_view from the actions array - this is the 3-second video view count
+      // This is different from video_play_actions which counts all starts (inflated)
+      const videoViews3Sec = getActionValue(insight.actions, "video_view");
+
       // Calculate hook rate and hold rate using IMPRESSIONS as denominator
-      // Hook Rate = video_plays / impressions * 100 (video starts)
-      // Hold Rate = video_p25_watched / impressions * 100 (watched 25%)
-      const hookRate = impressions > 0 ? (videoPlays / impressions) * 100 : 0;
+      // Hook Rate = video_view (from actions array - 3-sec views) / impressions * 100
+      // Hold Rate = video_p25_watched / impressions * 100
+      const hookRate = impressions > 0 ? (videoViews3Sec / impressions) * 100 : 0;
       const holdRate = impressions > 0 ? (videoP25 / impressions) * 100 : 0;
 
+      // Log video metrics for debugging
+      if (index < 3) {
+        console.log(`${insight.ad_name}: video_view(3sec)=${videoViews3Sec}, plays=${videoPlays}, thru=${videoThruPlays}, p25=${videoP25} | impr=${impressions}`);
+        console.log(`  Hook Rate: ${hookRate.toFixed(2)}%, Hold Rate: ${holdRate.toFixed(2)}%`);
+      }
+
       // Log warning if impressions exist but video metrics are 0
-      if (impressions > 0 && videoPlays === 0 && videoP25 === 0) {
+      if (impressions > 0 && videoViews3Sec === 0 && videoP25 === 0 && videoPlays === 0) {
         console.log(`Warning: Ad ${insight.ad_id} has ${impressions} impressions but no video metrics. This may be an image ad.`);
       }
 
@@ -315,6 +318,7 @@ Deno.serve(async (req: Request) => {
         cost_per_outbound_click: costPerOutboundClick,
         // Video metrics
         video_plays: videoPlays,
+        video_2_sec_watched: videoViews3Sec, // Actually stores video_view from actions (3-sec views)
         video_thru_plays: videoThruPlays,
         video_p25_watched: videoP25,
         video_p50_watched: videoP50,
@@ -504,9 +508,11 @@ function buildInitialUrl(
     "outbound_clicks",
     "outbound_clicks_ctr",
     "cost_per_outbound_click",
-    // Video metrics
+    // Video metrics - requesting all available video watch metrics
     "video_play_actions",
-    // Hook rate uses video_play_actions (video starts)
+    "video_continuous_2_sec_watched_actions",
+    "video_15_sec_watched_actions",
+    "video_30_sec_watched_actions",
     "video_thruplay_watched_actions",
     "video_p25_watched_actions",
     "video_p50_watched_actions",
