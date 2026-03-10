@@ -2126,10 +2126,17 @@ function WinningHooksTab() {
 // CROSS-POLLINATION TAB
 // ============================================================================
 
+interface CrossPollinationWithMeta extends CrossPollinationRecommendation {
+  isNew?: boolean;
+}
+
 function CrossPollinationTab() {
   const [loading, setLoading] = useState(true);
-  const [recommendations, setRecommendations] = useState<CrossPollinationRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<CrossPollinationWithMeta[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [toastError, setToastError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchRecommendations() {
@@ -2149,7 +2156,7 @@ function CrossPollinationTab() {
         }
 
         if (data?.cross_pollination && Array.isArray(data.cross_pollination)) {
-          setRecommendations(data.cross_pollination as CrossPollinationRecommendation[]);
+          setRecommendations(data.cross_pollination as CrossPollinationWithMeta[]);
         }
       } catch (err) {
         console.error("Error fetching cross-pollination:", err);
@@ -2160,6 +2167,49 @@ function CrossPollinationTab() {
     }
     fetchRecommendations();
   }, []);
+
+  // Generate new recommendations
+  const handleGenerateNew = async () => {
+    setGenerating(true);
+    setToastError(null);
+    try {
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/ai-strategist`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          },
+        }
+      );
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error || "Failed to generate recommendations");
+      }
+
+      // Append new recommendations with isNew flag
+      if (result.cross_pollination && Array.isArray(result.cross_pollination)) {
+        const newRecs = result.cross_pollination.map((rec: CrossPollinationRecommendation) => ({
+          ...rec,
+          isNew: true,
+        }));
+        setRecommendations((prev) => [...prev, ...newRecs]);
+      }
+    } catch (err) {
+      console.error("Error generating recommendations:", err);
+      setToastError("Analysis failed — please try again");
+      setTimeout(() => setToastError(null), 4000);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Toggle card expansion
+  const toggleExpand = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   // Helper to get awareness level badge color
   const getAwarenessColor = (level: string): "red" | "orange" | "yellow" | "blue" | "green" | "gray" => {
@@ -2179,10 +2229,16 @@ function CrossPollinationTab() {
     return match ? match[1] : level.split(".")[0].trim();
   };
 
+  // Truncate impact for collapsed view
+  const truncateImpact = (impact: string, maxLen = 80): string => {
+    if (!impact) return "";
+    return impact.length > maxLen ? impact.slice(0, maxLen) + "..." : impact;
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0075ff]"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0075ff]"></div>
       </div>
     );
   }
@@ -2190,311 +2246,368 @@ function CrossPollinationTab() {
   if (error) {
     return (
       <GlassCard>
-        <div className="text-center py-8 text-[#e31a1a]">{error}</div>
-      </GlassCard>
-    );
-  }
-
-  if (recommendations.length === 0) {
-    return (
-      <GlassCard className="border-dashed">
-        <div className="text-center py-16">
-          <div className="w-16 h-16 bg-[rgba(255,255,255,0.05)] rounded-full flex items-center justify-center mx-auto mb-4">
-            {MessagingIcons.Shuffle}
-          </div>
-          <h3 className="text-lg font-semibold text-white">No Cross-Pollination Recommendations Yet</h3>
-          <p className="text-[#a0aec0] mt-2 max-w-md mx-auto">
-            Run the AI Strategist to analyze your ads and sales calls, generating strategic recommendations.
-          </p>
-        </div>
+        <div className="text-center py-6 text-[#e31a1a] text-sm">{error}</div>
       </GlassCard>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#7928ca] to-[#0075ff] rounded-[20px] p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+    <div className="space-y-4">
+      {/* Toast Error */}
+      {toastError && (
+        <div className="fixed top-4 right-4 z-50 bg-[#e31a1a] text-white px-4 py-2 rounded-lg shadow-lg text-sm animate-pulse">
+          {toastError}
+        </div>
+      )}
+
+      {/* Header with Generate Button */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-[#7928ca] to-[#0075ff] rounded-full flex items-center justify-center">
             {MessagingIcons.Shuffle}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">Cross-Pollination Strategy</h2>
-            <p className="text-white/80 mt-1">
-              AI-generated recommendations combining ad performance data with sales call insights
+            <h2 className="text-sm font-semibold text-white">Cross-Pollination Strategy</h2>
+            <p className="text-xs text-[#a0aec0]">
+              AI-generated recommendations from ad performance + sales calls
             </p>
           </div>
         </div>
+        <button
+          onClick={handleGenerateNew}
+          disabled={generating}
+          className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#7928ca] to-[#0075ff] text-white rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+        >
+          {generating ? (
+            <>
+              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+              </svg>
+              <span>Generate New Recommendations</span>
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Recommendations List */}
-      <div className="space-y-6">
+      {/* Empty State */}
+      {recommendations.length === 0 && (
+        <GlassCard className="border-dashed">
+          <div className="text-center py-10">
+            <div className="w-10 h-10 bg-[rgba(255,255,255,0.05)] rounded-full flex items-center justify-center mx-auto mb-3">
+              {MessagingIcons.Shuffle}
+            </div>
+            <h3 className="text-sm font-semibold text-white">No Recommendations Yet</h3>
+            <p className="text-xs text-[#a0aec0] mt-1 max-w-sm mx-auto">
+              Click &quot;Generate New Recommendations&quot; to analyze your ads and sales calls.
+            </p>
+          </div>
+        </GlassCard>
+      )}
+
+      {/* Recommendations List - Collapsible Accordion */}
+      <div className="space-y-2">
         {recommendations.map((rec, idx) => {
-          // Check if this is the new format or legacy format
+          const isExpanded = expandedIndex === idx;
           const isNewFormat = rec.creative_justification || rec.sales_call_insights || rec.concept_architecture;
           const title = rec.title || rec.suggestion || `Recommendation ${idx + 1}`;
           const adIds = rec.ad_ids || rec.source_ads || [];
 
           return (
-            <GlassCard key={idx} padding="none" className="overflow-hidden">
-              {/* Card Header */}
-              <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#7928ca] to-[#0075ff] rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {idx + 1}
+            <div
+              key={idx}
+              className="rounded-[12px] border border-[rgba(255,255,255,0.08)] overflow-hidden"
+              style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}
+            >
+              {/* Collapsed Row - Always Visible */}
+              <div
+                onClick={() => toggleExpand(idx)}
+                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-[rgba(255,255,255,0.02)] transition-colors"
+              >
+                {/* Index Badge */}
+                <div className="w-6 h-6 bg-gradient-to-br from-[#7928ca] to-[#0075ff] rounded-full flex items-center justify-center text-white font-semibold text-[10px] flex-shrink-0">
+                  #{idx + 1}
+                </div>
+
+                {/* Title and Ad IDs */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-white truncate">{title}</span>
+                    {rec.isNew && (
+                      <span className="px-1.5 py-0.5 bg-[#01b574] text-white text-[9px] font-bold rounded uppercase">New</span>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white">{title}</h3>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {adIds.map((adId, i) => (
-                        <Badge key={i} color="blue">{adId}</Badge>
+                  <div className="flex items-center gap-2 mt-1">
+                    {/* Ad ID Pills */}
+                    <div className="flex flex-wrap gap-1">
+                      {adIds.slice(0, 3).map((adId, i) => (
+                        <span key={i} className="px-1.5 py-0.5 bg-[rgba(0,117,255,0.15)] text-[#0075ff] text-[9px] rounded">
+                          {adId}
+                        </span>
                       ))}
+                      {adIds.length > 3 && (
+                        <span className="px-1.5 py-0.5 bg-[rgba(255,255,255,0.05)] text-[#a0aec0] text-[9px] rounded">
+                          +{adIds.length - 3}
+                        </span>
+                      )}
                     </div>
+                    {/* Impact Summary */}
+                    <span className="text-[10px] text-[#718096] truncate hidden sm:inline">
+                      {truncateImpact(rec.expected_impact)}
+                    </span>
                   </div>
                 </div>
+
+                {/* Chevron */}
+                <svg
+                  className={`w-4 h-4 text-[#a0aec0] transition-transform duration-200 flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
 
-              {isNewFormat ? (
-                <>
-                  {/* Subsection 1: Creative Intelligence */}
-                  {rec.creative_justification && (
-                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                      <h4 className="text-xs font-bold text-[#0075ff] uppercase tracking-wider mb-4">
-                        Creative Intelligence
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-6">
-                        {/* Ads Referenced */}
-                        <div>
-                          <h5 className="text-sm font-medium text-[#a0aec0] mb-3">Ads Referenced</h5>
-                          <div className="space-y-3">
-                            {rec.creative_justification.ads_referenced?.map((ad, i) => (
-                              <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-[12px] p-3">
-                                <div className="text-[#0075ff] font-medium text-sm">{ad.ad_name}</div>
-                                <div className="text-xs text-[#a0aec0] mt-1">{ad.key_metrics}</div>
-                                <div className="text-white text-sm mt-2">{ad.what_worked}</div>
+              {/* Expanded Content */}
+              {isExpanded && (
+                <div className="border-t border-[rgba(255,255,255,0.05)]">
+                  {isNewFormat ? (
+                    <>
+                      {/* Creative Intelligence */}
+                      {rec.creative_justification && (
+                        <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.03)]">
+                          <h4 className="text-[10px] font-semibold text-[#0075ff] uppercase tracking-wider mb-2">
+                            Creative Intelligence
+                          </h4>
+                          <div className="grid md:grid-cols-2 gap-3">
+                            <div>
+                              <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Ads Referenced</h5>
+                              <div className="space-y-1.5">
+                                {rec.creative_justification.ads_referenced?.map((ad, i) => (
+                                  <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-lg p-2">
+                                    <div className="text-[#0075ff] font-medium text-xs">{ad.ad_name}</div>
+                                    <div className="text-[9px] text-[#718096] mt-0.5">{ad.key_metrics}</div>
+                                    <div className="text-white text-xs mt-1">{ad.what_worked}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Transcript Reference</h5>
+                              {rec.creative_justification.transcript_reference ? (
+                                <blockquote className="text-white text-xs border-l-2 border-[#7928ca] pl-2 py-1 bg-[rgba(255,255,255,0.02)] rounded-r-lg italic">
+                                  &ldquo;{rec.creative_justification.transcript_reference}&rdquo;
+                                </blockquote>
+                              ) : (
+                                <p className="text-[#718096] text-xs italic">N/A</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sales Call Insights */}
+                      {rec.sales_call_insights && (
+                        <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.03)]">
+                          <h4 className="text-[10px] font-semibold text-[#01b574] uppercase tracking-wider mb-2">
+                            Sales Call Insights
+                          </h4>
+                          {rec.sales_call_insights.transcripts_referenced?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {rec.sales_call_insights.transcripts_referenced.map((t, i) => (
+                                <span key={i} className="px-1.5 py-0.5 bg-[rgba(255,255,255,0.05)] text-[#a0aec0] text-[9px] rounded">{t}</span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="grid md:grid-cols-2 gap-3">
+                            {rec.sales_call_insights.pain_points?.length > 0 && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Pain Points</h5>
+                                <ul className="space-y-0.5">
+                                  {rec.sales_call_insights.pain_points.map((p, i) => (
+                                    <li key={i} className="text-white text-xs flex items-start gap-1.5">
+                                      <span className="text-[#e31a1a] text-[10px]">•</span>
+                                      <span>{p}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {rec.sales_call_insights.buying_signals?.length > 0 && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Buying Signals</h5>
+                                <ul className="space-y-0.5">
+                                  {rec.sales_call_insights.buying_signals.map((s, i) => (
+                                    <li key={i} className="text-white text-xs flex items-start gap-1.5">
+                                      <span className="text-[#01b574] text-[10px]">•</span>
+                                      <span>{s}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {rec.sales_call_insights.business_objectives?.length > 0 && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Business Objectives</h5>
+                                <ul className="space-y-0.5">
+                                  {rec.sales_call_insights.business_objectives.map((o, i) => (
+                                    <li key={i} className="text-white text-xs flex items-start gap-1.5">
+                                      <span className="text-[#0075ff] text-[10px]">•</span>
+                                      <span>{o}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {rec.sales_call_insights.perceived_obstacles?.length > 0 && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Perceived Obstacles</h5>
+                                <ul className="space-y-0.5">
+                                  {rec.sales_call_insights.perceived_obstacles.map((o, i) => (
+                                    <li key={i} className="text-white text-xs flex items-start gap-1.5">
+                                      <span className="text-[#ffc107] text-[10px]">•</span>
+                                      <span>{o}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {rec.sales_call_insights.past_failed_attempts?.length > 0 && (
+                              <div className="md:col-span-2">
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Past Failed Attempts</h5>
+                                <ul className="space-y-0.5">
+                                  {rec.sales_call_insights.past_failed_attempts.map((a, i) => (
+                                    <li key={i} className="text-white text-xs flex items-start gap-1.5">
+                                      <span className="text-[#718096] text-[10px]">•</span>
+                                      <span>{a}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Concept Architecture */}
+                      {rec.concept_architecture && (
+                        <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.03)]">
+                          <h4 className="text-[10px] font-semibold text-[#ffc107] uppercase tracking-wider mb-2">
+                            Concept Architecture
+                          </h4>
+                          <div className="space-y-2">
+                            {rec.concept_architecture.awareness_level && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Awareness Level</h5>
+                                <div className="flex items-start gap-2">
+                                  <Badge color={getAwarenessColor(rec.concept_architecture.awareness_level)}>
+                                    {getAwarenessLevelName(rec.concept_architecture.awareness_level)}
+                                  </Badge>
+                                  <p className="text-white text-xs flex-1">
+                                    {rec.concept_architecture.awareness_level.replace(/^(Unaware|Problem Aware|Solution Aware|Product Aware|Most Aware)[.\s-]*/i, "")}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                            {rec.concept_architecture.persona && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Persona</h5>
+                                <p className="text-white text-xs bg-[rgba(255,255,255,0.02)] p-2 rounded-lg">
+                                  {rec.concept_architecture.persona}
+                                </p>
+                              </div>
+                            )}
+                            {rec.concept_architecture.angle && (
+                              <div>
+                                <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">Angle</h5>
+                                <p className="text-white text-xs bg-[rgba(255,255,255,0.02)] p-2 rounded-lg">
+                                  {rec.concept_architecture.angle}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Hook Bank */}
+                      {rec.hook_bank && rec.hook_bank.length > 0 && (
+                        <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.03)]">
+                          <h4 className="text-[10px] font-semibold text-[#7928ca] uppercase tracking-wider mb-2">
+                            Hook Bank
+                          </h4>
+                          <div className="grid md:grid-cols-2 gap-2">
+                            {rec.hook_bank.map((hook, i) => (
+                              <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-lg p-2 border border-[rgba(255,255,255,0.03)]">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className={`px-1 py-0.5 text-[8px] font-semibold rounded uppercase ${
+                                    hook.hook_type === "pain-lead" ? "bg-[#e31a1a]/20 text-[#e31a1a]" :
+                                    hook.hook_type === "contrarian" ? "bg-[#ff9800]/20 text-[#ff9800]" :
+                                    hook.hook_type === "curiosity" ? "bg-[#ffc107]/20 text-[#ffc107]" :
+                                    hook.hook_type === "proof" ? "bg-[#01b574]/20 text-[#01b574]" :
+                                    hook.hook_type === "identity" ? "bg-[#0075ff]/20 text-[#0075ff]" : "bg-[#718096]/20 text-[#718096]"
+                                  }`}>
+                                    {hook.hook_type}
+                                  </span>
+                                </div>
+                                <p className="text-white text-xs italic mb-1">
+                                  &ldquo;{hook.hook_concept}&rdquo;
+                                </p>
+                                <p className="text-[#718096] text-[9px]">
+                                  From: {hook.derived_from}
+                                </p>
                               </div>
                             ))}
                           </div>
                         </div>
-                        {/* Transcript Reference */}
+                      )}
+                    </>
+                  ) : (
+                    /* Legacy format fallback */
+                    <div className="px-4 py-3 border-b border-[rgba(255,255,255,0.03)]">
+                      <div className="grid md:grid-cols-2 gap-3">
                         <div>
-                          <h5 className="text-sm font-medium text-[#a0aec0] mb-3">Ad Transcript Reference</h5>
-                          {rec.creative_justification.transcript_reference ? (
-                            <blockquote className="text-white text-sm border-l-4 border-[#7928ca] pl-4 py-2 bg-[rgba(255,255,255,0.02)] rounded-r-[12px] italic">
-                              &ldquo;{rec.creative_justification.transcript_reference}&rdquo;
-                            </blockquote>
+                          <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">
+                            Elements to Combine
+                          </h5>
+                          {typeof rec.elements_to_combine === 'string' ? (
+                            <p className="text-white text-xs">{rec.elements_to_combine}</p>
                           ) : (
-                            <p className="text-[#718096] text-sm italic">Not applicable</p>
+                            <ul className="text-white text-xs space-y-0.5">
+                              {Object.entries(rec.elements_to_combine || {}).map(([adId, desc]) => (
+                                <li key={adId}><span className="text-[#0075ff] font-medium">{adId}:</span> {String(desc)}</li>
+                              ))}
+                            </ul>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Subsection 2: Sales Call Insights */}
-                  {rec.sales_call_insights && (
-                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                      <h4 className="text-xs font-bold text-[#01b574] uppercase tracking-wider mb-4">
-                        Sales Call Insights
-                      </h4>
-                      {rec.sales_call_insights.transcripts_referenced?.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {rec.sales_call_insights.transcripts_referenced.map((t, i) => (
-                            <Badge key={i} color="gray">{t}</Badge>
-                          ))}
-                        </div>
-                      )}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {/* Pain Points */}
-                        {rec.sales_call_insights.pain_points?.length > 0 && (
+                        {rec.rationale && (
                           <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Pain Points</h5>
-                            <ul className="space-y-1">
-                              {rec.sales_call_insights.pain_points.map((p, i) => (
-                                <li key={i} className="text-white text-sm flex items-start gap-2">
-                                  <span className="text-[#e31a1a] mt-1">•</span>
-                                  <span>{p}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {/* Buying Signals */}
-                        {rec.sales_call_insights.buying_signals?.length > 0 && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Buying Signals</h5>
-                            <ul className="space-y-1">
-                              {rec.sales_call_insights.buying_signals.map((s, i) => (
-                                <li key={i} className="text-white text-sm flex items-start gap-2">
-                                  <span className="text-[#01b574] mt-1">•</span>
-                                  <span>{s}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {/* Business Objectives */}
-                        {rec.sales_call_insights.business_objectives?.length > 0 && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Business Objectives</h5>
-                            <ul className="space-y-1">
-                              {rec.sales_call_insights.business_objectives.map((o, i) => (
-                                <li key={i} className="text-white text-sm flex items-start gap-2">
-                                  <span className="text-[#0075ff] mt-1">•</span>
-                                  <span>{o}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {/* Perceived Obstacles */}
-                        {rec.sales_call_insights.perceived_obstacles?.length > 0 && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Perceived Obstacles</h5>
-                            <ul className="space-y-1">
-                              {rec.sales_call_insights.perceived_obstacles.map((o, i) => (
-                                <li key={i} className="text-white text-sm flex items-start gap-2">
-                                  <span className="text-[#ffc107] mt-1">•</span>
-                                  <span>{o}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {/* Past Failed Attempts */}
-                        {rec.sales_call_insights.past_failed_attempts?.length > 0 && (
-                          <div className="md:col-span-2">
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Past Failed Attempts</h5>
-                            <ul className="space-y-1">
-                              {rec.sales_call_insights.past_failed_attempts.map((a, i) => (
-                                <li key={i} className="text-white text-sm flex items-start gap-2">
-                                  <span className="text-[#718096] mt-1">•</span>
-                                  <span>{a}</span>
-                                </li>
-                              ))}
-                            </ul>
+                            <h5 className="text-[9px] font-medium text-[#718096] uppercase tracking-wider mb-1">
+                              Rationale
+                            </h5>
+                            <p className="text-white text-xs">{rec.rationale}</p>
                           </div>
                         )}
                       </div>
                     </div>
                   )}
 
-                  {/* Subsection 3: Concept Architecture */}
-                  {rec.concept_architecture && (
-                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                      <h4 className="text-xs font-bold text-[#ffc107] uppercase tracking-wider mb-4">
-                        Concept Architecture
-                      </h4>
-                      <div className="space-y-4">
-                        {/* Awareness Level */}
-                        {rec.concept_architecture.awareness_level && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Awareness Level</h5>
-                            <div className="flex items-start gap-3">
-                              <Badge color={getAwarenessColor(rec.concept_architecture.awareness_level)}>
-                                {getAwarenessLevelName(rec.concept_architecture.awareness_level)}
-                              </Badge>
-                              <p className="text-white text-sm flex-1">
-                                {rec.concept_architecture.awareness_level.replace(/^(Unaware|Problem Aware|Solution Aware|Product Aware|Most Aware)[.\s-]*/i, "")}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                        {/* Persona */}
-                        {rec.concept_architecture.persona && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Persona</h5>
-                            <p className="text-white text-sm bg-[rgba(255,255,255,0.02)] p-4 rounded-[12px]">
-                              {rec.concept_architecture.persona}
-                            </p>
-                          </div>
-                        )}
-                        {/* Angle */}
-                        {rec.concept_architecture.angle && (
-                          <div>
-                            <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">Angle</h5>
-                            <p className="text-white text-sm bg-[rgba(255,255,255,0.02)] p-4 rounded-[12px]">
-                              {rec.concept_architecture.angle}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Subsection 4: Hook Bank */}
-                  {rec.hook_bank && rec.hook_bank.length > 0 && (
-                    <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                      <h4 className="text-xs font-bold text-[#7928ca] uppercase tracking-wider mb-4">
-                        Hook Bank
-                      </h4>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {rec.hook_bank.map((hook, i) => (
-                          <div key={i} className="bg-[rgba(255,255,255,0.02)] rounded-[12px] p-4 border border-[rgba(255,255,255,0.05)]">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge color={
-                                hook.hook_type === "pain-lead" ? "red" :
-                                hook.hook_type === "contrarian" ? "orange" :
-                                hook.hook_type === "curiosity" ? "yellow" :
-                                hook.hook_type === "proof" ? "green" :
-                                hook.hook_type === "identity" ? "blue" : "gray"
-                              }>
-                                {hook.hook_type}
-                              </Badge>
-                            </div>
-                            <p className="text-white text-sm font-medium mb-2">
-                              &ldquo;{hook.hook_concept}&rdquo;
-                            </p>
-                            <p className="text-[#718096] text-xs italic">
-                              Derived from: {hook.derived_from}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* Legacy format fallback */
-                <div className="p-6 border-b border-[rgba(255,255,255,0.05)]">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">
-                        Elements to Combine
-                      </h5>
-                      {typeof rec.elements_to_combine === 'string' ? (
-                        <p className="text-white text-sm">{rec.elements_to_combine}</p>
-                      ) : (
-                        <ul className="text-white text-sm space-y-1">
-                          {Object.entries(rec.elements_to_combine || {}).map(([adId, desc]) => (
-                            <li key={adId}><span className="text-[#0075ff] font-medium">{adId}:</span> {String(desc)}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    {rec.rationale && (
-                      <div>
-                        <h5 className="text-xs font-medium text-[#a0aec0] uppercase tracking-wider mb-2">
-                          Rationale
-                        </h5>
-                        <p className="text-white text-sm">{rec.rationale}</p>
-                      </div>
-                    )}
+                  {/* Expected Impact */}
+                  <div className="px-4 py-2 bg-[rgba(1,181,116,0.05)]">
+                    <h4 className="text-[9px] font-semibold text-[#01b574] uppercase tracking-wider mb-1">
+                      Expected Impact
+                    </h4>
+                    <p className="text-[#01b574] text-xs font-medium">
+                      {rec.expected_impact}
+                    </p>
                   </div>
                 </div>
               )}
-
-              {/* Subsection 4: Expected Impact */}
-              <div className="p-6 bg-[rgba(1,181,116,0.05)]">
-                <h4 className="text-xs font-bold text-[#01b574] uppercase tracking-wider mb-2">
-                  Expected Impact
-                </h4>
-                <p className="text-[#01b574] text-base font-medium">
-                  {rec.expected_impact}
-                </p>
-              </div>
-            </GlassCard>
+            </div>
           );
         })}
       </div>
