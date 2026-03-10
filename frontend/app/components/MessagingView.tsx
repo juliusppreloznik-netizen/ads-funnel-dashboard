@@ -39,6 +39,9 @@ interface FatigueScore {
   cpa_trend: number;
   cpm_trend: number;
   ctr_trend: number;
+  cpa_trend_display?: string;
+  cpm_trend_display?: string;
+  ctr_trend_display?: string;
   days_analyzed: number;
   avg_cpa: number;
   avg_cpm: number;
@@ -1055,18 +1058,18 @@ function FatigueMonitorTab() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <span className={ad.cpa_trend > 0 ? "text-[#e31a1a]" : "text-[#01b574]"}>
-                      {ad.cpa_trend > 0 ? "+" : ""}{ad.cpa_trend.toFixed(2)}
+                    <span className={ad.cpa_trend > 0 ? "text-[#e31a1a]" : ad.cpa_trend < 0 ? "text-[#01b574]" : "text-[#a0aec0]"}>
+                      {ad.cpa_trend_display || (ad.cpa_trend === 0 ? "N/A" : `${ad.cpa_trend > 0 ? "+" : ""}${ad.cpa_trend.toFixed(1)}%`)}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={ad.cpm_trend > 0 ? "text-[#e31a1a]" : "text-[#01b574]"}>
-                      {ad.cpm_trend > 0 ? "+" : ""}{ad.cpm_trend.toFixed(2)}
+                    <span className={ad.cpm_trend > 0 ? "text-[#e31a1a]" : ad.cpm_trend < 0 ? "text-[#01b574]" : "text-[#a0aec0]"}>
+                      {ad.cpm_trend_display || (ad.cpm_trend === 0 ? "N/A" : `${ad.cpm_trend > 0 ? "+" : ""}${ad.cpm_trend.toFixed(1)}%`)}
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={ad.ctr_trend < 0 ? "text-[#e31a1a]" : "text-[#01b574]"}>
-                      {ad.ctr_trend > 0 ? "+" : ""}{ad.ctr_trend.toFixed(4)}
+                    <span className={ad.ctr_trend < 0 ? "text-[#e31a1a]" : ad.ctr_trend > 0 ? "text-[#01b574]" : "text-[#a0aec0]"}>
+                      {ad.ctr_trend_display || (ad.ctr_trend === 0 ? "N/A" : `${ad.ctr_trend > 0 ? "+" : ""}${ad.ctr_trend.toFixed(1)}%`)}
                     </span>
                   </TableCell>
                   <TableCell>

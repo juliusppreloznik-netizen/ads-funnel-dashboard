@@ -1,5 +1,5 @@
 // Fatigue Monitor Edge Function
-// Calculates ad fatigue scores using linear regression on CPA, CPM, CTR trends
+// Calculates ad fatigue scores using percentage change trends on CPA, CPM, CTR
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -9,35 +9,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Linear regression to calculate trend slope
-function linearRegression(values: number[]): number {
+// Calculate percentage change between first half and second half of values
+// Returns the percentage change: ((second_half_avg - first_half_avg) / first_half_avg) * 100
+// Returns null if first half average is 0 or not enough data
+function calculatePercentageChange(values: number[]): number | null {
   const n = values.length;
-  if (n < 2) return 0;
+  if (n < 2) return null;
 
-  const xMean = (n - 1) / 2;
-  const yMean = values.reduce((a, b) => a + b, 0) / n;
+  const midpoint = Math.floor(n / 2);
+  const firstHalf = values.slice(0, midpoint);
+  const secondHalf = values.slice(midpoint);
 
-  let numerator = 0;
-  let denominator = 0;
+  if (firstHalf.length === 0 || secondHalf.length === 0) return null;
 
-  for (let i = 0; i < n; i++) {
-    const xDiff = i - xMean;
-    const yDiff = values[i] - yMean;
-    numerator += xDiff * yDiff;
-    denominator += xDiff * xDiff;
-  }
+  const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+  const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
 
-  return denominator === 0 ? 0 : numerator / denominator;
+  // Avoid division by zero
+  if (firstHalfAvg === 0) return null;
+
+  return ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
 }
 
-// Normalize trend to -1 to 1 range
-function normalizeTrend(slope: number, values: number[]): number {
-  const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  if (mean === 0) return 0;
-
-  // Slope as percentage of mean, clamped to -1 to 1
-  const normalized = slope / mean;
-  return Math.max(-1, Math.min(1, normalized * 10));
+// Format percentage change for display: "+12.5%" or "-33.3%" or "N/A"
+function formatPercentageChange(change: number | null): string {
+  if (change === null) return "N/A";
+  const sign = change >= 0 ? "+" : "";
+  return `${sign}${change.toFixed(1)}%`;
 }
 
 // Calculate CPA (Cost Per Acquisition) from spend and leads
@@ -120,9 +118,12 @@ Deno.serve(async (req) => {
     const fatigueResults: {
       ad_id: string;
       fatigue_score: number;
-      cpa_trend: number;
-      cpm_trend: number;
-      ctr_trend: number;
+      cpa_trend: number | null;
+      cpm_trend: number | null;
+      ctr_trend: number | null;
+      cpa_trend_display: string;
+      cpm_trend_display: string;
+      ctr_trend_display: string;
       days_analyzed: number;
       avg_cpa: number;
       avg_cpm: number;
@@ -134,27 +135,36 @@ Deno.serve(async (req) => {
       // Skip ads with too few data points
       if (data.dates.length < 3) continue;
 
-      // Calculate trends using linear regression
-      const cpaSlope = linearRegression(data.cpas);
-      const cpmSlope = linearRegression(data.cpms);
-      const ctrSlope = linearRegression(data.ctrs);
+      // Calculate percentage change trends (comparing first half to second half of period)
+      const cpaTrend = calculatePercentageChange(data.cpas);
+      const cpmTrend = calculatePercentageChange(data.cpms);
+      const ctrTrend = calculatePercentageChange(data.ctrs);
 
-      // Normalize trends
-      const cpaTrend = normalizeTrend(cpaSlope, data.cpas);
-      const cpmTrend = normalizeTrend(cpmSlope, data.cpms);
-      const ctrTrend = normalizeTrend(ctrSlope, data.ctrs);
+      // Calculate fatigue score based on percentage changes
+      // Rising CPA/CPM = bad (positive % change)
+      // Falling CTR = bad (negative % change)
+      let fatigueScore = 50; // Start at neutral
 
-      // Calculate fatigue score (weighted average)
-      // Rising CPA/CPM = bad (positive trend)
-      // Falling CTR = bad (negative trend)
-      const fatigueScore = (
-        (cpaTrend * 0.5) +      // CPA increasing is bad (50% weight)
-        (cpmTrend * 0.3) +      // CPM increasing is bad (30% weight)
-        (-ctrTrend * 0.2)       // CTR decreasing is bad (20% weight, negated)
-      );
+      // CPA trend contributes 50% to fatigue score
+      if (cpaTrend !== null) {
+        // +100% CPA increase = +25 points, -100% = -25 points
+        fatigueScore += Math.min(25, Math.max(-25, cpaTrend * 0.25));
+      }
+
+      // CPM trend contributes 30% to fatigue score
+      if (cpmTrend !== null) {
+        // +100% CPM increase = +15 points
+        fatigueScore += Math.min(15, Math.max(-15, cpmTrend * 0.15));
+      }
+
+      // CTR trend contributes 20% to fatigue score (negative CTR change is bad)
+      if (ctrTrend !== null) {
+        // -100% CTR decrease = +10 points (bad), +100% = -10 points (good)
+        fatigueScore += Math.min(10, Math.max(-10, -ctrTrend * 0.10));
+      }
 
       // Clamp to 0-100 scale
-      const normalizedScore = Math.max(0, Math.min(100, (fatigueScore + 1) * 50));
+      const normalizedScore = Math.max(0, Math.min(100, fatigueScore));
 
       // Calculate averages
       const avgCpa = data.cpas.reduce((a, b) => a + b, 0) / data.cpas.length;
@@ -176,9 +186,12 @@ Deno.serve(async (req) => {
       fatigueResults.push({
         ad_id: adId,
         fatigue_score: Math.round(normalizedScore * 10) / 10,
-        cpa_trend: Math.round(cpaTrend * 100) / 100,
-        cpm_trend: Math.round(cpmTrend * 100) / 100,
-        ctr_trend: Math.round(ctrTrend * 100) / 100,
+        cpa_trend: cpaTrend !== null ? Math.round(cpaTrend * 10) / 10 : null,
+        cpm_trend: cpmTrend !== null ? Math.round(cpmTrend * 10) / 10 : null,
+        ctr_trend: ctrTrend !== null ? Math.round(ctrTrend * 10) / 10 : null,
+        cpa_trend_display: formatPercentageChange(cpaTrend),
+        cpm_trend_display: formatPercentageChange(cpmTrend),
+        ctr_trend_display: formatPercentageChange(ctrTrend),
         days_analyzed: data.dates.length,
         avg_cpa: Math.round(avgCpa * 100) / 100,
         avg_cpm: Math.round(avgCpm * 100) / 100,
@@ -194,9 +207,12 @@ Deno.serve(async (req) => {
         .upsert({
           ad_id: result.ad_id,
           fatigue_score: result.fatigue_score,
-          cpa_trend: result.cpa_trend,
-          cpm_trend: result.cpm_trend,
-          ctr_trend: result.ctr_trend,
+          cpa_trend: result.cpa_trend ?? 0, // Store 0 for null (DB may not accept null)
+          cpm_trend: result.cpm_trend ?? 0,
+          ctr_trend: result.ctr_trend ?? 0,
+          cpa_trend_display: result.cpa_trend_display,
+          cpm_trend_display: result.cpm_trend_display,
+          ctr_trend_display: result.ctr_trend_display,
           days_analyzed: result.days_analyzed,
           avg_cpa: result.avg_cpa,
           avg_cpm: result.avg_cpm,
