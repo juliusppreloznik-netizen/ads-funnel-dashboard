@@ -369,16 +369,16 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
 
             {campaignDropdownOpen && (
               <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
-                <div className="p-2 border-b border-[rgba(226,232,240,0.3)]">
+                <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                   <input
                     type="text"
                     placeholder="Search campaigns..."
                     value={campaignSearch}
                     onChange={(e) => setCampaignSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm text-white bg-[#060b28] border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-[#a0aec0]"
                   />
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto bg-[#0f1535]">
                   {filteredCampaigns.length === 0 ? (
                     <div className="px-4 py-3 text-sm text-[#a0aec0]">No campaigns found</div>
                   ) : (
@@ -399,7 +399,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                   )}
                 </div>
                 {selectedCampaigns.length > 0 && (
-                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)]">
+                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                     <button
                       onClick={() => setSelectedCampaigns([])}
                       className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
@@ -436,16 +436,16 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
 
             {adSetDropdownOpen && (
               <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
-                <div className="p-2 border-b border-[rgba(226,232,240,0.3)]">
+                <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                   <input
                     type="text"
                     placeholder="Search ad sets..."
                     value={adSetSearch}
                     onChange={(e) => setAdSetSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm text-white bg-[#060b28] border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-[#a0aec0]"
                   />
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto bg-[#0f1535]">
                   {filteredAdSets.length === 0 ? (
                     <div className="px-4 py-3 text-sm text-[#a0aec0]">
                       {selectedCampaigns.length > 0 ? "No ad sets in selected campaigns" : "No ad sets found"}
@@ -468,7 +468,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                   )}
                 </div>
                 {selectedAdSets.length > 0 && (
-                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)]">
+                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                     <button
                       onClick={() => setSelectedAdSets([])}
                       className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
