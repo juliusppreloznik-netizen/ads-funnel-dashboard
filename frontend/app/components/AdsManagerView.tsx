@@ -343,7 +343,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] p-4">
+      <div className="rounded-[20px] shadow-lg shadow-black/20 border-0 p-4 backdrop-blur-[120px]" style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}>
         <div className="flex flex-wrap items-center gap-3">
           {/* Campaign Filter */}
           <div ref={campaignDropdownRef} className="relative">
@@ -550,8 +550,8 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Ads Table */}
-      <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] overflow-hidden">
-        <div className="px-6 py-4 border-b border-[rgba(226,232,240,0.3)]">
+      <div className="rounded-[20px] shadow-lg shadow-black/20 border-0 overflow-hidden backdrop-blur-[120px]" style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}>
+        <div className="px-6 py-4 border-b border-[#2d3748]">
           <h2 className="text-lg font-semibold text-white">
             {hasActiveFilters ? `Filtered Ads (${filteredAds.length})` : "All Ads"}
           </h2>
@@ -559,89 +559,89 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-[#060b28]">
+          <table className="min-w-full divide-y divide-[#2d3748]">
+            <thead className="bg-transparent">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[#a0aec0] uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748]">
                   Actions
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-left text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("ad_name")}
                 >
                   Ad Name <SortIndicator column="ad_name" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_spend")}
                 >
                   Spend <SortIndicator column="total_spend" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_impressions")}
                 >
                   Impr. <SortIndicator column="total_impressions" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_clicks")}
                 >
                   Clicks <SortIndicator column="total_clicks" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("avg_ctr")}
                 >
                   CTR <SortIndicator column="avg_ctr" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_leads")}
                 >
                   Leads <SortIndicator column="total_leads" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("calls_booked")}
                 >
                   Booked <SortIndicator column="calls_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("cost_per_booked")}
                   title="Total spend divided by total calls booked (qualified + unqualified)"
                 >
                   Cost/Booked <SortIndicator column="cost_per_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("cost_per_qualified")}
                   title="Total spend divided by qualified calls booked only"
                 >
                   Cost/Qual. <SortIndicator column="cost_per_qualified" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("shows")}
                 >
                   Shows <SortIndicator column="shows" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("closes")}
                 >
                   Closes <SortIndicator column="closes" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
+                  className="px-4 py-3 text-right text-[10.4px] font-bold text-[#a0aec0] uppercase tracking-[0.05em] border-b border-[#2d3748] cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("revenue")}
                 >
                   Revenue <SortIndicator column="revenue" />
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-[#0f1535] divide-y divide-gray-200">
+            <tbody className="bg-transparent divide-y divide-[#2d3748]">
               {sortedAds.map((ad) => (
                 <tr key={ad.ad_id} className="hover:bg-[#1a1f37] transition-colors">
                   <td className="px-4 py-3 whitespace-nowrap">
@@ -680,49 +680,49 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4">
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-white truncate max-w-xs">
+                      <span className="text-[14px] font-medium text-white truncate max-w-xs">
                         {ad.ad_name}
                       </span>
                       {ad.campaign_name && (
-                        <span className="text-xs text-[#a0aec0] truncate max-w-xs">
+                        <span className="text-[12px] text-[#a0aec0] truncate max-w-xs">
                           {ad.campaign_name}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-white whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] font-medium text-white whitespace-nowrap">
                     {formatCurrency(ad.total_spend)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {formatNumber(ad.total_impressions)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {formatNumber(ad.total_clicks)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {formatPercent(ad.avg_ctr)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.total_leads}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.calls_booked}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.cost_per_booked !== null ? formatCurrency(ad.cost_per_booked) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.cost_per_qualified !== null ? formatCurrency(ad.cost_per_qualified) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.shows}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] text-white whitespace-nowrap">
                     {ad.closes}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-green-600 whitespace-nowrap">
+                  <td className="px-4 py-4 text-right text-[14px] font-medium text-[#01b574] whitespace-nowrap">
                     {formatCurrency(ad.revenue)}
                   </td>
                 </tr>
@@ -758,16 +758,19 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, value, subtitle, icon }: SummaryCardProps) {
   return (
-    <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] p-4">
+    <div
+      className="rounded-[20px] shadow-[0_20px_27px_0_rgba(0,0,0,0.05)] border-0 p-4 backdrop-blur-[120px]"
+      style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}
+    >
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-[#0075ff]/15 rounded-lg flex items-center justify-center text-[#0075ff]">
+        <div className="flex-shrink-0 w-12 h-12 bg-[#0075ff] rounded-[15px] flex items-center justify-center text-white">
           {icon}
         </div>
         <div>
-          <p className="text-sm text-[#a0aec0]">{title}</p>
+          <p className="text-[12px] text-[#a0aec0] capitalize">{title}</p>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-xl font-bold text-white">{value}</p>
-            {subtitle && <span className="text-xs text-[#a0aec0]">{subtitle}</span>}
+            <p className="text-[20px] font-bold text-white">{value}</p>
+            {subtitle && <span className="text-[12px] text-[#a0aec0]">{subtitle}</span>}
           </div>
         </div>
       </div>
