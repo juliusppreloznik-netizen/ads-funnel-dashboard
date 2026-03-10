@@ -578,7 +578,7 @@ function MetricCard({
           },
           align: "top" as const,
           anchor: "end" as const,
-          color: "#374151",
+          color: "#a0aec0",
           font: {
             size: 9,
             weight: "bold" as const,
@@ -595,7 +595,7 @@ function MetricCard({
             color: "rgba(0, 0, 0, 0.04)",
           },
           ticks: {
-            color: "#9CA3AF",
+            color: "#a0aec0",
             font: {
               size: 9,
             },
@@ -620,7 +620,7 @@ function MetricCard({
             color: "rgba(0, 0, 0, 0.04)",
           },
           ticks: {
-            color: "#9CA3AF",
+            color: "#a0aec0",
             font: {
               size: 9,
             },
