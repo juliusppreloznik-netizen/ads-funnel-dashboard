@@ -819,39 +819,39 @@ interface SourceKPITotals {
   roas: number;
 }
 
-// Badge components for styled numbers
+// Badge components for styled numbers (Vision UI style)
 const PurpleBadge = ({ value }: { value: number }) => (
-  <span className="vui-badge vui-badge-info !bg-vui-primary/15 !text-vui-primary min-w-[32px] justify-center">
+  <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-[8px] text-[12px] font-bold bg-[#0075ff]/20 text-[#0075ff] min-w-[32px]">
     {value}
   </span>
 );
 
 const GreenBadge = ({ value }: { value: number }) => (
-  <span className="vui-badge vui-badge-success min-w-[32px] justify-center">
+  <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-[8px] text-[12px] font-bold bg-[#01b574]/20 text-[#01b574] min-w-[32px]">
     {value}
   </span>
 );
 
 const RedBadge = ({ value }: { value: number }) => (
-  <span className="vui-badge vui-badge-error min-w-[32px] justify-center">
+  <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-[8px] text-[12px] font-bold bg-[#e31a1a]/20 text-[#e31a1a] min-w-[32px]">
     {value}
   </span>
 );
 
 const PercentageText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-medium ${value === 0 ? "text-vui-error" : "text-white"}`}>
+  <span className={`text-[14px] font-medium ${value === 0 ? "text-[#e31a1a]" : "text-white"}`}>
     {value.toFixed(1)}%
   </span>
 );
 
 const RoasText = ({ value }: { value: number }) => (
-  <span className={`text-sm font-semibold ${value === 0 ? "text-vui-error" : "text-white"}`}>
+  <span className={`text-[14px] font-bold ${value === 0 ? "text-[#e31a1a]" : "text-white"}`}>
     {value.toFixed(2)}x
   </span>
 );
 
 const RevenueText = ({ value }: { value: number }) => (
-  <span className="text-sm font-semibold text-vui-success">
+  <span className="text-[14px] font-medium text-[#01b574]">
     ${formatNumber(Math.round(value))}
   </span>
 );
@@ -883,19 +883,19 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     width: "200px",
     render: (row) => (
       <div className="min-w-[180px]">
-        <div className="text-sm font-medium text-vui-text-white truncate max-w-[200px]" title={row.source}>
+        <span className="text-[14px] font-medium text-white truncate max-w-[200px] block" title={row.source}>
           {row.source}
-        </div>
+        </span>
         {row.sourceId && (
-          <div className="text-xs text-vui-text truncate max-w-[200px]" title={row.sourceId}>
+          <span className="text-[12px] text-[#a0aec0] truncate max-w-[200px] block" title={row.sourceId}>
             {row.sourceId}
-          </div>
+          </span>
         )}
       </div>
     ),
     getValue: (row) => row.source,
     renderTotal: () => (
-      <div className="text-sm font-semibold text-white">All Sources</div>
+      <span className="text-[14px] font-bold text-white">All Sources</span>
     ),
   },
   spend: {
@@ -903,11 +903,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "SPEND",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-white">${formatNumber(Math.round(row.spend))}</span>
+      <span className="text-[14px] font-medium text-white">${formatNumber(Math.round(row.spend))}</span>
     ),
     getValue: (row) => row.spend,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-white">${formatNumber(Math.round(totals.spend))}</span>
+      <span className="text-[14px] font-bold text-white">${formatNumber(Math.round(totals.spend))}</span>
     ),
   },
   applications: {
@@ -940,9 +940,9 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     id: "shown",
     label: "SHOWS",
     align: "center",
-    render: (row) => <span className="text-sm text-white">{row.shown}</span>,
+    render: (row) => <span className="text-[14px] font-medium text-white">{row.shown}</span>,
     getValue: (row) => row.shown,
-    renderTotal: (totals) => <span className="text-sm font-semibold text-white">{totals.shown}</span>,
+    renderTotal: (totals) => <span className="text-[14px] font-bold text-white">{totals.shown}</span>,
   },
   showRate: {
     id: "showRate",
@@ -982,13 +982,13 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     shortLabel: "CASH",
     align: "right",
     render: (row) => (
-      <span className="text-sm font-semibold text-vui-success">
+      <span className="text-[14px] font-medium text-[#01b574]">
         ${formatNumber(Math.round(row.cashCollected))}
       </span>
     ),
     getValue: (row) => row.cashCollected,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-vui-success">
+      <span className="text-[14px] font-bold text-[#01b574]">
         ${formatNumber(Math.round(totals.cashCollected))}
       </span>
     ),
@@ -999,13 +999,13 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     shortLabel: "DEAL",
     align: "right",
     render: (row) => (
-      <span className="text-sm font-semibold text-vui-primary">
+      <span className="text-[14px] font-medium text-[#0075ff]">
         ${formatNumber(Math.round(row.dealValue))}
       </span>
     ),
     getValue: (row) => row.dealValue,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-vui-primary">
+      <span className="text-[14px] font-bold text-[#0075ff]">
         ${formatNumber(Math.round(totals.dealValue))}
       </span>
     ),
@@ -1015,11 +1015,11 @@ const createColumnDefs = (): Record<string, ColumnDef> => ({
     label: "COST/LEAD",
     align: "right",
     render: (row) => (
-      <span className="text-sm text-white">${row.costPerLead.toFixed(2)}</span>
+      <span className="text-[14px] font-medium text-white">${row.costPerLead.toFixed(2)}</span>
     ),
     getValue: (row) => row.costPerLead,
     renderTotal: (totals) => (
-      <span className="text-sm font-semibold text-white">${totals.costPerLead.toFixed(2)}</span>
+      <span className="text-[14px] font-bold text-white">${totals.costPerLead.toFixed(2)}</span>
     ),
   },
   roas: {
@@ -1065,9 +1065,9 @@ function SortableHeaderCell({
     <th
       ref={setNodeRef}
       style={style}
-      className={`px-3 py-3 text-[10.4px] font-bold text-vui-text whitespace-nowrap select-none
+      className={`py-3 pr-6 text-[10.4px] font-bold text-[#a0aec0] whitespace-nowrap select-none border-b border-[#2d3748]
         ${column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"}
-        ${isDragging ? "bg-vui-brand/20 z-20" : "bg-[rgba(6,11,40,0.5)]"}
+        ${isDragging ? "bg-vui-brand/20 z-20" : "bg-transparent"}
       `}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "right" ? "justify-end" : column.align === "center" ? "justify-center" : "justify-start"}`}>
@@ -1278,7 +1278,7 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 items={columnOrder}
                 strategy={horizontalListSortingStrategy}
               >
-                <tr className="border-b border-[#2d3748]">
+                <tr>
                   {orderedColumns.map((column) => (
                     <SortableHeaderCell
                       key={column.id}
@@ -1293,11 +1293,11 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
             </thead>
             <tbody>
               {/* Summary Row */}
-              <tr className="bg-[rgba(6,11,40,0.5)] border-b border-[#2d3748]">
+              <tr className="bg-[rgba(6,11,40,0.4)]">
                 {orderedColumns.map((column) => (
                   <td
                     key={column.id}
-                    className={`px-3 py-3 ${
+                    className={`py-4 pr-6 border-b border-[#2d3748] ${
                       column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"
                     }`}
                   >
@@ -1317,12 +1317,12 @@ function KpiPerSourceTable({ data, breakdownLevel, onBreakdownChange }: KpiPerSo
                 sortedData.map((row, index) => (
                   <tr
                     key={`${row.source}-${index}`}
-                    className="border-b border-[#2d3748] hover:bg-[rgba(26,31,55,0.3)] transition-colors bg-transparent"
+                    className="hover:bg-[rgba(26,31,55,0.3)] transition-colors bg-transparent"
                   >
                     {orderedColumns.map((column) => (
                       <td
                         key={column.id}
-                        className={`px-3 py-3 ${
+                        className={`py-4 pr-6 border-b border-[#2d3748] ${
                           column.align === "left" ? "text-left" : column.align === "right" ? "text-right" : "text-center"
                         }`}
                       >
