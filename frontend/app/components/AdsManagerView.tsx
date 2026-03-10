@@ -343,10 +343,10 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="rounded-[20px] shadow-lg shadow-black/20 border-0 p-4 backdrop-blur-[120px]" style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}>
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="rounded-[20px] shadow-lg shadow-black/20 border-0 p-4 backdrop-blur-[120px] relative z-20 overflow-visible" style={{ background: 'linear-gradient(127.09deg, rgba(6, 11, 40, 0.94) 19.41%, rgba(10, 14, 35, 0.49) 76.65%)' }}>
+        <div className="flex flex-wrap items-center gap-3 overflow-visible">
           {/* Campaign Filter */}
-          <div ref={campaignDropdownRef} className="relative">
+          <div ref={campaignDropdownRef} className="relative z-[9999]">
             <button
               onClick={() => {
                 setCampaignDropdownOpen(!campaignDropdownOpen);
@@ -368,7 +368,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
             </button>
 
             {campaignDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-xl z-[9999]">
                 <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                   <input
                     type="text"
@@ -413,7 +413,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
           </div>
 
           {/* Ad Set Filter */}
-          <div ref={adSetDropdownRef} className="relative">
+          <div ref={adSetDropdownRef} className="relative z-[9999]">
             <button
               onClick={() => {
                 setAdSetDropdownOpen(!adSetDropdownOpen);
@@ -435,7 +435,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
             </button>
 
             {adSetDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-xl z-[9999]">
                 <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
                   <input
                     type="text"

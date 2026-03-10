@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { DateRangeValue } from "../DateRangePicker";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -150,7 +150,10 @@ interface BriefItem {
 interface AdPerformanceData {
   ad_id: string;
   ad_name: string;
+  campaign_id?: string;
   campaign_name: string;
+  adset_id?: string;
+  adset_name?: string;
   total_spend: number;
   total_impressions: number;
   total_clicks: number;
@@ -242,6 +245,257 @@ const MessagingIcons = {
     </svg>
   ),
 };
+
+// ============================================================================
+// CAMPAIGN/AD SET FILTER COMPONENT
+// ============================================================================
+
+interface CampaignOption {
+  campaign_id: string;
+  campaign_name: string;
+}
+
+interface AdSetOption {
+  adset_id: string;
+  adset_name: string;
+  campaign_id: string;
+}
+
+interface CampaignAdSetFilterProps {
+  campaigns: CampaignOption[];
+  adSets: AdSetOption[];
+  selectedCampaigns: string[];
+  selectedAdSets: string[];
+  onCampaignChange: (campaigns: string[]) => void;
+  onAdSetChange: (adSets: string[]) => void;
+  onClear: () => void;
+}
+
+function CampaignAdSetFilter({
+  campaigns,
+  adSets,
+  selectedCampaigns,
+  selectedAdSets,
+  onCampaignChange,
+  onAdSetChange,
+  onClear,
+}: CampaignAdSetFilterProps) {
+  const [campaignDropdownOpen, setCampaignDropdownOpen] = useState(false);
+  const [adSetDropdownOpen, setAdSetDropdownOpen] = useState(false);
+  const [campaignSearch, setCampaignSearch] = useState("");
+  const [adSetSearch, setAdSetSearch] = useState("");
+  const campaignDropdownRef = useRef<HTMLDivElement>(null);
+  const adSetDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (campaignDropdownRef.current && !campaignDropdownRef.current.contains(event.target as Node)) {
+        setCampaignDropdownOpen(false);
+      }
+      if (adSetDropdownRef.current && !adSetDropdownRef.current.contains(event.target as Node)) {
+        setAdSetDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter ad sets based on selected campaigns
+  const filteredAdSets = useMemo(() => {
+    let result = adSets;
+    if (selectedCampaigns.length > 0) {
+      result = result.filter((a) => selectedCampaigns.includes(a.campaign_id));
+    }
+    if (adSetSearch) {
+      result = result.filter((a) =>
+        a.adset_name.toLowerCase().includes(adSetSearch.toLowerCase())
+      );
+    }
+    return result;
+  }, [adSets, selectedCampaigns, adSetSearch]);
+
+  // Filter campaigns by search
+  const filteredCampaigns = useMemo(() => {
+    if (!campaignSearch) return campaigns;
+    return campaigns.filter((c) =>
+      c.campaign_name.toLowerCase().includes(campaignSearch.toLowerCase())
+    );
+  }, [campaigns, campaignSearch]);
+
+  const toggleCampaign = (campaignId: string) => {
+    if (selectedCampaigns.includes(campaignId)) {
+      onCampaignChange(selectedCampaigns.filter((id) => id !== campaignId));
+    } else {
+      onCampaignChange([...selectedCampaigns, campaignId]);
+    }
+    // Clear ad set selections when campaigns change
+    onAdSetChange([]);
+  };
+
+  const toggleAdSet = (adSetId: string) => {
+    if (selectedAdSets.includes(adSetId)) {
+      onAdSetChange(selectedAdSets.filter((id) => id !== adSetId));
+    } else {
+      onAdSetChange([...selectedAdSets, adSetId]);
+    }
+  };
+
+  const hasActiveFilters = selectedCampaigns.length > 0 || selectedAdSets.length > 0;
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 mb-6 relative z-20 overflow-visible">
+      {/* Campaign Filter */}
+      <div ref={campaignDropdownRef} className="relative z-[9999]">
+        <button
+          onClick={() => {
+            setCampaignDropdownOpen(!campaignDropdownOpen);
+            setAdSetDropdownOpen(false);
+          }}
+          className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-[#a0aec0] bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg hover:bg-[#1a1f37] focus:outline-none focus:ring-2 focus:ring-[#0075ff]"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#a0aec0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            {selectedCampaigns.length > 0
+              ? `Campaign (${selectedCampaigns.length})`
+              : "All Campaigns"}
+          </span>
+          <svg className={`w-4 h-4 text-[#a0aec0] transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {campaignDropdownOpen && (
+          <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-xl z-[9999]">
+            <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
+              <input
+                type="text"
+                placeholder="Search campaigns..."
+                value={campaignSearch}
+                onChange={(e) => setCampaignSearch(e.target.value)}
+                className="w-full px-3 py-2 text-sm text-white bg-[#060b28] border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-[#0075ff] placeholder:text-[#a0aec0]"
+              />
+            </div>
+            <div className="max-h-64 overflow-y-auto bg-[#0f1535]">
+              {filteredCampaigns.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-[#a0aec0]">No campaigns found</div>
+              ) : (
+                filteredCampaigns.map((campaign) => (
+                  <label
+                    key={campaign.campaign_id}
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-[#1a1f37] cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCampaigns.includes(campaign.campaign_id)}
+                      onChange={() => toggleCampaign(campaign.campaign_id)}
+                      className="w-4 h-4 text-[#0075ff] border-[rgba(226,232,240,0.3)] rounded focus:ring-[#0075ff]"
+                    />
+                    <span className="text-sm text-[#a0aec0] truncate">{campaign.campaign_name}</span>
+                  </label>
+                ))
+              )}
+            </div>
+            {selectedCampaigns.length > 0 && (
+              <div className="p-2 border-t border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
+                <button
+                  onClick={() => onCampaignChange([])}
+                  className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
+                >
+                  Clear selection
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Ad Set Filter */}
+      <div ref={adSetDropdownRef} className="relative z-[9999]">
+        <button
+          onClick={() => {
+            setAdSetDropdownOpen(!adSetDropdownOpen);
+            setCampaignDropdownOpen(false);
+          }}
+          className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-[#a0aec0] bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg hover:bg-[#1a1f37] focus:outline-none focus:ring-2 focus:ring-[#0075ff]"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#a0aec0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            {selectedAdSets.length > 0
+              ? `Ad Set (${selectedAdSets.length})`
+              : "All Ad Sets"}
+          </span>
+          <svg className={`w-4 h-4 text-[#a0aec0] transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {adSetDropdownOpen && (
+          <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-xl z-[9999]">
+            <div className="p-2 border-b border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
+              <input
+                type="text"
+                placeholder="Search ad sets..."
+                value={adSetSearch}
+                onChange={(e) => setAdSetSearch(e.target.value)}
+                className="w-full px-3 py-2 text-sm text-white bg-[#060b28] border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-[#0075ff] placeholder:text-[#a0aec0]"
+              />
+            </div>
+            <div className="max-h-64 overflow-y-auto bg-[#0f1535]">
+              {filteredAdSets.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-[#a0aec0]">
+                  {selectedCampaigns.length > 0 ? "No ad sets in selected campaigns" : "No ad sets found"}
+                </div>
+              ) : (
+                filteredAdSets.map((adSet) => (
+                  <label
+                    key={adSet.adset_id}
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-[#1a1f37] cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedAdSets.includes(adSet.adset_id)}
+                      onChange={() => toggleAdSet(adSet.adset_id)}
+                      className="w-4 h-4 text-[#0075ff] border-[rgba(226,232,240,0.3)] rounded focus:ring-[#0075ff]"
+                    />
+                    <span className="text-sm text-[#a0aec0] truncate">{adSet.adset_name}</span>
+                  </label>
+                ))
+              )}
+            </div>
+            {selectedAdSets.length > 0 && (
+              <div className="p-2 border-t border-[rgba(226,232,240,0.3)] bg-[#0f1535]">
+                <button
+                  onClick={() => onAdSetChange([])}
+                  className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
+                >
+                  Clear selection
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Clear All Filters */}
+      {hasActiveFilters && (
+        <button
+          onClick={onClear}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-[#e31a1a] bg-[#e31a1a]/10 rounded-lg hover:bg-[#e31a1a]/15 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          Clear Filters
+        </button>
+      )}
+    </div>
+  );
+}
 
 // ============================================================================
 // TAB CONFIGURATION
@@ -927,11 +1181,22 @@ function CallInsightsTab() {
 // FATIGUE MONITOR TAB
 // ============================================================================
 
+interface AdWithFatigueExtended extends AdWithFatigue {
+  campaign_id?: string;
+  campaign_name?: string;
+  adset_id?: string;
+  adset_name?: string;
+}
+
 function FatigueMonitorTab() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [fatigueData, setFatigueData] = useState<AdWithFatigue[]>([]);
+  const [fatigueData, setFatigueData] = useState<AdWithFatigueExtended[]>([]);
   const [sortBy, setSortBy] = useState<"fatigue_score" | "cpa_trend" | "cpm_trend" | "ctr_trend">("fatigue_score");
+
+  // Filter state
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [selectedAdSets, setSelectedAdSets] = useState<string[]>([]);
 
   const fetchFatigueData = useCallback(async () => {
     setLoading(true);
@@ -946,7 +1211,7 @@ function FatigueMonitorTab() {
       const adIds = scores?.map((s) => s.ad_id) || [];
       const { data: ads, error: adsError } = await supabase
         .from("ads")
-        .select("ad_id, ad_name")
+        .select("ad_id, ad_name, campaign_id, campaign_name, adset_id, adset_name")
         .in("ad_id", adIds);
 
       if (adsError) throw adsError;
@@ -958,14 +1223,28 @@ function FatigueMonitorTab() {
 
       if (transcriptsError) throw transcriptsError;
 
-      const adNameMap = new Map(ads?.map((a) => [a.ad_id, a.ad_name]));
+      // Build maps for ad info
+      const adInfoMap = new Map(ads?.map((a) => [a.ad_id, {
+        ad_name: a.ad_name,
+        campaign_id: a.campaign_id,
+        campaign_name: a.campaign_name,
+        adset_id: a.adset_id,
+        adset_name: a.adset_name,
+      }]));
       const thumbnailMap = new Map(transcripts?.map((t) => [t.ad_id, t.thumbnail_url]));
 
-      const mergedData: AdWithFatigue[] = (scores || []).map((score) => ({
-        ...score,
-        ad_name: adNameMap.get(score.ad_id) || "Unknown",
-        thumbnail_url: thumbnailMap.get(score.ad_id),
-      }));
+      const mergedData: AdWithFatigueExtended[] = (scores || []).map((score) => {
+        const adInfo = adInfoMap.get(score.ad_id);
+        return {
+          ...score,
+          ad_name: adInfo?.ad_name || "Unknown",
+          campaign_id: adInfo?.campaign_id,
+          campaign_name: adInfo?.campaign_name,
+          adset_id: adInfo?.adset_id,
+          adset_name: adInfo?.adset_name,
+          thumbnail_url: thumbnailMap.get(score.ad_id),
+        };
+      });
 
       setFatigueData(mergedData);
     } catch (err) {
@@ -974,6 +1253,55 @@ function FatigueMonitorTab() {
       setLoading(false);
     }
   }, []);
+
+  // Extract unique campaigns and ad sets
+  const uniqueCampaigns = useMemo<CampaignOption[]>(() => {
+    const campaignMap = new Map<string, CampaignOption>();
+    fatigueData.forEach((ad) => {
+      if (ad.campaign_id && ad.campaign_name) {
+        campaignMap.set(ad.campaign_id, {
+          campaign_id: ad.campaign_id,
+          campaign_name: ad.campaign_name,
+        });
+      }
+    });
+    return Array.from(campaignMap.values()).sort((a, b) =>
+      a.campaign_name.localeCompare(b.campaign_name)
+    );
+  }, [fatigueData]);
+
+  const uniqueAdSets = useMemo<AdSetOption[]>(() => {
+    const adSetMap = new Map<string, AdSetOption>();
+    fatigueData.forEach((ad) => {
+      if (ad.adset_id && ad.adset_name && ad.campaign_id) {
+        adSetMap.set(ad.adset_id, {
+          adset_id: ad.adset_id,
+          adset_name: ad.adset_name,
+          campaign_id: ad.campaign_id,
+        });
+      }
+    });
+    return Array.from(adSetMap.values()).sort((a, b) =>
+      a.adset_name.localeCompare(b.adset_name)
+    );
+  }, [fatigueData]);
+
+  // Filter data based on selections
+  const filteredFatigueData = useMemo(() => {
+    let result = fatigueData;
+    if (selectedCampaigns.length > 0) {
+      result = result.filter((ad) => ad.campaign_id && selectedCampaigns.includes(ad.campaign_id));
+    }
+    if (selectedAdSets.length > 0) {
+      result = result.filter((ad) => ad.adset_id && selectedAdSets.includes(ad.adset_id));
+    }
+    return result;
+  }, [fatigueData, selectedCampaigns, selectedAdSets]);
+
+  const clearFilters = () => {
+    setSelectedCampaigns([]);
+    setSelectedAdSets([]);
+  };
 
   useEffect(() => {
     fetchFatigueData();
@@ -1007,7 +1335,7 @@ function FatigueMonitorTab() {
     }
   };
 
-  const sortedData = [...fatigueData].sort((a, b) => {
+  const sortedData = [...filteredFatigueData].sort((a, b) => {
     if (sortBy === "fatigue_score") return b.fatigue_score - a.fatigue_score;
     if (sortBy === "cpa_trend") return b.cpa_trend - a.cpa_trend;
     if (sortBy === "cpm_trend") return b.cpm_trend - a.cpm_trend;
@@ -1044,6 +1372,17 @@ function FatigueMonitorTab() {
           Refresh Scores
         </button>
       </div>
+
+      {/* Campaign/Ad Set Filter */}
+      <CampaignAdSetFilter
+        campaigns={uniqueCampaigns}
+        adSets={uniqueAdSets}
+        selectedCampaigns={selectedCampaigns}
+        selectedAdSets={selectedAdSets}
+        onCampaignChange={setSelectedCampaigns}
+        onAdSetChange={setSelectedAdSets}
+        onClear={clearFilters}
+      />
 
       {/* Fatigue Table */}
       <GlassCard>
@@ -1147,13 +1486,17 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
   const [sortBy, setSortBy] = useState<"opt_in_rate" | "booking_rate" | "cpc" | "cost_per_booked">("cost_per_booked");
   const [sortAsc, setSortAsc] = useState(true);
 
+  // Filter state
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [selectedAdSets, setSelectedAdSets] = useState<string[]>([]);
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
         let adsQuery = supabase
           .from("ads")
-          .select("ad_id, ad_name, campaign_name, spend, impressions, clicks, leads");
+          .select("ad_id, ad_name, campaign_id, campaign_name, adset_id, adset_name, spend, impressions, clicks, leads");
 
         if (dateRange?.from) {
           adsQuery = adsQuery.gte("date", formatDateOnly(dateRange.from));
@@ -1192,7 +1535,10 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
             adMap.set(ad.ad_id, {
               ad_id: ad.ad_id,
               ad_name: ad.ad_name || "Unknown",
+              campaign_id: ad.campaign_id,
               campaign_name: ad.campaign_name || "Unknown",
+              adset_id: ad.adset_id,
+              adset_name: ad.adset_name,
               total_spend: Number(ad.spend) || 0,
               total_impressions: Number(ad.impressions) || 0,
               total_clicks: Number(ad.clicks) || 0,
@@ -1244,6 +1590,55 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
     fetchData();
   }, [dateRange]);
 
+  // Extract unique campaigns and ad sets
+  const uniqueCampaigns = useMemo<CampaignOption[]>(() => {
+    const campaignMap = new Map<string, CampaignOption>();
+    data.forEach((ad) => {
+      if (ad.campaign_id && ad.campaign_name) {
+        campaignMap.set(ad.campaign_id, {
+          campaign_id: ad.campaign_id,
+          campaign_name: ad.campaign_name,
+        });
+      }
+    });
+    return Array.from(campaignMap.values()).sort((a, b) =>
+      a.campaign_name.localeCompare(b.campaign_name)
+    );
+  }, [data]);
+
+  const uniqueAdSets = useMemo<AdSetOption[]>(() => {
+    const adSetMap = new Map<string, AdSetOption>();
+    data.forEach((ad) => {
+      if (ad.adset_id && ad.adset_name && ad.campaign_id) {
+        adSetMap.set(ad.adset_id, {
+          adset_id: ad.adset_id,
+          adset_name: ad.adset_name,
+          campaign_id: ad.campaign_id,
+        });
+      }
+    });
+    return Array.from(adSetMap.values()).sort((a, b) =>
+      a.adset_name.localeCompare(b.adset_name)
+    );
+  }, [data]);
+
+  // Filter data based on selections
+  const filteredData = useMemo(() => {
+    let result = data;
+    if (selectedCampaigns.length > 0) {
+      result = result.filter((ad) => ad.campaign_id && selectedCampaigns.includes(ad.campaign_id));
+    }
+    if (selectedAdSets.length > 0) {
+      result = result.filter((ad) => ad.adset_id && selectedAdSets.includes(ad.adset_id));
+    }
+    return result;
+  }, [data, selectedCampaigns, selectedAdSets]);
+
+  const clearFilters = () => {
+    setSelectedCampaigns([]);
+    setSelectedAdSets([]);
+  };
+
   const handleSort = (column: typeof sortBy) => {
     if (sortBy === column) {
       setSortAsc(!sortAsc);
@@ -1253,7 +1648,7 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
     }
   };
 
-  const sortedData = [...data].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortBy];
     const bVal = b[sortBy];
     return sortAsc ? aVal - bVal : bVal - aVal;
@@ -1273,6 +1668,17 @@ function PerformanceKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
         <h2 className="text-xl font-semibold text-white">Performance KPIs</h2>
         <p className="text-[#a0aec0]">Conversion and cost metrics for each ad</p>
       </div>
+
+      {/* Campaign/Ad Set Filter */}
+      <CampaignAdSetFilter
+        campaigns={uniqueCampaigns}
+        adSets={uniqueAdSets}
+        selectedCampaigns={selectedCampaigns}
+        selectedAdSets={selectedAdSets}
+        onCampaignChange={setSelectedCampaigns}
+        onAdSetChange={setSelectedAdSets}
+        onClear={clearFilters}
+      />
 
       <GlassCard>
         <Table>
@@ -1342,13 +1748,17 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
   const [sortBy, setSortBy] = useState<"cpm" | "hook_rate" | "hold_rate" | "outbound_ctr">("hook_rate");
   const [sortAsc, setSortAsc] = useState(false);
 
+  // Filter state
+  const [selectedCampaigns, setSelectedCampaigns] = useState<string[]>([]);
+  const [selectedAdSets, setSelectedAdSets] = useState<string[]>([]);
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
         let query = supabase
           .from("ads")
-          .select("ad_id, ad_name, campaign_name, spend, impressions, clicks, cpm, hook_rate, hold_rate, outbound_ctr");
+          .select("ad_id, ad_name, campaign_id, campaign_name, adset_id, adset_name, spend, impressions, clicks, cpm, hook_rate, hold_rate, outbound_ctr");
 
         if (dateRange?.from) {
           query = query.gte("date", formatDateOnly(dateRange.from));
@@ -1372,7 +1782,10 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
             adMap.set(ad.ad_id, {
               ad_id: ad.ad_id,
               ad_name: ad.ad_name || "Unknown",
+              campaign_id: ad.campaign_id,
               campaign_name: ad.campaign_name || "Unknown",
+              adset_id: ad.adset_id,
+              adset_name: ad.adset_name,
               total_spend: Number(ad.spend) || 0,
               total_impressions: Number(ad.impressions) || 0,
               total_clicks: Number(ad.clicks) || 0,
@@ -1407,6 +1820,55 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
     fetchData();
   }, [dateRange]);
 
+  // Extract unique campaigns and ad sets
+  const uniqueCampaigns = useMemo<CampaignOption[]>(() => {
+    const campaignMap = new Map<string, CampaignOption>();
+    data.forEach((ad) => {
+      if (ad.campaign_id && ad.campaign_name) {
+        campaignMap.set(ad.campaign_id, {
+          campaign_id: ad.campaign_id,
+          campaign_name: ad.campaign_name,
+        });
+      }
+    });
+    return Array.from(campaignMap.values()).sort((a, b) =>
+      a.campaign_name.localeCompare(b.campaign_name)
+    );
+  }, [data]);
+
+  const uniqueAdSets = useMemo<AdSetOption[]>(() => {
+    const adSetMap = new Map<string, AdSetOption>();
+    data.forEach((ad) => {
+      if (ad.adset_id && ad.adset_name && ad.campaign_id) {
+        adSetMap.set(ad.adset_id, {
+          adset_id: ad.adset_id,
+          adset_name: ad.adset_name,
+          campaign_id: ad.campaign_id,
+        });
+      }
+    });
+    return Array.from(adSetMap.values()).sort((a, b) =>
+      a.adset_name.localeCompare(b.adset_name)
+    );
+  }, [data]);
+
+  // Filter data based on selections
+  const filteredData = useMemo(() => {
+    let result = data;
+    if (selectedCampaigns.length > 0) {
+      result = result.filter((ad) => ad.campaign_id && selectedCampaigns.includes(ad.campaign_id));
+    }
+    if (selectedAdSets.length > 0) {
+      result = result.filter((ad) => ad.adset_id && selectedAdSets.includes(ad.adset_id));
+    }
+    return result;
+  }, [data, selectedCampaigns, selectedAdSets]);
+
+  const clearFilters = () => {
+    setSelectedCampaigns([]);
+    setSelectedAdSets([]);
+  };
+
   const handleSort = (column: typeof sortBy) => {
     if (sortBy === column) {
       setSortAsc(!sortAsc);
@@ -1416,7 +1878,7 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
     }
   };
 
-  const sortedData = [...data].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a, b) => {
     const aVal = a[sortBy];
     const bVal = b[sortBy];
     return sortAsc ? aVal - bVal : bVal - aVal;
@@ -1436,6 +1898,17 @@ function EngagementKPIsTab({ dateRange }: { dateRange: DateRangeValue }) {
         <h2 className="text-xl font-semibold text-white">Engagement KPIs</h2>
         <p className="text-[#a0aec0]">Video engagement and attention metrics for each ad</p>
       </div>
+
+      {/* Campaign/Ad Set Filter */}
+      <CampaignAdSetFilter
+        campaigns={uniqueCampaigns}
+        adSets={uniqueAdSets}
+        selectedCampaigns={selectedCampaigns}
+        selectedAdSets={selectedAdSets}
+        onCampaignChange={setSelectedCampaigns}
+        onAdSetChange={setSelectedAdSets}
+        onClear={clearFilters}
+      />
 
       <GlassCard>
         <Table>
