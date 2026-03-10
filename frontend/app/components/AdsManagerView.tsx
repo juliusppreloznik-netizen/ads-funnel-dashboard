@@ -241,10 +241,10 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
   // Sort indicator
   const SortIndicator = ({ column }: { column: keyof AdsManagerAd }) => {
     if (sortColumn !== column) {
-      return <span className="text-vui-text ml-1">↕</span>;
+      return <span className="text-[#a0aec0] ml-1">↕</span>;
     }
     return (
-      <span className="text-vui-brand ml-1">
+      <span className="text-[#0075ff] ml-1">
         {sortDirection === "asc" ? "↑" : "↓"}
       </span>
     );
@@ -255,7 +255,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[rgba(0,117,255,0.3)] border-t-orange-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-vui-text">Loading ads data...</p>
+          <p className="text-[#a0aec0]">Loading ads data...</p>
         </div>
       </div>
     );
@@ -265,16 +265,16 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 bg-vui-error/15 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-vui-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-[#e31a1a]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-[#e31a1a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-vui-text-white">Error loading data</h3>
-          <p className="text-sm text-vui-text mt-1">{error}</p>
+          <h3 className="text-lg font-semibold text-white">Error loading data</h3>
+          <p className="text-sm text-[#a0aec0] mt-1">{error}</p>
           <button
             onClick={fetchData}
-            className="mt-4 px-4 py-2 bg-vui-brand/100 text-vui-text-white rounded-vui hover:bg-orange-600 transition-colors"
+            className="mt-4 px-4 py-2 bg-[#0075ff]/100 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             Retry
           </button>
@@ -287,13 +287,13 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-16 h-16 bg-vui-sidenav-btn rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 bg-[#1a1f37] rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-[#a0aec0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-vui-text-white">No ads found</h3>
-          <p className="text-sm text-vui-text mt-1">Try adjusting your date range</p>
+          <h3 className="text-lg font-semibold text-white">No ads found</h3>
+          <p className="text-sm text-[#a0aec0] mt-1">Try adjusting your date range</p>
         </div>
       </div>
     );
@@ -343,7 +343,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-vui-page rounded-vui-xl shadow-lg shadow-black/20 border border-vui-border/30 p-4">
+      <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] p-4">
         <div className="flex flex-wrap items-center gap-3">
           {/* Campaign Filter */}
           <div ref={campaignDropdownRef} className="relative">
@@ -352,57 +352,57 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                 setCampaignDropdownOpen(!campaignDropdownOpen);
                 setAdSetDropdownOpen(false);
               }}
-              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-vui-text bg-vui-page border border-vui-border/30 rounded-vui hover:bg-vui-body focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-[#a0aec0] bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg hover:bg-[#1a1f37] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
             >
               <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[#a0aec0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
                 {selectedCampaigns.length > 0
                   ? `Campaign (${selectedCampaigns.length})`
                   : "All Campaigns"}
               </span>
-              <svg className={`w-4 h-4 text-vui-text transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 text-[#a0aec0] transition-transform ${campaignDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {campaignDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-vui-page border border-vui-border/30 rounded-vui shadow-lg z-50">
-                <div className="p-2 border-b border-vui-border/30">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-[rgba(226,232,240,0.3)]">
                   <input
                     type="text"
                     placeholder="Search campaigns..."
                     value={campaignSearch}
                     onChange={(e) => setCampaignSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-vui-border/30 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {filteredCampaigns.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-vui-text">No campaigns found</div>
+                    <div className="px-4 py-3 text-sm text-[#a0aec0]">No campaigns found</div>
                   ) : (
                     filteredCampaigns.map((campaign) => (
                       <label
                         key={campaign.campaign_id}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-vui-body cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-[#1a1f37] cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedCampaigns.includes(campaign.campaign_id)}
                           onChange={() => toggleCampaign(campaign.campaign_id)}
-                          className="w-4 h-4 text-vui-brand border-vui-border/30 rounded focus:ring-orange-500"
+                          className="w-4 h-4 text-[#0075ff] border-[rgba(226,232,240,0.3)] rounded focus:ring-orange-500"
                         />
-                        <span className="text-sm text-vui-text truncate">{campaign.campaign_name}</span>
+                        <span className="text-sm text-[#a0aec0] truncate">{campaign.campaign_name}</span>
                       </label>
                     ))
                   )}
                 </div>
                 {selectedCampaigns.length > 0 && (
-                  <div className="p-2 border-t border-vui-border/30">
+                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)]">
                     <button
                       onClick={() => setSelectedCampaigns([])}
-                      className="w-full px-3 py-1.5 text-sm text-vui-text hover:text-vui-text-white hover:bg-vui-sidenav-btn rounded"
+                      className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
                     >
                       Clear selection
                     </button>
@@ -419,59 +419,59 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                 setAdSetDropdownOpen(!adSetDropdownOpen);
                 setCampaignDropdownOpen(false);
               }}
-              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-vui-text bg-vui-page border border-vui-border/30 rounded-vui hover:bg-vui-body focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
+              className="inline-flex items-center justify-between gap-2 px-4 py-2 min-w-[200px] text-sm font-medium text-[#a0aec0] bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg hover:bg-[#1a1f37] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1"
             >
               <span className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-vui-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-[#a0aec0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 {selectedAdSets.length > 0
                   ? `Ad Set (${selectedAdSets.length})`
                   : "All Ad Sets"}
               </span>
-              <svg className={`w-4 h-4 text-vui-text transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 text-[#a0aec0] transition-transform ${adSetDropdownOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {adSetDropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-80 bg-vui-page border border-vui-border/30 rounded-vui shadow-lg z-50">
-                <div className="p-2 border-b border-vui-border/30">
+              <div className="absolute top-full left-0 mt-1 w-80 bg-[#0f1535] border border-[rgba(226,232,240,0.3)] rounded-lg shadow-lg z-50">
+                <div className="p-2 border-b border-[rgba(226,232,240,0.3)]">
                   <input
                     type="text"
                     placeholder="Search ad sets..."
                     value={adSetSearch}
                     onChange={(e) => setAdSetSearch(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-vui-border/30 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full px-3 py-2 text-sm border border-[rgba(226,232,240,0.3)] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
                 <div className="max-h-64 overflow-y-auto">
                   {filteredAdSets.length === 0 ? (
-                    <div className="px-4 py-3 text-sm text-vui-text">
+                    <div className="px-4 py-3 text-sm text-[#a0aec0]">
                       {selectedCampaigns.length > 0 ? "No ad sets in selected campaigns" : "No ad sets found"}
                     </div>
                   ) : (
                     filteredAdSets.map((adSet) => (
                       <label
                         key={adSet.adset_id}
-                        className="flex items-center gap-3 px-4 py-2 hover:bg-vui-body cursor-pointer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-[#1a1f37] cursor-pointer"
                       >
                         <input
                           type="checkbox"
                           checked={selectedAdSets.includes(adSet.adset_id)}
                           onChange={() => toggleAdSet(adSet.adset_id)}
-                          className="w-4 h-4 text-vui-brand border-vui-border/30 rounded focus:ring-orange-500"
+                          className="w-4 h-4 text-[#0075ff] border-[rgba(226,232,240,0.3)] rounded focus:ring-orange-500"
                         />
-                        <span className="text-sm text-vui-text truncate">{adSet.adset_name}</span>
+                        <span className="text-sm text-[#a0aec0] truncate">{adSet.adset_name}</span>
                       </label>
                     ))
                   )}
                 </div>
                 {selectedAdSets.length > 0 && (
-                  <div className="p-2 border-t border-vui-border/30">
+                  <div className="p-2 border-t border-[rgba(226,232,240,0.3)]">
                     <button
                       onClick={() => setSelectedAdSets([])}
-                      className="w-full px-3 py-1.5 text-sm text-vui-text hover:text-vui-text-white hover:bg-vui-sidenav-btn rounded"
+                      className="w-full px-3 py-1.5 text-sm text-[#a0aec0] hover:text-white hover:bg-[#1a1f37] rounded"
                     >
                       Clear selection
                     </button>
@@ -485,7 +485,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-vui hover:bg-vui-error/15 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-[#e31a1a]/15 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -497,7 +497,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
           {/* Filter Summary */}
           {hasActiveFilters && (
             <div className="flex-1 flex items-center justify-end">
-              <span className="text-sm text-vui-text">
+              <span className="text-sm text-[#a0aec0]">
                 Showing {filteredAds.length} of {ads.length} ads
               </span>
             </div>
@@ -506,13 +506,13 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
 
         {/* Active Filter Tags */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-vui-border/20">
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-[rgba(226,232,240,0.2)]">
             {selectedCampaigns.map((campaignId) => {
               const campaign = uniqueCampaigns.find((c) => c.campaign_id === campaignId);
               return campaign ? (
                 <span
                   key={campaignId}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-vui-brand/15 text-orange-700 rounded-full"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-[#0075ff]/15 text-orange-700 rounded-full"
                 >
                   {campaign.campaign_name}
                   <button
@@ -550,104 +550,104 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
       </div>
 
       {/* Ads Table */}
-      <div className="bg-vui-page rounded-vui-xl shadow-lg shadow-black/20 border border-vui-border/30 overflow-hidden">
-        <div className="px-6 py-4 border-b border-vui-border/30">
-          <h2 className="text-lg font-semibold text-vui-text-white">
+      <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] overflow-hidden">
+        <div className="px-6 py-4 border-b border-[rgba(226,232,240,0.3)]">
+          <h2 className="text-lg font-semibold text-white">
             {hasActiveFilters ? `Filtered Ads (${filteredAds.length})` : "All Ads"}
           </h2>
-          <p className="text-sm text-vui-text">Click &quot;Preview&quot; to view ad creative and transcript</p>
+          <p className="text-sm text-[#a0aec0]">Click &quot;Preview&quot; to view ad creative and transcript</p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-vui-body">
+            <thead className="bg-[#060b28]">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-vui-text uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-[#a0aec0] uppercase tracking-wider">
                   Actions
                 </th>
                 <th
-                  className="px-4 py-3 text-left text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-left text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("ad_name")}
                 >
                   Ad Name <SortIndicator column="ad_name" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_spend")}
                 >
                   Spend <SortIndicator column="total_spend" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_impressions")}
                 >
                   Impr. <SortIndicator column="total_impressions" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_clicks")}
                 >
                   Clicks <SortIndicator column="total_clicks" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("avg_ctr")}
                 >
                   CTR <SortIndicator column="avg_ctr" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("total_leads")}
                 >
                   Leads <SortIndicator column="total_leads" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("calls_booked")}
                 >
                   Booked <SortIndicator column="calls_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("cost_per_booked")}
                   title="Total spend divided by total calls booked (qualified + unqualified)"
                 >
                   Cost/Booked <SortIndicator column="cost_per_booked" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("cost_per_qualified")}
                   title="Total spend divided by qualified calls booked only"
                 >
                   Cost/Qual. <SortIndicator column="cost_per_qualified" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("shows")}
                 >
                   Shows <SortIndicator column="shows" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("closes")}
                 >
                   Closes <SortIndicator column="closes" />
                 </th>
                 <th
-                  className="px-4 py-3 text-right text-xs font-semibold text-vui-text uppercase tracking-wider cursor-pointer hover:text-vui-text"
+                  className="px-4 py-3 text-right text-xs font-semibold text-[#a0aec0] uppercase tracking-wider cursor-pointer hover:text-[#a0aec0]"
                   onClick={() => handleSort("revenue")}
                 >
                   Revenue <SortIndicator column="revenue" />
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-vui-page divide-y divide-gray-200">
+            <tbody className="bg-[#0f1535] divide-y divide-gray-200">
               {sortedAds.map((ad) => (
-                <tr key={ad.ad_id} className="hover:bg-vui-body transition-colors">
+                <tr key={ad.ad_id} className="hover:bg-[#1a1f37] transition-colors">
                   <td className="px-4 py-3 whitespace-nowrap">
                     <button
                       onClick={() => handlePreview(ad)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-vui-brand bg-vui-brand/10 rounded-vui hover:bg-vui-brand/15 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#0075ff] bg-[#0075ff]/10 rounded-lg hover:bg-[#0075ff]/15 transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -656,7 +656,7 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                       Preview
                     </button>
                     {ad.media_type === "video" && ad.has_transcript && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-vui-success/15 text-green-800">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#01b574]/15 text-green-800">
                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -682,44 +682,44 @@ export default function AdsManagerView({ dateRange }: AdsManagerViewProps) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-vui-text-white truncate max-w-xs">
+                      <span className="text-sm font-medium text-white truncate max-w-xs">
                         {ad.ad_name}
                       </span>
                       {ad.campaign_name && (
-                        <span className="text-xs text-vui-text truncate max-w-xs">
+                        <span className="text-xs text-[#a0aec0] truncate max-w-xs">
                           {ad.campaign_name}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-vui-text-white whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm font-medium text-white whitespace-nowrap">
                     {formatCurrency(ad.total_spend)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {formatNumber(ad.total_impressions)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {formatNumber(ad.total_clicks)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {formatPercent(ad.avg_ctr)}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.total_leads}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.calls_booked}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.cost_per_booked !== null ? formatCurrency(ad.cost_per_booked) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.cost_per_qualified !== null ? formatCurrency(ad.cost_per_qualified) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.shows}
                   </td>
-                  <td className="px-4 py-3 text-right text-sm text-vui-text whitespace-nowrap">
+                  <td className="px-4 py-3 text-right text-sm text-[#a0aec0] whitespace-nowrap">
                     {ad.closes}
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-medium text-green-600 whitespace-nowrap">
@@ -758,16 +758,16 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, value, subtitle, icon }: SummaryCardProps) {
   return (
-    <div className="bg-vui-page rounded-vui-xl shadow-lg shadow-black/20 border border-vui-border/30 p-4">
+    <div className="bg-[#0f1535] rounded-[20px] shadow-lg shadow-black/20 border border-[rgba(226,232,240,0.3)] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-10 h-10 bg-vui-brand/15 rounded-vui flex items-center justify-center text-vui-brand">
+        <div className="flex-shrink-0 w-10 h-10 bg-[#0075ff]/15 rounded-lg flex items-center justify-center text-[#0075ff]">
           {icon}
         </div>
         <div>
-          <p className="text-sm text-vui-text">{title}</p>
+          <p className="text-sm text-[#a0aec0]">{title}</p>
           <div className="flex items-baseline gap-1.5">
-            <p className="text-xl font-bold text-vui-text-white">{value}</p>
-            {subtitle && <span className="text-xs text-vui-text">{subtitle}</span>}
+            <p className="text-xl font-bold text-white">{value}</p>
+            {subtitle && <span className="text-xs text-[#a0aec0]">{subtitle}</span>}
           </div>
         </div>
       </div>
