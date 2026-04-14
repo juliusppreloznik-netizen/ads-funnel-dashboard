@@ -342,3 +342,6 @@
 ## Email Update - Step 5 Facebook Access (Two Emails)
 - [x] Change email back to duffyjamir@gmail.com on Step 5 (Facebook Business Access)
 - [x] Add second email Sharifcmt182@gmail.com on Step 5 (Facebook Business Access)
+
+## Email Update - Step 5 Second Email Change
+- [x] Change second email on Step 5 from Sharifcmt182@gmail.com to awaisblogger390@gmail.com
